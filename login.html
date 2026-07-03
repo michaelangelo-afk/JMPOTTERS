@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <title>Sign In | JMPOTTERS</title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://tmpggeeuwdvlngvfncaa.supabase.co" />
+
+    <!-- Lucide Icons -->
+    <link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css" />
+    <!-- Playfair Display + Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <style>
+        /* ===== CSS VARIABLES ===== */
+        :root {
+            --gold: #d4af37;
+            --gold-dark: #b8860b;
+            --gold-light: rgba(212, 175, 55, 0.12);
+            --gold-glow: 0 0 30px rgba(212, 175, 55, 0.3);
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --transition: 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.10);
+            --glass-dark: rgba(12, 15, 21, 0.92);
+            --glass-blur: blur(16px);
+            --radius: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 1.5rem;
+            --nav-height: 76px;
+            --success-500: #22C55E;
+            --danger-500: #EF4444;
+            --primary-500: #d4af37;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #faf8f5; color: var(--gray-800);
+            overflow-x: hidden; min-height: 100vh;
+        }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; letter-spacing: -0.02em; }
+        h4, h5, h6 { font-family: 'Inter', sans-serif; }
+
+        .skip-link {
+            position: absolute; top: -100px; left: 16px; z-index: 9999;
+            background: var(--gold); color: #0c0f15; padding: 12px 24px;
+            border-radius: 0 0 var(--radius) var(--radius);
+            font-weight: 700; text-decoration: none; font-size: 0.9rem;
+            transition: top 0.2s ease;
+        }
+        .skip-link:focus { top: 0; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* ===== HEADER ===== */
+        .nav-bar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1050;
+            background: var(--glass-dark); backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            transition: padding 0.3s ease, background 0.3s ease;
+        }
+        .nav-bar.shrunk { background: rgba(10, 13, 18, 0.97); border-bottom-color: rgba(212, 175, 55, 0.25); }
+        .nav-bar.shrunk .logo-img { height: 40px; }
+        .nav-bar.shrunk .header-container { padding-top: 6px; padding-bottom: 6px; }
+        .header-container {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 1.5rem; max-width: 1280px; margin: 0 auto;
+            transition: padding 0.3s ease;
+        }
+        .header-left { display: flex; align-items: center; gap: 8px; }
+        .mobile-toggle {
+            background: rgba(255,255,255,0.06); border: none; font-size: 1.4rem;
+            width: 44px; height: 44px; border-radius: 12px; color: var(--gold);
+            cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .mobile-toggle:hover { background: var(--gold); color: #0c0f15; }
+        .header-center { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; }
+        .logo-img {
+            height: 56px; width: auto; object-fit: contain; display: block;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); transition: height 0.3s ease;
+        }
+        .desktop-nav-links {
+            display: none; list-style: none; gap: 4px; align-items: center;
+        }
+        .desktop-nav-links a {
+            color: #c8cdd5; text-decoration: none; font-size: 0.82rem;
+            font-weight: 500; padding: 8px 14px; border-radius: 10px;
+            transition: var(--transition); font-family: 'Inter', sans-serif; white-space: nowrap;
+        }
+        .desktop-nav-links a:hover { color: white; background: rgba(255,255,255,0.06); }
+        .header-right { display: flex; align-items: center; gap: 8px; }
+        .search-toggle, .header-icon {
+            position: relative; font-size: 1.25rem; color: #eef2f5; cursor: pointer;
+            transition: var(--transition); background: rgba(255,255,255,0.06);
+            width: 44px; height: 44px; display: flex; align-items: center;
+            justify-content: center; border-radius: 12px; border: none; text-decoration: none;
+        }
+        .search-toggle:hover, .header-icon:hover { background: var(--gold); color: #0c0f15; }
+        .nav-badge {
+            position: absolute; top: -4px; right: -4px; background: var(--gold);
+            color: #0c0f15; font-size: 0.65rem; font-weight: 800;
+            min-width: 18px; height: 18px; border-radius: 30px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Search overlay */
+        .search-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(12,15,21,0.92); backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1100; display: none; flex-direction: column; align-items: center;
+            padding-top: 100px; overflow-y: auto;
+        }
+        .search-overlay.active { display: flex; }
+        .search-box { width: 92%; max-width: 640px; position: relative; }
+        .search-box input {
+            width: 100%; padding: 18px 56px 18px 50px; font-size: 1.1rem;
+            border: 2px solid rgba(212,175,55,0.3); border-radius: 50px;
+            background: rgba(15,18,25,0.95); color: white; outline: none;
+            font-family: 'Inter', sans-serif; transition: border-color 0.3s ease;
+        }
+        .search-box input:focus { border-color: var(--gold); }
+        .search-box input::placeholder { color: #64748b; }
+        .search-box .search-icon-input { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 1.1rem; pointer-events: none; }
+        .search-box .search-close { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer; padding: 4px; transition: var(--transition); }
+        .search-box .search-close:hover { color: var(--gold); }
+        .search-results-container { width: 92%; max-width: 640px; margin-top: 16px; padding-bottom: 60px; }
+        .search-status { color: #94a3b8; font-size: 0.85rem; padding: 8px 4px; font-family: 'Inter', sans-serif; }
+        .search-results-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .search-result-item {
+            display: flex; gap: 14px; padding: 14px; background: rgba(30,35,48,0.9);
+            border-radius: 14px; cursor: pointer; transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.05); text-decoration: none; align-items: center;
+        }
+        .search-result-item:hover { background: rgba(45,50,65,0.95); border-color: rgba(212,175,55,0.3); }
+        .search-result-img { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+        .search-result-info { flex: 1; min-width: 0; }
+        .search-result-name { font-size: 0.9rem; font-weight: 600; color: #f1f5f9; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .search-result-name mark { background: rgba(212,175,55,0.3); color: var(--gold); border-radius: 2px; padding: 0 2px; }
+        .search-result-category { font-size: 0.72rem; color: var(--gold); background: rgba(212,175,55,0.12); padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .search-result-price { font-size: 0.85rem; font-weight: 700; color: var(--gold-dark); }
+        .search-empty { text-align: center; padding: 40px 20px; color: #64748b; }
+        .search-empty i { font-size: 2.5rem; display: block; margin-bottom: 12px; opacity: 0.4; }
+        .search-empty p { font-size: 0.9rem; margin-bottom: 4px; }
+        .search-empty .search-hint { font-size: 0.78rem; color: #475569; }
+        @media (min-width: 640px) { .search-results-grid { grid-template-columns: 1fr 1fr; } }
+
+        /* Mobile Nav */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 1060; display: none; cursor: pointer;
+        }
+        .overlay.active { display: block; }
+        .mobile-nav {
+            position: fixed; top: 0; left: -100%; width: 85%; max-width: 360px;
+            height: 100vh; height: 100dvh;
+            background: rgba(15, 18, 25, 0.97); backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            z-index: 1070; transition: left 0.4s ease;
+            padding: 28px 20px; border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+            overflow-y: auto;
+        }
+        .mobile-nav.active { left: 0; }
+        .mobile-nav-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 32px; padding-bottom: 16px;
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+        }
+        .mobile-nav-header .logo-img { height: 44px; }
+        .close-nav {
+            background: rgba(255,255,255,0.06); border: none; font-size: 1.4rem;
+            width: 44px; height: 44px; border-radius: 12px; color: var(--gold);
+            cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .close-nav:hover { background: var(--gold); color: #0c0f15; }
+        .mobile-nav-links { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .mobile-nav-links li a {
+            display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+            background: rgba(255,255,255,0.03); border-radius: 14px;
+            font-weight: 500; color: #f0f3f8; text-decoration: none;
+            transition: var(--transition); font-size: 0.95rem;
+        }
+        .mobile-nav-links li a i { font-size: 1.2rem; color: var(--gold); }
+        .mobile-nav-links li a:hover { background: var(--gold); color: #0c0f15; transform: translateX(6px); }
+        .mobile-nav-links li a:hover i { color: #0c0f15; }
+
+        /* Back to top */
+        .back-to-top {
+            position: fixed; bottom: 24px; right: 24px; z-index: 1030;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--gold); color: #0c0f15; border: none;
+            font-size: 1.3rem; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            box-shadow: 0 4px 16px rgba(212,175,55,0.3);
+            opacity: 0; transform: translateY(20px); pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .back-to-top:hover { transform: translateY(-3px); box-shadow: var(--gold-glow); }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 24px; right: 24px; z-index: 1080;
+            background: white; border-radius: var(--radius); padding: 14px 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex;
+            align-items: center; gap: 14px; min-width: 280px;
+            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid var(--gray-100);
+        }
+        .toast.show { transform: translateX(0); }
+        .toast-img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+        .toast-content { flex: 1; }
+        .toast-title { font-size: 0.82rem; font-weight: 600; margin-bottom: 2px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .toast-subtitle { font-size: 0.72rem; color: var(--gray-500); }
+        .toast-action { color: var(--gold-dark); font-size: 0.75rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
+        .toast-action:hover { text-decoration: underline; }
+
+        /* Ad Zones */
+        .ad-zone { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .ad-zone:empty { display: none; }
+        .ad-card { position: relative; border-radius: 16px; overflow: hidden; margin: 24px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.3s ease; }
+        .ad-card:hover { transform: translateY(-2px); }
+        .ad-card a { display: block; }
+        .ad-card img { width: 100%; height: auto; display: block; max-height: 320px; object-fit: cover; }
+        .ad-label { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: #fff; font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+        .ad-countdown { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.65); color: var(--gold); font-size: 0.75rem; padding: 4px 10px; border-radius: 10px; font-weight: 600; }
+
+        /* ===== SILHOUETTE FOOTER ===== */
+        .silhouette-footer { position: relative; background: #05070a; color: #eef2f5; padding: 80px 0 0; overflow: hidden; }
+        .footer-skyline { position: absolute; bottom: 0; left: 0; right: 0; height: 120px; pointer-events: none; z-index: 0; }
+        .footer-grid { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1.2fr; gap: 2.5rem; max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 1; }
+        .footer-brand p { color: #94a3b8; font-size: 0.85rem; line-height: 1.7; margin-top: 12px; }
+        .footer-logo-img { height: 56px; width: auto; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.9; }
+        .social-links { display: flex; gap: 10px; margin-top: 20px; }
+        .social-links a { background: rgba(255,255,255,0.06); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 1.2rem; transition: var(--transition); text-decoration: none; }
+        .social-links a:hover { background: var(--gold); color: #0c0f15; transform: translateY(-2px); }
+        .footer-col h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 16px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { color: #94a3b8; text-decoration: none; font-size: 0.85rem; transition: var(--transition); }
+        .footer-links a:hover { color: white; padding-left: 4px; }
+        .footer-links li.contact-item { display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 0.85rem; }
+        .footer-links li.contact-item i { color: var(--gold); font-size: 1rem; }
+        .payment-methods { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+        .payment-icon { background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 8px; font-size: 0.72rem; font-weight: 600; color: #94a3b8; border: 1px solid rgba(255,255,255,0.06); transition: var(--transition); }
+        .payment-icon:hover { border-color: rgba(212,175,55,0.3); }
+        .footer-bottom { margin-top: 48px; padding: 24px 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); position: relative; z-index: 1; }
+        .footer-bottom-inner { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .copyright { font-size: 0.75rem; color: #64748b; }
+        .footer-bottom-links { display: flex; gap: 20px; list-style: none; }
+        .footer-bottom-links a { color: #64748b; text-decoration: none; font-size: 0.75rem; transition: var(--transition); }
+        .footer-bottom-links a:hover { color: var(--gold); }
+
+        /* Responsive */
+        @media (min-width: 1025px) { .mobile-toggle { display: none; } .desktop-nav-links { display: flex; } }
+        @media (max-width: 768px) {
+            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .footer-bottom-inner { flex-direction: column; text-align: center; }
+            .toast { right: 12px; left: 12px; min-width: auto; }
+        }
+
+        /* ===== LOGIN PAGE SPECIFIC ===== */
+        main {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 120px 20px 60px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            box-shadow: var(--shadow-lg);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .login-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: white;
+            font-size: 28px;
+        }
+
+        .login-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 6px;
+        }
+
+        .form-group label .required {
+            color: var(--danger-500);
+            margin-left: 2px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius);
+            font-size: 0.9375rem;
+            font-family: inherit;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+        }
+
+        .form-help {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+        }
+
+        .checkbox-group label {
+            font-size: 0.8125rem;
+            font-weight: normal;
+            color: var(--gray-600);
+            margin-bottom: 0;
+        }
+
+        .checkbox-group a {
+            color: var(--gold-dark);
+            text-decoration: none;
+        }
+
+        .checkbox-group a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-signin {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-signin:hover {
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold-dark));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.35);
+        }
+
+        .btn-signin:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-200);
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .signup-link a {
+            color: var(--gold-dark);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Notification */
+        .notification-container {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            background: white;
+            padding: 12px 18px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid;
+            max-width: 360px;
+        }
+
+        .notification.success { border-left-color: var(--success-500); }
+        .notification.error { border-left-color: var(--danger-500); }
+        .notification.warning { border-left-color: #EAB308; }
+        .notification.info { border-left-color: var(--gold); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Account recovery card */
+        .account-actions {
+            margin-top: 18px;
+            text-align: center;
+        }
+        .account-actions a {
+            font-size: 0.8125rem;
+            color: var(--gold-dark);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .account-actions a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 640px) {
+            main { padding: 100px 16px 40px; }
+            .login-card { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Skip to content (a11y) -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- ===== HEADER ===== -->
+    <nav class="nav-bar" id="navBar">
+        <div class="header-container">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle" aria-label="Open navigation menu">
+                    <i class="icon-menu"></i>
+                </button>
+                <ul class="desktop-nav-links">
+                    <li><a href="mensfootwear.html">Men</a></li>
+                    <li><a href="womensfootwear.html">Women</a></li>
+                    <li><a href="bags.html">Bags</a></li>
+                    <li><a href="accessories.html">Accessories</a></li>
+                    <li><a href="household.html">Home</a></li>
+                    <li><a href="kids.html">Kids</a></li>
+                </ul>
+            </div>
+            <div class="header-center">
+                <a href="index.html" aria-label="JMPOTTERS Home">
+                    <img src="assets/logos/logo1.png" alt="JMPOTTERS" class="logo-img" width="56" height="56">
+                </a>
+            </div>
+            <div class="header-right">
+                <button class="search-toggle" id="searchToggle" aria-label="Search products">
+                    <i class="icon-search"></i>
+                </button>
+                <a href="cart.html" class="header-icon" id="cartIcon" aria-label="Shopping cart">
+                    <i class="icon-shopping-bag"></i>
+                    <span class="nav-badge" id="cartCount" style="display:none">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-box">
+            <i class="icon-search search-icon-input"></i>
+            <input type="text" id="searchInput" placeholder="Search products, categories..." autocomplete="off" aria-label="Search">
+            <button class="search-close" id="searchClose" aria-label="Close search"><i class="icon-x"></i></button>
+        </div>
+        <div class="search-results-container" id="searchResultsContainer"></div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="overlay" id="navOverlay" role="presentation"></div>
+    <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+        <div class="mobile-nav-header">
+            <img src="assets/logos/logo1.png" alt="JMPOTTERS" class="logo-img" width="44" height="44">
+            <button class="close-nav" id="closeNavBtn" aria-label="Close navigation">
+                <i class="icon-x"></i>
+            </button>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="index.html"><i class="icon-house"></i> Home</a></li>
+            <li><a href="mensfootwear.html"><i class="icon-footprints"></i> Men's Footwear</a></li>
+            <li><a href="womensfootwear.html"><i class="icon-sparkles"></i> Women's Footwear</a></li>
+            <li><a href="bags.html"><i class="icon-briefcase"></i> Bags</a></li>
+            <li><a href="accessories.html"><i class="icon-gem"></i> Accessories</a></li>
+            <li><a href="household.html"><i class="icon-lamp"></i> Household</a></li>
+            <li><a href="kids.html"><i class="icon-baby"></i> Kids & Babies</a></li>
+            <li><a href="healthcare.html"><i class="icon-heart-pulse"></i> Healthcare</a></li>
+            <li><a href="contact.html"><i class="icon-phone"></i> Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="notification-container" id="notificationContainer"></div>
+    <main id="main-content">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">
+                    <i class="icon-log-in"></i>
+                </div>
+                <h1>Welcome Back</h1>
+                <p>Sign in to your JMPOTTERS account</p>
+            </div>
+
+            <form id="signinForm" autocomplete="on">
+                <div class="form-group">
+                    <label for="email">Email Address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" placeholder="john@example.com" autocomplete="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="phone" name="phone" placeholder="08012345678" autocomplete="tel" required>
+                    <div class="form-help">
+                        <i class="icon-shield-check" style="font-size:0.85rem;color:var(--gold-dark);"></i>
+                        We verify your identity using the same email & phone used at signup.
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="remember">
+                    <label for="remember">Keep me signed in on this device</label>
+                </div>
+
+                <button type="submit" class="btn-signin" id="signinBtn">
+                    <i class="icon-log-in"></i> Sign In
+                </button>
+            </form>
+
+            <div class="account-actions">
+                <a href="#" id="forgotLink">Forgot your details?</a>
+            </div>
+
+            <div class="signup-link">
+                New to JMPOTTERS? <a href="register.html">Create an account</a>
+            </div>
+        </div>
+    </main>
+
+    <div class="ad-zone" id="adZoneBeforeFooter"></div>
+
+    <!-- ===== SILHOUETTE FOOTER ===== -->
+    <footer class="silhouette-footer">
+        <svg class="footer-skyline" viewBox="0 0 1440 120" preserveAspectRatio="none" fill="rgba(212,175,55,0.04)">
+            <path d="M0,120 L0,80 L60,80 L60,50 L80,50 L80,35 L100,35 L100,50 L120,50 L120,80 L200,80 L200,60 L220,60 L220,40 L240,40 L240,20 L260,20 L260,40 L280,40 L280,60 L300,60 L300,80 L400,80 L400,55 L420,55 L420,30 L440,30 L440,10 L460,10 L460,30 L480,30 L480,55 L500,55 L500,80 L580,80 L580,65 L600,65 L600,45 L620,45 L620,65 L640,65 L640,80 L720,80 L720,50 L740,50 L740,25 L760,25 L760,50 L780,50 L780,80 L860,80 L860,70 L880,70 L880,40 L900,40 L900,15 L920,15 L920,40 L940,40 L940,70 L960,70 L960,80 L1040,80 L1040,55 L1060,55 L1060,35 L1080,35 L1080,55 L1100,55 L1100,80 L1180,80 L1180,60 L1200,60 L1200,30 L1220,30 L1220,60 L1240,60 L1240,80 L1320,80 L1320,70 L1340,70 L1340,45 L1360,45 L1360,70 L1380,70 L1380,80 L1440,80 L1440,120 Z" />
+        </svg>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <img src="assets/logos/logo1.png" alt="JMPOTTERS" class="footer-logo-img" width="56" height="56">
+                <p>Premium fashion and lifestyle products for the modern individual. Quality you can trust, style you'll love.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="WhatsApp"><i class="icon-message-circle"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="icon-instagram"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="icon-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="icon-twitter"></i></a>
+                </div>
+                <div class="payment-methods">
+                    <span class="payment-icon"><i class="icon-credit-card" style="font-size:0.9rem;vertical-align:middle;margin-right:4px"></i> Visa</span>
+                    <span class="payment-icon"><i class="icon-credit-card" style="font-size:0.9rem;vertical-align:middle;margin-right:4px"></i> Mastercard</span>
+                    <span class="payment-icon"><i class="icon-banknote" style="font-size:0.9rem;vertical-align:middle;margin-right:4px"></i> Transfer</span>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Shop</h4>
+                <ul class="footer-links">
+                    <li><a href="mensfootwear.html">Men's Footwear</a></li>
+                    <li><a href="womensfootwear.html">Women's Footwear</a></li>
+                    <li><a href="bags.html">Bags</a></li>
+                    <li><a href="accessories.html">Accessories</a></li>
+                    <li><a href="household.html">Household</a></li>
+                    <li><a href="kids.html">Kids & Babies</a></li>
+                    <li><a href="healthcare.html">Healthcare</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Company</h4>
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="#">Shipping Policy</a></li>
+                    <li><a href="#">Returns & Refunds</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Get in Touch</h4>
+                <ul class="footer-links">
+                    <li class="contact-item"><i class="icon-phone"></i> +234 813 958 3320</li>
+                    <li class="contact-item"><i class="icon-mail"></i> hello@jmpotters.com</li>
+                    <li class="contact-item"><i class="icon-map-pin"></i> Lagos, Nigeria</li>
+                    <li class="contact-item"><i class="icon-clock"></i> Mon-Sat, 9am - 7pm</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-inner">
+                <div class="copyright">&copy; 2025 JMPOTTERS. All rights reserved.</div>
+                <ul class="footer-bottom-links">
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to top -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="icon-arrow-up"></i></button>
+
+    <!-- Toast notification -->
+    <div class="toast" id="cartToast" role="alert">
+        <img class="toast-img" id="toastImg" src="" alt="">
+        <div class="toast-content">
+            <div class="toast-title" id="toastTitle"></div>
+            <div class="toast-subtitle">Added to cart</div>
+        </div>
+        <a href="cart.html" class="toast-action">View Cart</a>
+    </div>
+
+    <script src="app.js" defer></script>
+    <script>
+        // Supabase configuration (same as app.js and register.html)
+        const SUPABASE_URL = 'https://tmpggeeuwdvlngvfncaa.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtcGdnZWV1d2R2bG5ndmZuY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTc0MDYsImV4cCI6MjA3Nzc3MzQwNn0.EKzkKWmzYMvQuN11vEjRTDHrUbh6dYXk7clxVsYQ0b4';
+
+        let supabaseClient = null;
+
+        function initSupabase() {
+            if (window.supabase && window.supabase.createClient) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('✅ Supabase client initialized');
+                return true;
+            }
+            return false;
+        }
+
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            if (!container) return;
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            const icons = {
+                success: '<i class="icon-check-circle" style="font-size: 1.2rem;"></i>',
+                error:   '<i class="icon-alert-circle" style="font-size: 1.2rem;"></i>',
+                warning: '<i class="icon-alert-circle" style="font-size: 1.2rem;"></i>',
+                info:    '<i class="icon-info" style="font-size: 1.2rem;"></i>'
+            };
+            notification.innerHTML = `${icons[type] || icons.info}<span>${message}</span>`;
+            container.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 4500);
+        }
+
+        // ===== Normalize a phone number into the same digits-only form used at signup =====
+        function normalizePhone(raw) {
+            if (!raw) return '';
+            const digits = String(raw).replace(/\D/g, '');
+            // If user typed a leading 0 (Nigerian local), strip it so we compare against
+            // the canonical 11-digit form that register.html stores after stripping.
+            // Actually register.html keeps the digit string exactly as typed (it only
+            // strips non-digits and caps at 11). So we just compare digit-for-digit.
+            return digits.slice(0, 11);
+        }
+
+        async function signInUser(event) {
+            event.preventDefault();
+
+            const signinBtn = document.getElementById('signinBtn');
+            const originalText = signinBtn.innerHTML;
+
+            const rawEmail  = document.getElementById('email').value.trim().toLowerCase();
+            const rawPhone  = document.getElementById('phone').value.trim();
+            const remember  = document.getElementById('remember').checked;
+
+            // ---- Validation ----
+            if (!rawEmail) {
+                showNotification('Please enter your email address', 'warning');
+                return;
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(rawEmail)) {
+                showNotification('Please enter a valid email address', 'warning');
+                return;
+            }
+            if (!rawPhone) {
+                showNotification('Please enter your phone number', 'warning');
+                return;
+            }
+            const cleanPhone = normalizePhone(rawPhone);
+            if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+                showNotification('Phone number must be 10–11 digits', 'warning');
+                return;
+            }
+
+            // ---- Connect ----
+            if (!supabaseClient && !initSupabase()) {
+                showNotification('Connection error. Please refresh the page.', 'error');
+                return;
+            }
+
+            signinBtn.disabled = true;
+            signinBtn.innerHTML = '<i class="icon-loader"></i> Signing In...';
+
+            try {
+                // Look up existing account by email
+                const { data: account, error: lookupError } = await supabaseClient
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('email', rawEmail)
+                    .maybeSingle();
+
+                if (lookupError) {
+                    console.error('Lookup error:', lookupError);
+                    throw lookupError;
+                }
+
+                if (!account) {
+                    signinBtn.disabled = false;
+                    signinBtn.innerHTML = originalText;
+                    showNotification('No account found with that email. Please create an account.', 'error');
+                    return;
+                }
+
+                // Verify the phone matches the one on file
+                const storedPhone = String(account.phone || '').replace(/\D/g, '');
+                if (storedPhone !== cleanPhone) {
+                    signinBtn.disabled = false;
+                    signinBtn.innerHTML = originalText;
+                    showNotification('The phone number does not match our records for this email.', 'error');
+                    return;
+                }
+
+                // Persist the signed-in user locally so app.js + checkout flow can use it.
+                const userSession = {
+                    id: account.id,
+                    email: account.email,
+                    full_name: account.full_name,
+                    phone: account.phone,
+                    address: account.address,
+                    city: account.city,
+                    state: account.state,
+                    role: account.role || 'customer',
+                    signed_in_at: new Date().toISOString()
+                };
+
+                if (remember) {
+                    localStorage.setItem('jmpotters_user', JSON.stringify(userSession));
+                } else {
+                    // Store a temporary session that won't survive reload.
+                    sessionStorage.setItem('jmpotters_user', JSON.stringify(userSession));
+                }
+
+                // Refresh updated_at on the profile so admins can see recent activity.
+                await supabaseClient
+                    .from('user_profiles')
+                    .update({ updated_at: new Date().toISOString() })
+                    .eq('id', account.id);
+
+                showNotification(`Welcome back, ${account.full_name.split(' ')[0]}!`, 'success');
+
+                // Honor any pending redirect (e.g. checkout) saved before sign-in.
+                const redirectTo = sessionStorage.getItem('checkoutRedirect') || 'index.html';
+                sessionStorage.removeItem('checkoutRedirect');
+
+                setTimeout(() => {
+                    window.location.href = redirectTo;
+                }, 1200);
+
+            } catch (error) {
+                console.error('Sign-in error:', error);
+                showNotification(error.message || 'Sign-in failed. Please try again.', 'error');
+                signinBtn.disabled = false;
+                signinBtn.innerHTML = originalText;
+            }
+        }
+
+        // "Forgot your details?" – simplest sensible behaviour: send user to register
+        // to re-create their account. We don't silently expose PII via email since
+        // there is no password-reset infrastructure yet.
+        function handleForgotClick(event) {
+            event.preventDefault();
+            showNotification(
+                "Re-create your account using the same email & phone, or contact support at hello@jmpotters.com.",
+                'info'
+            );
+            setTimeout(() => { window.location.href = 'register.html'; }, 1800);
+        }
+
+        // ===== UI wiring =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mobileNav    = document.getElementById('mobileNav');
+            const navOverlay   = document.getElementById('navOverlay');
+            const closeNav     = document.querySelector('.close-nav');
+
+            function openNav() {
+                mobileNav.classList.add('active');
+                navOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            function closeNavFunc() {
+                mobileNav.classList.remove('active');
+                navOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            if (mobileToggle) mobileToggle.addEventListener('click', openNav);
+            if (closeNav)     closeNav.addEventListener('click', closeNavFunc);
+            if (navOverlay)   navOverlay.addEventListener('click', closeNavFunc);
+
+            initSupabase();
+
+            const signinForm = document.getElementById('signinForm');
+            if (signinForm) signinForm.addEventListener('submit', signInUser);
+
+            const forgotLink = document.getElementById('forgotLink');
+            if (forgotLink) forgotLink.addEventListener('click', handleForgotClick);
+
+            const phoneInput = document.getElementById('phone');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function() {
+                    let v = this.value.replace(/\D/g, '').slice(0, 11);
+                    this.value = v;
+                });
+            }
+
+            // ESC closes any open overlays
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeNavFunc();
+                }
+            });
+        });
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var SUPABASE_URL = 'https://tmpggeeuwdvlngvfncaa.supabase.co';
+        var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtcGdnZWV1d2R2bG5ndmZuY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTc0MDYsImV4cCI6MjA3Nzc3MzQwNn0.EKzkKWmzYMvQuN11vEjRTDHrUbh6dYXk7clxVsYQ0b4';
+        var supabase = null;
+        try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) {}
+
+        function getImageUrl(f) { if (!f) return 'https://via.placeholder.com/400x400?text=JMPOTTERS'; if (f.startsWith('http')) return f; return 'https://ebuzome.github.io/JMPOTTERS/assets/images/' + f; }
+        function escapeHtml(t) { if (!t) return ''; var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+        // Mobile Nav
+        var mobileToggle = document.getElementById('mobileToggle');
+        var mobileNav    = document.getElementById('mobileNav');
+        var navOverlay   = document.getElementById('navOverlay');
+        var closeNavBtn  = document.getElementById('closeNavBtn');
+        function openNav() { mobileNav.classList.add('active'); navOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeNav() { mobileNav.classList.remove('active'); navOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+        if (mobileToggle) mobileToggle.addEventListener('click', openNav);
+        if (closeNavBtn) closeNavBtn.addEventListener('click', closeNav);
+        if (navOverlay) navOverlay.addEventListener('click', closeNav);
+
+        // Search
+        var searchToggle = document.getElementById('searchToggle');
+        var searchOverlay = document.getElementById('searchOverlay');
+        var searchClose = document.getElementById('searchClose');
+        var searchInput = document.getElementById('searchInput');
+        var searchResultsContainer = document.getElementById('searchResultsContainer');
+        var searchDebounceTimer = null, searchCache = {};
+        function openSearch() { searchOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; setTimeout(function() { searchInput.focus(); }, 100); }
+        function closeSearch() { searchOverlay.classList.remove('active'); document.body.style.overflow = ''; searchInput.value = ''; if (searchResultsContainer) searchResultsContainer.innerHTML = ''; }
+        if (searchToggle) searchToggle.addEventListener('click', openSearch);
+        if (searchClose) searchClose.addEventListener('click', closeSearch);
+        if (searchOverlay) searchOverlay.addEventListener('click', function(e) { if (e.target === searchOverlay) closeSearch(); });
+
+        function highlightMatch(text, query) { if (!query) return escapeHtml(text); var escaped = escapeHtml(text); var regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'); return escaped.replace(regex, '<mark>$1</mark>'); }
+        async function performSearch(query) {
+            if (!searchResultsContainer) return;
+            if (!query || query.length < 2) { searchResultsContainer.innerHTML = ''; return; }
+            if (searchCache[query.toLowerCase()]) { renderSearchResults(searchCache[query.toLowerCase()], query); return; }
+            searchResultsContainer.innerHTML = '<div class="search-status"><i class="icon-loader" style="animation:spin 1s linear infinite;display:inline-block"></i> Searching...</div>';
+            try {
+                var sb = supabase || (window.JMPOTTERS && window.JMPOTTERS.getSupabaseClient ? window.JMPOTTERS.getSupabaseClient() : null);
+                if (!sb) { searchResultsContainer.innerHTML = '<div class="search-empty"><i class="icon-alert-circle"></i><p>Search unavailable</p></div>'; return; }
+                var terms = query.toLowerCase().split(/\s+/).filter(function(t) { return t.length > 0; });
+                var { data: products, error } = await sb.from('products').select('id, name, slug, price, image_url, description, category_id, is_active, categories(name, slug)').eq('is_active', true).order('name');
+                if (error) throw error;
+                var results = (products || []).filter(function(p) {
+                    var searchable = [(p.name || '').toLowerCase(), (p.slug || '').toLowerCase(), (p.description || '').toLowerCase(), (p.categories && p.categories.name ? p.categories.name.toLowerCase() : ''), (p.categories && p.categories.slug ? p.categories.slug.toLowerCase() : '')].join(' ');
+                    return terms.every(function(term) { return searchable.indexOf(term) !== -1; });
+                });
+                searchCache[query.toLowerCase()] = results;
+                renderSearchResults(results, query);
+            } catch(err) { searchResultsContainer.innerHTML = '<div class="search-empty"><i class="icon-alert-circle"></i><p>Search unavailable</p></div>'; }
+        }
+        function renderSearchResults(results, query) {
+            if (!searchResultsContainer) return;
+            if (results.length === 0) { searchResultsContainer.innerHTML = '<div class="search-empty"><i class="icon-search"></i><p>No products found for "' + escapeHtml(query) + '"</p></div>'; return; }
+            var html = '<div class="search-status">' + results.length + ' product' + (results.length !== 1 ? 's' : '') + ' found</div><div class="search-results-grid">';
+            results.slice(0, 20).forEach(function(p) {
+                var catName = p.categories && p.categories.name ? p.categories.name : '';
+                html += '<a href="product.html?slug=' + encodeURIComponent(p.slug || p.id) + '" class="search-result-item"><img class="search-result-img" src="' + getImageUrl(p.image_url) + '" alt="' + escapeHtml(p.name) + '" loading="lazy"><div class="search-result-info">' + (catName ? '<span class="search-result-category">' + escapeHtml(catName) + '</span>' : '') + '<div class="search-result-name">' + highlightMatch(p.name || '', query) + '</div><div class="search-result-price">\u20A6' + (p.price || 0).toLocaleString() + '</div></div></a>';
+            });
+            html += '</div>';
+            searchResultsContainer.innerHTML = html;
+        }
+        if (searchInput) {
+            searchInput.addEventListener('input', function() { var q = searchInput.value.trim(); clearTimeout(searchDebounceTimer); searchDebounceTimer = setTimeout(function() { performSearch(q); }, 300); });
+            searchInput.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeSearch(); });
+        }
+
+        // Nav shrink
+        var navBar = document.getElementById('navBar');
+        window.addEventListener('scroll', function() { if ((window.scrollY || window.pageYOffset) > 80) navBar.classList.add('shrunk'); else navBar.classList.remove('shrunk'); }, { passive: true });
+
+        // Cart count
+        function updateCartCountShared() {
+            var cart = JSON.parse(localStorage.getItem('jmpotters_cart')) || [];
+            var total = cart.reduce(function(s,i){ return s + i.quantity; }, 0);
+            var el = document.getElementById('cartCount');
+            if (el) { el.textContent = total; el.style.display = total > 0 ? 'flex' : 'none'; }
+        }
+        updateCartCountShared();
+
+        // Back to top
+        var backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', function() { if ((window.scrollY || window.pageYOffset) > 500) backToTop.classList.add('visible'); else backToTop.classList.remove('visible'); }, { passive: true });
+        if (backToTop) backToTop.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+        // ESC handler
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeNav(); closeSearch(); } });
+    });
+    </script>
+
+</body>
+</html>
