@@ -157,22 +157,22 @@
         if (document.getElementById('jmpottersAccountStyles')) return;
         const css = [
             // Account icon avatar variants
-            '#accountIcon .header-icon-circle { width:36px; height:36px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #d4af37, #b8860b); color:#fff; }',
-            '#accountIcon.has-avatar .header-icon-circle { box-shadow: 0 0 0 2px rgba(212,175,55,0.45); }',
+            '#accountIcon .header-icon-circle { width:36px; height:36px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #111827, #1f2937); color:#fff; }',
+            '#accountIcon.has-avatar .header-icon-circle { box-shadow: 0 0 0 2px rgba(17,24,39,0.45); }',
             '#accountIcon.has-avatar img { width:100%; height:100%; object-fit:cover; }',
             '#accountIcon .header-icon-initials { font-family:Inter,sans-serif; font-weight:700; font-size:0.85rem; letter-spacing:0.5px; text-transform:uppercase; }',
 
             // Drop zone
             '.avatar-dropzone { position:relative; border:2px dashed var(--gray-300); border-radius:var(--radius); padding:18px; text-align:center; transition:var(--transition); background:var(--gray-50); cursor:pointer; }',
-            '.avatar-dropzone:hover, .avatar-dropzone.dragging { border-color:var(--gold); background:var(--gold-light); transform:translateY(-1px); }',
+            '.avatar-dropzone:hover, .avatar-dropzone.dragging { border-color:#111827; background:#f3f4f6; transform:translateY(-1px); }',
             '.avatar-dropzone input[type="file"] { display:none; }',
-            '.avatar-dropzone-icon { font-size:2rem; color:var(--gold); display:block; margin-bottom:6px; }',
+            '.avatar-dropzone-icon { font-size:2rem; color:#111827; display:block; margin-bottom:6px; }',
             '.avatar-dropzone-text { font-size:0.85rem; color:var(--gray-700); display:block; font-weight:500; }',
             '.avatar-dropzone-hint { font-size:0.72rem; color:var(--gray-500); display:block; margin-top:3px; }',
 
             // Avatar preview
             '.avatar-preview { position:relative; display:inline-block; }',
-            '.avatar-preview img { width:96px; height:96px; border-radius:50%; object-fit:cover; border:3px solid var(--gold); box-shadow:0 4px 14px rgba(0,0,0,0.12); }',
+            '.avatar-preview img { width:96px; height:96px; border-radius:50%; object-fit:cover; border:3px solid #111827; box-shadow:0 4px 14px rgba(0,0,0,0.12); }',
             '.avatar-preview .remove-avatar-btn { position:absolute; top:-6px; right:-6px; width:26px; height:26px; background:#ef4444; color:white; border:2px solid white; border-radius:50%; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; transition:transform 0.15s; }',
             '.avatar-preview .remove-avatar-btn:hover { transform:scale(1.08); }',
 
@@ -180,7 +180,7 @@
             '.account-section { margin-top:18px; padding-top:16px; border-top:1px solid var(--gray-100); }',
             '.account-section:first-of-type { border-top:none; padding-top:0; margin-top:0; }',
             '.account-section-label { font-size:0.7rem; font-weight:700; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; display:flex; align-items:center; gap:6px; }',
-            '.account-section-label i { color:var(--gold); }',
+            '.account-section-label i { color:#111827; }',
             '.optional-tag { font-weight:500; color:var(--gray-400); font-size:0.66rem; text-transform:none; letter-spacing:0; margin-left:4px; }',
 
             '.account-info-row { display:flex; justify-content:space-between; align-items:baseline; padding:10px 0; border-bottom:1px solid var(--gray-100); font-size:0.85rem; gap:10px; }',
@@ -190,15 +190,35 @@
 
             // Action rows
             '.account-action-row { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:var(--radius); text-decoration:none; color:var(--gray-700); font-weight:500; font-size:0.9rem; transition:var(--transition); background:var(--gray-50); margin-bottom:8px; cursor:pointer; border:none; width:100%; font-family:inherit; text-align:left; }',
-            '.account-action-row:hover { background:var(--gold-light); color:var(--gray-900); }',
-            '.account-action-row i.iconify { color:var(--gold); }',
+            '.account-action-row:hover { background:#f3f4f6; color:#111827; }',
+            '.account-action-row i.iconify { color:#111827; }',
             '.account-action-row .spacer { flex:1; }',
             '.account-action-row .chev { color:var(--gray-400); }',
             '.account-signout-btn { color:#ef4444; background:transparent; border:1px solid var(--gray-200); }',
             '.account-signout-btn:hover { background:rgba(239,68,68,0.08); color:#dc2626; border-color:rgba(239,68,68,0.3); }',
             '.account-signout-btn i { color:#ef4444; }',
 
-            '.account-panel-greeting { padding:14px 18px; background:var(--gold-light); border:1px solid rgba(212,175,55,0.25); border-radius:var(--radius); margin-bottom:16px; font-size:0.9rem; color:var(--gray-700); line-height:1.5; }'
+            '.account-panel-greeting { padding:14px 18px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:var(--radius); margin-bottom:16px; font-size:0.9rem; color:var(--gray-700); line-height:1.5; }',
+
+            /* === STRUCTURAL CSS for the account slide-down panel ===
+               Without these scoped rules, on storefront pages that do NOT carry
+               the cart.html CSS bundle, #accountPanel (which is given the legacy
+               class name .cart-slide-panel) renders as static block content
+               appended after the footer. Combined with document.body.style.overflow='hidden'
+               the page feels frozen and account content appears under the footer.
+               Scoping these under #accountPanel / #accountOverlay keeps cart.html's
+               .cart-slide-panel/.cart-overlay-panel rules untouched. */
+            '#accountOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,18,25,0.55); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); z-index:1060; opacity:0; visibility:hidden; transition:opacity 0.25s ease, visibility 0.25s ease; cursor:pointer; }',
+            '#accountOverlay.active { opacity:1; visibility:visible; }',
+            '#accountPanel { position:fixed; top:0; right:-110%; width:100%; max-width:440px; height:100vh; height:100dvh; background:#ffffff; z-index:1075; visibility:hidden; transition:right 0.4s cubic-bezier(0.165,0.84,0.44,1), visibility 0s linear 0.4s; display:flex; flex-direction:column; box-shadow:-10px 0 40px rgba(0,0,0,0.18); overflow:hidden; }',
+            '#accountPanel.active { right:0; visibility:visible; transition:right 0.4s cubic-bezier(0.165,0.84,0.44,1), visibility 0s linear 0s; }',
+            '#accountPanel .cart-slide-header { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid #f3f4f6; background:#ffffff; flex-shrink:0; }',
+            "#accountPanel .cart-slide-title { font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:700; color:#111827; }",
+            '#accountPanel .close-cart-slide { background:none; border:none; cursor:pointer; padding:8px; border-radius:10px; color:#6b7280; font-size:1.1rem; transition:background 0.2s, color 0.2s; display:flex; align-items:center; justify-content:center; }',
+            '#accountPanel .close-cart-slide:hover { background:#f3f4f6; color:#111827; }',
+            '#accountPanel .cart-slide-items { flex:1; overflow-y:auto; padding:1rem 1.5rem; }',
+            '#accountPanel .cart-slide-footer { padding:12px 22px; border-top:1px solid #f3f4f6; background:#ffffff; flex-shrink:0; }',
+            '@media (min-width:768px) { #accountPanel { max-width:460px; } }'
         ].join('\n');
         const style = document.createElement('style');
         style.id = 'jmpottersAccountStyles';
@@ -327,7 +347,7 @@
 
         const avatarBlock = avatar
             ? '<div class="avatar-preview"><img src="' + escapeHtml(avatar) + '" alt="Profile" /><button type="button" class="remove-avatar-btn" id="accountRemoveAvatarBtn" aria-label="Remove profile picture"><i class="icon-x"></i></button></div>'
-            : '<div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#b8860b);color:white;font-weight:700;font-size:1.4rem;font-family:Inter,sans-serif;">' + escapeHtml(initials) + '</div>';
+            : '<div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1f2937,#111827);color:white;font-weight:700;font-size:1.4rem;font-family:Inter,sans-serif;">' + escapeHtml(initials) + '</div>';
 
         const dropzoneInner = avatar
             ? '<div style="font-size:0.85rem;color:var(--gray-700);">Want a different photo? Drop or click to upload.</div>'
