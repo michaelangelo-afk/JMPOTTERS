@@ -44,14 +44,14 @@
             --nav-height: 76px;
             --success-500: #22C55E;
             --danger-500: #EF4444;
-            --primary-500: #d4af37;
+            --primary-500: #111827;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: #faf8f5; color: var(--gray-800);
+            background: #f5f5f5; color: var(--gray-800);
             overflow-x: hidden; min-height: 100vh;
         }
         .container { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
@@ -258,10 +258,8 @@
         }
         .account-page-header h1 {
             font-size: 2rem;
-            background: linear-gradient(135deg, var(--gold-dark), var(--gold));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #111827;
+            letter-spacing: -0.01em;
         }
         .account-page-header .welcome-text {
             color: var(--gray-500);
@@ -315,7 +313,7 @@
             display: flex; align-items: center; gap: 10px;
             font-family: 'Playfair Display', serif;
         }
-        .account-card-header h2 i { color: var(--gold); font-size: 1.05rem; }
+        .account-card-header h2 i { color: #111827; font-size: 1.05rem; }
         .account-card-header .meta {
             font-size: 0.75rem;
             color: var(--gray-500);
@@ -345,8 +343,8 @@
             padding: 4px 10px;
             font-size: 0.7rem;
             font-weight: 600;
-            background: var(--gold-light);
-            color: var(--gold-dark);
+            background: #1f2937;
+            color: #ffffff;
             border-radius: 20px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -364,10 +362,10 @@
             width: 120px; height: 120px;
             border-radius: 50%;
             overflow: hidden;
-            border: 4px solid var(--gold);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border: 4px solid #111827;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
             display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, #d4af37, #b8860b);
+            background: linear-gradient(135deg, #1f2937, #111827);
             color: white;
             font-size: 2.2rem;
             font-weight: 700;
@@ -389,17 +387,17 @@
             bottom: -4px;
             right: -4px;
             width: 38px; height: 38px;
-            background: var(--gold);
+            background: #111827;
             color: white;
             border: 3px solid white;
             border-radius: 50%;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             font-size: 0.85rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
             transition: transform 0.15s, background 0.15s;
         }
-        .page-avatar-edit:hover { background: var(--gold-dark); transform: scale(1.05); }
+        .page-avatar-edit:hover { background: #374151; transform: scale(1.05); }
         .page-avatar-edit input[type="file"] { display: none; }
 
         /* Page drop zone (large) */
@@ -416,7 +414,7 @@
             position: relative;
         }
         .page-dropzone.active { display: block; }
-        .page-dropzone.dragging { border-color: var(--gold); background: var(--gold-light); }
+        .page-dropzone.dragging { border-color: #111827; background: #f3f4f6; }
         .page-dropzone input[type="file"] { display: none; }
 
         /* Read-only info grid */
@@ -445,7 +443,7 @@
             align-items: center;
             gap: 6px;
         }
-        .info-cell .label i { color: var(--gold); font-size: 0.95rem; }
+        .info-cell .label i { color: #111827; font-size: 0.95rem; }
         .info-cell .value {
             font-size: 0.95rem;
             color: var(--gray-800);
@@ -486,14 +484,14 @@
             text-decoration: none;
             color: inherit;
         }
-        .order-row:hover { background: var(--gold-light); border-color: rgba(212,175,55,0.4); transform: translateY(-1px); }
+        .order-row:hover { background: #f9fafb; border-color: #d1d5db; transform: translateY(-1px); }
         @media (max-width: 640px) {
             .order-row { grid-template-columns: 1fr auto; }
             .order-id-mobile-show { display: none; }
         }
         .order-number-badge {
-            background: rgba(212,175,55,0.15);
-            color: var(--gold-dark);
+            background: #1f2937;
+            color: #ffffff;
             font-weight: 800;
             padding: 6px 12px;
             border-radius: 50px;
@@ -573,7 +571,7 @@
         .notification.success { border-left-color: var(--success-500); }
         .notification.error { border-left-color: var(--danger-500); }
         .notification.warning { border-left-color: #EAB308; }
-        .notification.info { border-left-color: var(--gold); }
+        .notification.info { border-left-color: #111827; }
         @keyframes slideIn { from { opacity:0; transform: translateX(100%);} to { opacity:1; transform: translateX(0);} }
 
         @media (max-width: 640px) {
@@ -665,7 +663,7 @@
             <i class="icon-user-x" style="font-size:3rem;color:var(--gray-400);"></i>
             <h2 style="margin-top:12px;font-size:1.4rem;color:var(--gray-800);">You're signed out</h2>
             <p style="color:var(--gray-500);margin-top:6px;font-size:0.95rem;">Sign in to view your profile and orders.</p>
-            <a href="login.html" class="header-action-btn" style="margin-top:18px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:white;">
+            <a href="login.html" class="header-action-btn" style="margin-top:18px;background:#111827;color:white;border-radius:50px;padding:12px 22px;font-weight:600;font-size:0.9rem;display:inline-flex;align-items:center;gap:8px;text-decoration:none;">
                 <i class="icon-log-in"></i> Sign In
             </a>
         </div>
@@ -707,8 +705,7 @@
                 </div>
                 <div class="page-dropzone" id="pageDropzone">
                     <input type="file" id="pageDropzoneInput" accept="image/jpeg,image/png,image/webp" />
-                    <div style="display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;">
-                        <i class="icon-camera" style="font-size:2.2rem;color:var(--gold);"></i>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;">                            <i class="icon-camera" style="font-size:2.2rem;color:#111827;"></i>
                         <div style="text-align:left;">
                             <div style="font-weight:600;color:var(--gray-800);">Drop a new photo here or click to browse</div>
                             <div style="font-size:0.78rem;color:var(--gray-500);margin-top:4px;">JPG, PNG or WebP · Max 2MB · optional</div>
@@ -770,7 +767,7 @@
             <!-- Account actions -->
             <div class="account-card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
                 <div>
-                    <h2 style="font-size:1.1rem;font-family:'Playfair Display',serif;color:var(--gray-900);display:flex;align-items:center;gap:10px;margin-bottom:6px;"><i class="icon-settings" style="color:var(--gold);"></i> Account Actions</h2>
+                    <h2 style="font-size:1.1rem;font-family:'Playfair Display',serif;color:var(--gray-900);display:flex;align-items:center;gap:10px;margin-bottom:6px;"><i class="icon-settings" style="color:#111827;"></i> Account Actions</h2>
                     <div style="font-size:0.85rem;color:var(--gray-500);">Manage your session and preferences.</div>
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;">
