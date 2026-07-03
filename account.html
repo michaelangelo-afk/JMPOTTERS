@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <title>My Account | JMPOTTERS</title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://tmpggeeuwdvlngvfncaa.supabase.co" />
+
+    <!-- Lucide Icons -->
+    <link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <style>
+        /* ===== CSS VARIABLES (mirrors register.html / login.html) ===== */
+        :root {
+            --gold: #d4af37;
+            --gold-dark: #b8860b;
+            --gold-light: rgba(212, 175, 55, 0.12);
+            --gold-glow: 0 0 30px rgba(212, 175, 55, 0.3);
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --transition: 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.10);
+            --glass-dark: rgba(12, 15, 21, 0.92);
+            --glass-blur: blur(16px);
+            --radius: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 1.5rem;
+            --nav-height: 76px;
+            --success-500: #22C55E;
+            --danger-500: #EF4444;
+            --primary-500: #d4af37;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #faf8f5; color: var(--gray-800);
+            overflow-x: hidden; min-height: 100vh;
+        }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; letter-spacing: -0.02em; }
+        h4, h5, h6 { font-family: 'Inter', sans-serif; }
+
+        .skip-link {
+            position: absolute; top: -100px; left: 16px; z-index: 9999;
+            background: var(--gold); color: #0c0f15; padding: 12px 24px;
+            border-radius: 0 0 var(--radius) var(--radius);
+            font-weight: 700; text-decoration: none; font-size: 0.9rem;
+            transition: top 0.2s ease;
+        }
+        .skip-link:focus { top: 0; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* ===== HEADER (shared markup; account-auth.js injects the account icon) ===== */
+        .nav-bar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1040;
+            background: var(--glass-dark); backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+        }
+        .header-container {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 1.5rem; max-width: 1280px; margin: 0 auto;
+        }
+        .header-left { display: flex; align-items: center; gap: 8px; }
+        .mobile-toggle {
+            background: rgba(255,255,255,0.06); border: none; font-size: 1.4rem;
+            width: 44px; height: 44px; border-radius: 12px; color: var(--gold);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+        .mobile-toggle:hover { background: var(--gold); color: #0c0f15; }
+        .header-center { flex: 0 0 auto; }
+        .logo-img { height: 56px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
+        .desktop-nav-links { display: none; list-style: none; gap: 4px; align-items: center; }
+        .desktop-nav-links a {
+            color: #c8cdd5; text-decoration: none; font-size: 0.82rem;
+            font-weight: 500; padding: 8px 14px; border-radius: 10px;
+            transition: var(--transition); font-family: 'Inter', sans-serif; white-space: nowrap;
+        }
+        .desktop-nav-links a:hover { color: white; background: rgba(255,255,255,0.06); }
+        .header-right { display: flex; align-items: center; gap: 8px; }
+        .search-toggle, .header-icon {
+            position: relative; font-size: 1.25rem; color: #eef2f5; cursor: pointer;
+            transition: var(--transition); background: rgba(255,255,255,0.06);
+            width: 44px; height: 44px; display: flex; align-items: center;
+            justify-content: center; border-radius: 12px; border: none; text-decoration: none;
+        }
+        .search-toggle:hover, .header-icon:hover { background: var(--gold); color: #0c0f15; }
+        .nav-badge {
+            position: absolute; top: -4px; right: -4px; background: var(--gold);
+            color: #0c0f15; font-size: 0.65rem; font-weight: 800;
+            min-width: 18px; height: 18px; border-radius: 30px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Search overlay */
+        .search-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(12,15,21,0.92); backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1100; display: none; flex-direction: column; align-items: center;
+            padding-top: 100px; overflow-y: auto;
+        }
+        .search-overlay.active { display: flex; }
+        .search-box { width: 92%; max-width: 640px; position: relative; }
+        .search-box input {
+            width: 100%; padding: 18px 56px 18px 50px; font-size: 1.1rem;
+            border: 2px solid rgba(212,175,55,0.3); border-radius: 50px;
+            background: rgba(15,18,25,0.95); color: white; outline: none; font-family: 'Inter', sans-serif;
+        }
+        .search-box input:focus { border-color: var(--gold); }
+        .search-box input::placeholder { color: #64748b; }
+        .search-box .search-icon-input { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 1.1rem; pointer-events: none; }
+        .search-box .search-close { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer; padding: 4px; }
+        .search-box .search-close:hover { color: var(--gold); }
+        .search-results-container { width: 92%; max-width: 640px; margin-top: 16px; padding-bottom: 60px; }
+        .search-status { color: #94a3b8; font-size: 0.85rem; padding: 8px 4px; }
+        .search-results-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .search-result-item {
+            display: flex; gap: 14px; padding: 14px; background: rgba(30,35,48,0.9);
+            border-radius: 14px; cursor: pointer; transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.05); text-decoration: none; align-items: center;
+        }
+        .search-result-item:hover { background: rgba(45,50,65,0.95); border-color: rgba(212,175,55,0.3); }
+        .search-result-img { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+        .search-result-info { flex: 1; min-width: 0; }
+        .search-result-name { font-size: 0.9rem; font-weight: 600; color: #f1f5f9; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .search-result-name mark { background: rgba(212,175,55,0.3); color: var(--gold); border-radius: 2px; padding: 0 2px; }
+        .search-result-category { font-size: 0.72rem; color: var(--gold); background: rgba(212,175,55,0.12); padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .search-result-price { font-size: 0.85rem; font-weight: 700; color: var(--gold-dark); }
+        .search-empty { text-align: center; padding: 40px 20px; color: #64748b; }
+        .search-empty i { font-size: 2.5rem; display: block; margin-bottom: 12px; opacity: 0.4; }
+        .search-empty p { font-size: 0.9rem; margin-bottom: 4px; }
+        @media (min-width: 640px) { .search-results-grid { grid-template-columns: 1fr 1fr; } }
+
+        /* Mobile Nav */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 1060; display: none; cursor: pointer;
+        }
+        .overlay.active { display: block; }
+        .mobile-nav {
+            position: fixed; top: 0; left: -100%; width: 85%; max-width: 360px;
+            height: 100vh; height: 100dvh;
+            background: rgba(15, 18, 25, 0.97); backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            z-index: 1070; transition: left 0.4s ease;
+            padding: 28px 20px; border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+            overflow-y: auto;
+        }
+        .mobile-nav.active { left: 0; }
+        .mobile-nav-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 32px; padding-bottom: 16px;
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+        }
+        .mobile-nav-header .logo-img { height: 44px; }
+        .close-nav {
+            background: rgba(255,255,255,0.06); border: none; font-size: 1.4rem;
+            width: 44px; height: 44px; border-radius: 12px; color: var(--gold);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+        .close-nav:hover { background: var(--gold); color: #0c0f15; }
+        .mobile-nav-links { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .mobile-nav-links li a {
+            display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+            background: rgba(255,255,255,0.03); border-radius: 14px;
+            font-weight: 500; color: #f0f3f8; text-decoration: none;
+            transition: var(--transition); font-size: 0.95rem;
+        }
+        .mobile-nav-links li a i { font-size: 1.2rem; color: var(--gold); }
+        .mobile-nav-links li a:hover { background: var(--gold); color: #0c0f15; transform: translateX(6px); }
+        .mobile-nav-links li a:hover i { color: #0c0f15; }
+
+        /* Back to top */
+        .back-to-top {
+            position: fixed; bottom: 24px; right: 24px; z-index: 1030;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--gold); color: #0c0f15; border: none;
+            font-size: 1.3rem; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            box-shadow: 0 4px 16px rgba(212,175,55,0.3);
+            opacity: 0; transform: translateY(20px); pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .back-to-top:hover { transform: translateY(-3px); box-shadow: var(--gold-glow); }
+
+        /* ===== SILHOUETTE FOOTER ===== */
+        .silhouette-footer { position: relative; background: #05070a; color: #eef2f5; padding: 80px 0 0; overflow: hidden; margin-top: 60px; }
+        .footer-skyline { position: absolute; bottom: 0; left: 0; right: 0; height: 120px; pointer-events: none; z-index: 0; }
+        .footer-grid { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1.2fr; gap: 2.5rem; max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 1; }
+        .footer-brand p { color: #94a3b8; font-size: 0.85rem; line-height: 1.7; margin-top: 12px; }
+        .footer-logo-img { height: 56px; width: auto; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.9; }
+        .social-links { display: flex; gap: 10px; margin-top: 20px; }
+        .social-links a { background: rgba(255,255,255,0.06); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 1.2rem; transition: var(--transition); text-decoration: none; }
+        .social-links a:hover { background: var(--gold); color: #0c0f15; transform: translateY(-2px); }
+        .footer-col h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 16px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { color: #94a3b8; text-decoration: none; font-size: 0.85rem; transition: var(--transition); }
+        .footer-links a:hover { color: white; padding-left: 4px; }
+        .footer-links li.contact-item { display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 0.85rem; }
+        .footer-links li.contact-item i { color: var(--gold); font-size: 1rem; }
+        .payment-methods { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+        .payment-icon { background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 8px; font-size: 0.72rem; font-weight: 600; color: #94a3b8; border: 1px solid rgba(255,255,255,0.06); transition: var(--transition); }
+        .payment-icon:hover { border-color: rgba(212,175,55,0.3); }
+        .footer-bottom { margin-top: 48px; padding: 24px 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); position: relative; z-index: 1; }
+        .footer-bottom-inner { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .copyright { font-size: 0.75rem; color: #64748b; }
+        .footer-bottom-links { display: flex; gap: 20px; list-style: none; }
+        .footer-bottom-links a { color: #64748b; text-decoration: none; font-size: 0.75rem; transition: var(--transition); }
+        .footer-bottom-links a:hover { color: var(--gold); }
+
+        @media (min-width: 1025px) { .mobile-toggle { display: none; } .desktop-nav-links { display: flex; } }
+        @media (max-width: 768px) {
+            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .footer-bottom-inner { flex-direction: column; text-align: center; }
+        }
+
+        /* ============================================
+           ACCOUNT PAGE-SPECIFIC
+           ============================================ */
+        main { max-width: 960px; margin: 0 auto; padding: 110px 20px 60px; }
+
+        .account-page-header {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 16px;
+            margin-bottom: 28px;
+        }
+        .account-page-header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .account-page-header .welcome-text {
+            color: var(--gray-500);
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+        .header-actions { display: flex; gap: 10px; }
+        .header-action-btn {
+            padding: 10px 18px; border-radius: 50px; font-weight: 600;
+            font-size: 0.85rem; cursor: pointer; transition: var(--transition);
+            display: inline-flex; align-items: center; gap: 8px;
+            text-decoration: none;
+        }
+        .header-action-btn.secondary {
+            background: var(--gray-100); color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+        .header-action-btn.secondary:hover { background: var(--gray-200); }
+        .header-action-btn.danger {
+            background: rgba(239,68,68,0.08); color: #dc2626;
+            border: 1px solid rgba(239,68,68,0.25);
+        }
+        .header-action-btn.danger:hover { background: rgba(239,68,68,0.15); }
+
+        .account-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 24px;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .account-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        .account-card-header h2 {
+            font-size: 1.15rem;
+            color: var(--gray-900);
+            display: flex; align-items: center; gap: 10px;
+            font-family: 'Playfair Display', serif;
+        }
+        .account-card-header h2 i { color: var(--gold); font-size: 1.05rem; }
+        .account-card-header .meta {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        /* Profile top card */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 24px;
+            align-items: center;
+        }
+        .profile-summary .name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+            font-family: 'Playfair Display', serif;
+        }
+        .profile-summary .email {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+        .profile-summary .pill {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: var(--gold-light);
+            color: var(--gold-dark);
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        @media (max-width: 640px) {
+            .profile-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Avatar block on the page */
+        .page-avatar-block {
+            position: relative;
+            display: inline-block;
+        }
+        .page-avatar {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid var(--gold);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: white;
+            font-size: 2.2rem;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+        }
+        .page-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .page-avatar-status {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            width: 18px;
+            height: 18px;
+            background: #22c55e;
+            border: 3px solid white;
+            border-radius: 50%;
+        }
+        .page-avatar-edit {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 38px; height: 38px;
+            background: var(--gold);
+            color: white;
+            border: 3px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            transition: transform 0.15s, background 0.15s;
+        }
+        .page-avatar-edit:hover { background: var(--gold-dark); transform: scale(1.05); }
+        .page-avatar-edit input[type="file"] { display: none; }
+
+        /* Page drop zone (large) */
+        .page-dropzone {
+            display: none; /* toggled when pencil clicked */
+            margin-top: 18px;
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius);
+            padding: 22px;
+            text-align: center;
+            background: var(--gray-50);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+        .page-dropzone.active { display: block; }
+        .page-dropzone.dragging { border-color: var(--gold); background: var(--gold-light); }
+        .page-dropzone input[type="file"] { display: none; }
+
+        /* Read-only info grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 28px;
+        }
+        @media (max-width: 640px) {
+            .info-grid { grid-template-columns: 1fr; }
+        }
+        .info-cell {
+            background: var(--gray-50);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            border: 1px solid var(--gray-100);
+        }
+        .info-cell .label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .info-cell .label i { color: var(--gold); font-size: 0.95rem; }
+        .info-cell .value {
+            font-size: 0.95rem;
+            color: var(--gray-800);
+            font-weight: 600;
+            word-break: break-word;
+        }
+        .info-cell.span-2 { grid-column: span 2; }
+        @media (max-width: 640px) {
+            .info-cell.span-2 { grid-column: span 1; }
+        }
+
+        /* Edit-coming-soon pill */
+        .edit-pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--gray-100);
+            color: var(--gray-500);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Orders */
+        .orders-list { display: flex; flex-direction: column; gap: 12px; }
+        .order-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            gap: 14px;
+            align-items: center;
+            padding: 14px 16px;
+            background: var(--gray-50);
+            border: 1px solid var(--gray-100);
+            border-radius: var(--radius);
+            transition: var(--transition);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        .order-row:hover { background: var(--gold-light); border-color: rgba(212,175,55,0.4); transform: translateY(-1px); }
+        @media (max-width: 640px) {
+            .order-row { grid-template-columns: 1fr auto; }
+            .order-id-mobile-show { display: none; }
+        }
+        .order-number-badge {
+            background: rgba(212,175,55,0.15);
+            color: var(--gold-dark);
+            font-weight: 800;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-family: 'Inter', monospace;
+            white-space: nowrap;
+        }
+        .order-info-name {
+            font-weight: 600;
+            color: var(--gray-900);
+            font-size: 0.92rem;
+            margin-bottom: 2px;
+        }
+        .order-info-meta {
+            font-size: 0.72rem;
+            color: var(--gray-500);
+        }
+        .order-total { font-weight: 700; color: var(--gray-900); font-size: 0.95rem; }
+        .order-status {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            font-family: 'Inter', sans-serif;
+        }
+        .order-status.pending { background: rgba(234,179,8,0.12); color: #b45309; }
+        .order-status.processing { background: rgba(59,130,246,0.12); color: #1d4ed8; }
+        .order-status.shipped { background: rgba(99,102,241,0.12); color: #4338ca; }
+        .order-status.delivered, .order-status.completed { background: rgba(34,197,94,0.12); color: #15803d; }
+        .order-status.cancelled, .order-status.canceled { background: rgba(239,68,68,0.12); color: #b91c1c; }
+
+        .orders-empty, .orders-loading, .orders-error {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-500);
+        }
+        .orders-empty i, .orders-loading i, .orders-error i {
+            font-size: 2.6rem;
+            display: block;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+        .orders-empty p, .orders-loading p, .orders-error p {
+            font-size: 0.92rem;
+            margin-bottom: 6px;
+        }
+        .orders-empty .hint, .orders-error .hint {
+            font-size: 0.78rem;
+            color: var(--gray-400);
+        }
+
+        /* Toast notifications */
+        .notification-container {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .notification {
+            background: white;
+            padding: 12px 18px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid;
+            max-width: 360px;
+            animation: slideIn 0.3s ease;
+        }
+        .notification.success { border-left-color: var(--success-500); }
+        .notification.error { border-left-color: var(--danger-500); }
+        .notification.warning { border-left-color: #EAB308; }
+        .notification.info { border-left-color: var(--gold); }
+        @keyframes slideIn { from { opacity:0; transform: translateX(100%);} to { opacity:1; transform: translateX(0);} }
+
+        @media (max-width: 640px) {
+            main { padding: 100px 16px 40px; }
+            .account-card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Skip to content -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- ===== HEADER ===== -->
+    <nav class="nav-bar" id="navBar">
+        <div class="header-container">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle" aria-label="Open navigation menu">
+                    <i class="icon-menu"></i>
+                </button>
+                <ul class="desktop-nav-links">
+                    <li><a href="mensfootwear.html">Men</a></li>
+                    <li><a href="womensfootwear.html">Women</a></li>
+                    <li><a href="bags.html">Bags</a></li>
+                    <li><a href="accessories.html">Accessories</a></li>
+                    <li><a href="household.html">Home</a></li>
+                    <li><a href="kids.html">Kids</a></li>
+                </ul>
+            </div>
+            <div class="header-center">
+                <a href="index.html" aria-label="JMPOTTERS Home">
+                    <img src="assets/logos/logo1.png" alt="JMPOTTERS" class="logo-img" width="56" height="56">
+                </a>
+            </div>
+            <div class="header-right">
+                <button class="search-toggle" id="searchToggle" aria-label="Search products">
+                    <i class="icon-search"></i>
+                </button>
+                <a href="cart.html" class="header-icon" id="cartIcon" aria-label="Shopping cart">
+                    <i class="icon-shopping-bag"></i>
+                    <span class="nav-badge" id="cartCount" style="display:none">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-box">
+            <i class="icon-search search-icon-input"></i>
+            <input type="text" id="searchInput" placeholder="Search products, categories..." autocomplete="off" aria-label="Search">
+            <button class="search-close" id="searchClose" aria-label="Close search"><i class="icon-x"></i></button>
+        </div>
+        <div class="search-results-container" id="searchResultsContainer"></div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="overlay" id="navOverlay" role="presentation"></div>
+    <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+        <div class="mobile-nav-header">
+            <img src="assets/logos/logo1.png" alt="JMPOTTERS" class="logo-img" width="44" height="44">
+            <button class="close-nav" id="closeNavBtn" aria-label="Close navigation">
+                <i class="icon-x"></i>
+            </button>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="index.html"><i class="icon-house"></i> Home</a></li>
+            <li><a href="mensfootwear.html"><i class="icon-footprints"></i> Men's Footwear</a></li>
+            <li><a href="womensfootwear.html"><i class="icon-sparkles"></i> Women's Footwear</a></li>
+            <li><a href="bags.html"><i class="icon-briefcase"></i> Bags</a></li>
+            <li><a href="accessories.html"><i class="icon-gem"></i> Accessories</a></li>
+            <li><a href="household.html"><i class="icon-lamp"></i> Household</a></li>
+            <li><a href="kids.html"><i class="icon-baby"></i> Kids & Babies</a></li>
+            <li><a href="healthcare.html"><i class="icon-heart-pulse"></i> Healthcare</a></li>
+            <li><a href="contact.html"><i class="icon-phone"></i> Contact</a></li>
+        </ul>
+    </nav>
+
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main id="main-content">
+        <div id="accountLoading" style="padding:80px 20px;text-align:center;color:var(--gray-500);" hidden>
+            <i class="icon-loader" style="font-size:2rem;display:inline-block;animation:spin 1s linear infinite;"></i>
+            <p style="margin-top:10px;font-size:0.9rem;">Loading your account…</p>
+        </div>
+
+        <div id="notSignedIn" style="padding:80px 20px;text-align:center;" hidden>
+            <i class="icon-user-x" style="font-size:3rem;color:var(--gray-400);"></i>
+            <h2 style="margin-top:12px;font-size:1.4rem;color:var(--gray-800);">You're signed out</h2>
+            <p style="color:var(--gray-500);margin-top:6px;font-size:0.95rem;">Sign in to view your profile and orders.</p>
+            <a href="login.html" class="header-action-btn" style="margin-top:18px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:white;">
+                <i class="icon-log-in"></i> Sign In
+            </a>
+        </div>
+
+        <div id="accountContent" hidden>
+            <div class="account-page-header">
+                <div>
+                    <h1>My Account</h1>
+                    <div class="welcome-text" id="welcomeText">Welcome back.</div>
+                </div>
+                <div class="header-actions">
+                    <a href="cart.html" class="header-action-btn secondary"><i class="icon-shopping-bag"></i> View Cart</a>
+                    <a href="index.html" class="header-action-btn secondary"><i class="icon-house"></i> Home</a>
+                </div>
+            </div>
+
+            <!-- Profile card -->
+            <div class="account-card">
+                <div class="account-card-header">
+                    <h2><i class="icon-user"></i> Profile</h2>
+                    <span class="edit-pill">Profile picture uploadable · Profile editing coming soon</span>
+                </div>
+                <div class="profile-grid">
+                    <div class="page-avatar-block">
+                        <div class="page-avatar" id="pageAvatar">
+                            <span id="pageAvatarInitial">U</span>
+                        </div>
+                        <span class="page-avatar-status" id="pageAvatarStatus"></span>
+                        <label class="page-avatar-edit" for="pageAvatarInput" title="Change profile picture">
+                            <i class="icon-camera"></i>
+                            <input type="file" id="pageAvatarInput" accept="image/jpeg,image/png,image/webp" />
+                        </label>
+                    </div>
+                    <div class="profile-summary">
+                        <div class="name" id="pageName">User</div>
+                        <div class="email" id="pageEmail">user@example.com</div>
+                        <span class="pill" id="pageRole">Customer</span>
+                    </div>
+                </div>
+                <div class="page-dropzone" id="pageDropzone">
+                    <input type="file" id="pageDropzoneInput" accept="image/jpeg,image/png,image/webp" />
+                    <div style="display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;">
+                        <i class="icon-camera" style="font-size:2.2rem;color:var(--gold);"></i>
+                        <div style="text-align:left;">
+                            <div style="font-weight:600;color:var(--gray-800);">Drop a new photo here or click to browse</div>
+                            <div style="font-size:0.78rem;color:var(--gray-500);margin-top:4px;">JPG, PNG or WebP · Max 2MB · optional</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="pageAvatarError" style="display:none;color:#ef4444;font-size:0.85rem;margin-top:10px;"></div>
+            </div>
+
+            <!-- Personal info card -->
+            <div class="account-card">
+                <div class="account-card-header">
+                    <h2><i class="icon-info"></i> Personal Information</h2>
+                    <span class="edit-pill">Read-only</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-cell">
+                        <div class="label"><i class="icon-user"></i> Full Name</div>
+                        <div class="value" id="infoFullName">—</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="label"><i class="icon-mail"></i> Email</div>
+                        <div class="value" id="infoEmail">—</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="label"><i class="icon-phone"></i> Phone</div>
+                        <div class="value" id="infoPhone">—</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="label"><i class="icon-map-pin"></i> City &amp; State</div>
+                        <div class="value" id="infoLocation">—</div>
+                    </div>
+                    <div class="info-cell span-2">
+                        <div class="label"><i class="icon-home"></i> Delivery Address</div>
+                        <div class="value" id="infoAddress">—</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="label"><i class="icon-calendar"></i> Member Since</div>
+                        <div class="value" id="infoMemberSince">—</div>
+                    </div>
+                    <div class="info-cell">
+                        <div class="label"><i class="icon-clock"></i> Last Sign In</div>
+                        <div class="value" id="infoLastSignIn">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders card -->
+            <div class="account-card">
+                <div class="account-card-header">
+                    <h2><i class="icon-package"></i> Your Orders</h2>
+                    <span class="meta" id="ordersMeta">Loading…</span>
+                </div>
+                <div id="ordersListContainer">
+                    <div class="orders-loading"><i class="icon-loader" style="animation:spin 1s linear infinite;display:inline-block;"></i><p>Loading your orders…</p></div>
+                </div>
+            </div>
+
+            <!-- Account actions -->
+            <div class="account-card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+                <div>
+                    <h2 style="font-size:1.1rem;font-family:'Playfair Display',serif;color:var(--gray-900);display:flex;align-items:center;gap:10px;margin-bottom:6px;"><i class="icon-settings" style="color:var(--gold);"></i> Account Actions</h2>
+                    <div style="font-size:0.85rem;color:var(--gray-500);">Manage your session and preferences.</div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <a href="register.html" class="header-action-btn secondary"><i class="icon-user-pen"></i> Update Details (coming soon)</a>
+                    <button class="header-action-btn danger" id="pageSignOutBtn" type="button"><i class="icon-log-out"></i> Sign Out</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== SILHOUETTE FOOTER ===== -->
+    <footer class="silhouette-footer">
+        <svg class="footer-skyline" viewBox="0 0 1440 120" preserveAspectRatio="none" fill="rgba(212,175,55,0.04)">
+            <path d="M0,120 L0,80 L60,80 L60,50 L80,50 L80,35 L100,35 L100,50 L120,50 L120,80 L200,80 L200,60 L220,60 L220,40 L240,40 L240,20 L260,20 L260,40 L280,40 L280,60 L300,60 L300,80 L400,80 L400,55 L420,55 L420,30 L440,30 L440,10 L460,10 L460,30 L480,30 L480,55 L500,55 L500,80 L580,80 L580,65 L600,65 L600,45 L620,45 L620,65 L640,65 L640,80 L720,80 L720,50 L740,50 L740,25 L760,25 L760,50 L780,50 L780,80 L860,80 L860,70 L880,70 L880,40 L900,40 L900,15 L920,15 L920,40 L940,40 L940,70 L960,70 L960,80 L1040,80 L1040,55 L1060,55 L1060,35 L1080,35 L1080,55 L1100,55 L1100,80 L1180,80 L1180,60 L1200,60 L1200,30 L1220,30 L1220,60 L1240,60 L1240,80 L1320,80 L1320,70 L1340,70 L1340,45 L1360,45 L1360,70 L1380,70 L1380,80 L1440,80 L1440,120 Z" />
+        </svg>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <img src="assets/logos/logo1.png" alt="JMPOTTERS" class="footer-logo-img" width="56" height="56">
+                <p>Premium fashion and lifestyle products for the modern individual. Quality you can trust, style you'll love.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="WhatsApp"><i class="icon-message-circle"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="icon-instagram"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="icon-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="icon-twitter"></i></a>
+                </div>
+                <div class="payment-methods">
+                    <span class="payment-icon"><i class="icon-credit-card"></i> Visa</span>
+                    <span class="payment-icon"><i class="icon-credit-card"></i> Mastercard</span>
+                    <span class="payment-icon"><i class="icon-banknote"></i> Transfer</span>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Shop</h4>
+                <ul class="footer-links">
+                    <li><a href="mensfootwear.html">Men's Footwear</a></li>
+                    <li><a href="womensfootwear.html">Women's Footwear</a></li>
+                    <li><a href="bags.html">Bags</a></li>
+                    <li><a href="accessories.html">Accessories</a></li>
+                    <li><a href="household.html">Household</a></li>
+                    <li><a href="kids.html">Kids & Babies</a></li>
+                    <li><a href="healthcare.html">Healthcare</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Company</h4>
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="#">Shipping Policy</a></li>
+                    <li><a href="#">Returns & Refunds</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Get in Touch</h4>
+                <ul class="footer-links">
+                    <li class="contact-item"><i class="icon-phone"></i> +234 813 958 3320</li>
+                    <li class="contact-item"><i class="icon-mail"></i> hello@jmpotters.com</li>
+                    <li class="contact-item"><i class="icon-map-pin"></i> Lagos, Nigeria</li>
+                    <li class="contact-item"><i class="icon-clock"></i> Mon-Sat, 9am - 7pm</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-inner">
+                <div class="copyright">&copy; 2025 JMPOTTERS. All rights reserved.</div>
+                <ul class="footer-bottom-links">
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to top -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="icon-arrow-up"></i></button>
+
+    <!-- Shared app + account-auth modules. Order matters: app.js first, then the
+         shared account module that depends on its globals. -->
+    <script src="app.js" defer></script>
+    <script src="account-auth.js" defer></script>
+    <script>
+        // ====================
+        // account.html — page logic
+        // Pulls the signed-in user, fills read-only fields, loads their orders,
+        // and exposes the avatar-upload flow that account-auth.js owns.
+        // ====================
+        (function() {
+            'use strict';
+
+            const SUPABASE_URL = 'https://tmpggeeuwdvlngvfncaa.supabase.co';
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtcGdnZWV1d2R2bG5ndmZuY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTc0MDYsImV4cCI6MjA3Nzc3MzQwNn0.EKzkKWmzYMvQuN11vEjRTDHrUbh6dYXk7clxVsYQ0b4';
+            let supabaseClient = null;
+
+            function initSupabase() {
+                if (window.supabase && window.supabase.createClient) {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                    return true;
+                }
+                return false;
+            }
+
+            function showN(message, type) {
+                if (window.JMPOTTERS_ACCOUNT && typeof window.JMPOTTERS_ACCOUNT.notify === 'function') {
+                    window.JMPOTTERS_ACCOUNT.notify(message, type);
+                    return;
+                }
+                const container = document.getElementById('notificationContainer');
+                if (!container) return;
+                const n = document.createElement('div');
+                n.className = 'notification ' + (type || 'info');
+                const icons = {
+                    success: '<i class="icon-check-circle" style="font-size:1.2rem;"></i>',
+                    error:   '<i class="icon-alert-circle" style="font-size:1.2rem;"></i>',
+                    warning: '<i class="icon-alert-circle" style="font-size:1.2rem;"></i>',
+                    info:    '<i class="icon-info" style="font-size:1.2rem;"></i>'
+                };
+                n.innerHTML = (icons[type] || icons.info) + '<span>' + message + '</span>';
+                container.appendChild(n);
+                setTimeout(() => {
+                    n.style.opacity = '0';
+                    n.style.transform = 'translateX(100%)';
+                    setTimeout(() => n.remove(), 300);
+                }, 4500);
+            }
+
+            function escapeHtml(t) {
+                if (t == null) return '—';
+                const d = document.createElement('div');
+                d.textContent = String(t);
+                return d.innerHTML;
+            }
+
+            function formatPrice(n) {
+                return '₦' + Number(n || 0).toLocaleString();
+            }
+
+            function formatDate(iso) {
+                if (!iso) return '—';
+                const d = new Date(iso);
+                if (isNaN(d.getTime())) return '—';
+                return d.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
+            }
+
+            function getUser() {
+                if (window.JMPOTTERS_ACCOUNT) return window.JMPOTTERS_ACCOUNT.getCurrentUser();
+                try { return JSON.parse(localStorage.getItem('jmpotters_user')) || JSON.parse(sessionStorage.getItem('jmpotters_user')) || null; } catch (e) { return null; }
+            }
+
+            function renderUser(u) {
+                document.getElementById('accountLoading').hidden = true;
+                document.getElementById('notSignedIn').hidden = !!u;
+                document.getElementById('accountContent').hidden = !u;
+                if (!u) return;
+
+                const avatar = window.JMPOTTERS_ACCOUNT ? window.JMPOTTERS_ACCOUNT.getCurrentAvatar() : (u.avatar_url || localStorage.getItem('jmpotters_avatar') || null);
+
+                // Page avatar block
+                const avatarEl = document.getElementById('pageAvatar');
+                if (avatar) {
+                    avatarEl.innerHTML = '<img src="' + escapeHtml(avatar) + '" alt="Profile" />';
+                } else {
+                    const initial = (u.full_name || u.email || '?').trim().charAt(0).toUpperCase();
+                    avatarEl.innerHTML = '<span id="pageAvatarInitial">' + escapeHtml(initial) + '</span>';
+                }
+
+                document.getElementById('welcomeText').innerHTML = 'Welcome back, ' + escapeHtml((u.full_name || '').split(' ')[0] || 'friend') + '!';
+                document.getElementById('pageName').textContent = u.full_name || '—';
+                document.getElementById('pageEmail').textContent = u.email || '—';
+                document.getElementById('pageRole').textContent = u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'Customer';
+
+                document.getElementById('infoFullName').textContent = u.full_name || '—';
+                document.getElementById('infoEmail').textContent = u.email || '—';
+                document.getElementById('infoPhone').textContent = u.phone || '—';
+                const locationLine = (u.city || '') + (u.state ? ', ' + u.state : '');
+                document.getElementById('infoLocation').textContent = locationLine.trim() || '—';
+                document.getElementById('infoAddress').textContent = u.address || '—';
+
+                // Member since & last sign-in (best-effort: pull from server).
+                document.getElementById('infoMemberSince').textContent = 'Loading…';
+                document.getElementById('infoLastSignIn').textContent = u.signed_in_at ? formatDate(u.signed_in_at) : '—';
+
+                // Fetch extra record for joined date
+                loadProfileExtras(u.id);
+            }
+
+            async function loadProfileExtras(userId) {
+                if (!supabaseClient) return;
+                try {
+                    const { data } = await supabaseClient.from('user_profiles').select('created_at, updated_at').eq('id', userId).maybeSingle();
+                    if (data) {
+                        document.getElementById('infoMemberSince').textContent = data.created_at ? formatDate(data.created_at) : '—';
+                        if (data.updated_at) {
+                            document.getElementById('infoLastSignIn').textContent = formatDate(data.updated_at);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('profile extras fetch failed', e);
+                    document.getElementById('infoMemberSince').textContent = '—';
+                }
+            }
+
+            async function loadOrders(u) {
+                const list = document.getElementById('ordersListContainer');
+                const meta = document.getElementById('ordersMeta');
+                if (!supabaseClient) {
+                    list.innerHTML = '<div class="orders-error"><i class="icon-alert-circle"></i><p>Cannot connect to the server.</p></div>';
+                    meta.textContent = '';
+                    return;
+                }
+                try {
+                    meta.textContent = 'Loading…';
+                    let query = supabaseClient.from('orders').select('*').eq('user_id', u.id).order('created_at', { ascending: false }).limit(20);
+                    let { data, error } = await query;
+                    if (error || !data || data.length === 0) {
+                        // Sometimes user_profiles.id and orders.user_id don't match — fall back to email.
+                        const { data: byEmail } = await supabaseClient.from('orders').select('*').eq('user_email', u.email).order('created_at', { ascending: false }).limit(20);
+                        data = byEmail || [];
+                    }
+                    if (!data || data.length === 0) {
+                        list.innerHTML = '<div class="orders-empty"><i class="icon-shopping-bag"></i><p>You have not placed any orders yet.</p><p class="hint">When you do, they will show up here with the receipt and status.</p></div>';
+                        meta.textContent = '0 orders';
+                        return;
+                    }
+                    meta.textContent = data.length + (data.length === 1 ? ' order' : ' orders');
+
+                    const items = data.map(function(o) {
+                        const num = escapeHtml(o.order_number || 'N/A');
+                        const dateLabel = formatDate(o.created_at);
+                        const itemCount = Array.isArray(o.items) ? o.items.reduce(function(s,i){ return s + (i.quantity||0); }, 0) : 0;
+                        const countLabel = itemCount > 0 ? itemCount + ' item' + (itemCount === 1 ? '' : 's') : 'Order';
+                        const total = formatPrice(o.grand_total != null ? o.grand_total : o.total_amount);
+                        const status = (o.status || 'pending').toLowerCase();
+                        const statusDisplay = status === 'delivered' ? 'Completed' : status.charAt(0).toUpperCase() + status.slice(1);
+                        const meta = (o.full_name || u.full_name || '') + ' · ' + dateLabel + ' · ' + escapeHtml(countLabel);
+
+                        return '<a class="order-row" href="invoice.html?order=' + encodeURIComponent(o.order_number || '') + '">' +
+                            '<span class="order-number-badge">' + num + '</span>' +
+                            '<div class="order-info-name">' + meta + '</div>' +
+                            '<div class="order-total">' + total + '</div>' +
+                            '<span class="order-status ' + status + '">' + escapeHtml(statusDisplay) + '</span>' +
+                        '</a>';
+                    }).join('');
+
+                    list.innerHTML = '<div class="orders-list">' + items + '</div>';
+                } catch (e) {
+                    console.error('loadOrders error', e);
+                    list.innerHTML = '<div class="orders-error"><i class="icon-alert-circle"></i><p>Failed to load orders.</p><p class="hint">' + escapeHtml(e.message || 'Please try again') + '</p></div>';
+                    meta.textContent = '';
+                }
+            }
+
+            function showAvatarError(message) {
+                const el = document.getElementById('pageAvatarError');
+                if (el) {
+                    el.textContent = message;
+                    el.style.display = 'block';
+                    clearTimeout(el._t);
+                    el._t = setTimeout(function() { el.style.display = 'none'; }, 5000);
+                }
+            }
+
+            function wireAvatarUpload() {
+                if (!window.JMPOTTERS_ACCOUNT || !window.JMPOTTERS_ACCOUNT.handleAvatarFile) return;
+
+                const iconBtn = document.getElementById('pageAvatarInput');
+                const dropzone = document.getElementById('pageDropzone');
+                const dropInput = document.getElementById('pageDropzoneInput');
+
+                const AP = window.JMPOTTERS_ACCOUNT;
+
+                if (iconBtn) {
+                    iconBtn.addEventListener('change', function() {
+                        const f = iconBtn.files && iconBtn.files[0];
+                        if (f) AP.handleAvatarFile(f);
+                        iconBtn.value = '';
+                    });
+                }
+                if (dropzone) {
+                    dropzone.addEventListener('click', function() { dropInput.click(); });
+                    dropzone.addEventListener('dragover', function(e) { e.preventDefault(); dropzone.classList.add('dragging'); });
+                    dropzone.addEventListener('dragleave', function(e) { e.preventDefault(); dropzone.classList.remove('dragging'); });
+                    dropzone.addEventListener('drop', function(e) {
+                        e.preventDefault();
+                        dropzone.classList.remove('dragging');
+                        const f = e.dataTransfer.files && e.dataTransfer.files[0];
+                        if (f) AP.handleAvatarFile(f);
+                    });
+                }
+
+                // When account-auth.js finishes an upload we re-render here.
+                window.addEventListener('jmpotters:avatar-updated', function() {
+                    const u = getUser();
+                    // Refresh the big avatar on the page
+                    const avatar = AP.getCurrentAvatar();
+                    const avatarEl = document.getElementById('pageAvatar');
+                    if (avatar) {
+                        avatarEl.innerHTML = '<img src="' + escapeHtml(avatar) + '" alt="Profile" />';
+                    } else if (u) {
+                        const initial = (u.full_name || u.email || '?').trim().charAt(0).toUpperCase();
+                        avatarEl.innerHTML = '<span id="pageAvatarInitial">' + escapeHtml(initial) + '</span>';
+                    }
+                });
+            }
+
+            function wireSignOut() {
+                const btn = document.getElementById('pageSignOutBtn');
+                if (!btn) return;
+                btn.addEventListener('click', function() {
+                    if (window.JMPOTTERS_ACCOUNT && typeof window.JMPOTTERS_ACCOUNT.signOut === 'function') {
+                        window.JMPOTTERS_ACCOUNT.signOut();
+                    } else {
+                        localStorage.removeItem('jmpotters_user');
+                        sessionStorage.removeItem('jmpotters_user');
+                        localStorage.removeItem('jmpotters_avatar');
+                        window.location.href = 'index.html';
+                    }
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('accountLoading').hidden = false;
+                initSupabase();
+
+                const u = getUser();
+                renderUser(u);
+
+                if (u) {
+                    loadOrders(u);
+                    wireAvatarUpload();
+                    wireSignOut();
+                }
+
+                // Mobile nav
+                var mobileToggle = document.getElementById('mobileToggle');
+                var mobileNav = document.getElementById('mobileNav');
+                var navOverlay = document.getElementById('navOverlay');
+                var closeNavBtn = document.getElementById('closeNavBtn');
+                function openNav() { mobileNav.classList.add('active'); navOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+                function closeNav() { mobileNav.classList.remove('active'); navOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+                if (mobileToggle) mobileToggle.addEventListener('click', openNav);
+                if (closeNavBtn) closeNavBtn.addEventListener('click', closeNav);
+                if (navOverlay) navOverlay.addEventListener('click', closeNav);
+
+                // Cart count
+                try {
+                    var cart = JSON.parse(localStorage.getItem('jmpotters_cart')) || [];
+                    var total = cart.reduce(function(s,i){ return s + i.quantity; }, 0);
+                    var el = document.getElementById('cartCount');
+                    if (el) { el.textContent = total; el.style.display = total > 0 ? 'flex' : 'none'; }
+                } catch (e) {}
+
+                // Back to top
+                var backToTop = document.getElementById('backToTop');
+                window.addEventListener('scroll', function() {
+                    if ((window.scrollY || window.pageYOffset) > 500) backToTop.classList.add('visible');
+                    else backToTop.classList.remove('visible');
+                }, { passive: true });
+                if (backToTop) backToTop.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+                // Inject spin animation for loader icon
+                if (!document.getElementById('jmpottersAccountPageAnim')) {
+                    var s = document.createElement('style');
+                    s.id = 'jmpottersAccountPageAnim';
+                    s.textContent = '@keyframes spin { to {transform: rotate(360deg);} } #accountLoading i { animation: spin 1s linear infinite; }';
+                    document.head.appendChild(s);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
