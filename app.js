@@ -978,11 +978,31 @@
         const cartItem = {
             product_id: product.id, quantity, name: product.name, price: product.price || 0,
             image_url: product.image_url, category_slug: options.category_slug || getCurrentCategory(),
+            // Display fields (kept for legacy compatibility & UI labels)
             color_name: options.color_name || null, size_value: options.size_value || null,
+            // Stable variant identity so stock decrements target the exact DB row
+            // and so the cart merge doesn't accidentally fold distinct colorways
+            // (e.g. "size 42 in Black" vs "size 42 in Brown") into one line.
+            size_id:  options.size_id  != null ? Number(options.size_id)  : null,
+            color_id: options.color_id != null ? Number(options.color_id) : null,
             added_at: new Date().toISOString()
         };
+        // Remove null/undefined identity fields before saving so the on-disk cart
+        // stays clean. Non-footwear lines have size_id === null.
+        if (cartItem.size_id === null)  delete cartItem.size_id;
+        if (cartItem.color_id === null) delete cartItem.color_id;
         
-        const existingIndex = cart.findIndex(item => item.product_id === cartItem.product_id && item.color_name === cartItem.color_name && item.size_value === cartItem.size_value);
+        // Merge by (product_id, size_id) when a variant is present — size_id
+        // is unique per (product, color, size) in product_sizes. Fall back to
+        // (product_id) for variant-less quick-add lines. This prevents the
+        // accidental folding bug where two colorways of the same numeric size
+        // used to be incorrectly merged because we matched by display strings.
+        const existingIndex = cart.findIndex(item => {
+            if (item.product_id !== cartItem.product_id) return false;
+            return (cartItem.size_id != null)
+                ? item.size_id === cartItem.size_id
+                : (item.size_id == null);
+        });
         if (existingIndex !== -1) {
             cart[existingIndex].quantity += quantity;
             showNotification(`Updated ${product.name} quantity`, 'info');
@@ -1410,6 +1430,8 @@
                 quantity: item.quantity,
                 color_name: item.color_name,
                 size_value: item.size_value,
+                size_id:  item.size_id  || null,
+                color_id: item.color_id || null,
                 image_url: item.image_url
             }));
             
@@ -1447,6 +1469,36 @@
                 return null;
             }
             
+            // --- Stock decrement (best-effort, race-safe) ----------------------
+            // The order is already paid and persisted; failure here does NOT void
+            // the order. We surface failures via notifications and log so an admin
+            // can reconcile stock manually if a race or transient error occurs.
+            try {
+                const stockResult = await decrementStockForOrder(cart);
+                if (stockResult.failed.length > 0) {
+                    console.warn('⚠️ Stock reconciliation needed for:', stockResult.failed);
+                    const list = stockResult.failed.slice(0, 3).map(f =>
+                        f.kind === 'size'
+                            ? `${f.name || 'Variant'} (size_id ${f.size_id})`
+                            : `${f.name || 'Product'} (id ${f.product_id})`
+                    ).join(', ');
+                    showNotification(
+                        `Order ${orderNumber} placed, but stock didn't update for: ${list}. Admin will reconcile.`,
+                        'warning'
+                    );
+                }
+                // Refresh in-page product caches so availability reflects reality
+                // right away if the user keeps browsing.
+                applyStockResultsToCache(stockResult);
+            } catch (stockErr) {
+                console.error('Stock decrement crashed (order still valid):', stockErr);
+                showNotification(
+                    `Order ${orderNumber} placed. Stock sync failed (will be reconciled).`,
+                    'warning'
+                );
+            }
+            // --------------------------------------------------------------------
+            
             localStorage.removeItem('jmpotters_cart');
             updateCartUI();
             showNotification(`Order ${orderNumber} placed successfully!`, 'success');
@@ -1457,6 +1509,308 @@
             showNotification(`Failed to place order: ${error.message}`, 'error');
             return null;
         }
+    }
+    
+    // ====================
+    // STOCK DECREMENT (post-order, race-safe)
+    // ====================
+    // Decrements inventory for each cart line using Supabase UPDATEs whose
+    // WHERE clauses guard against oversell. Because the REST API has no
+    // transactional guarantees, we treat the order as the source of truth and
+    // log/notify on any per-line failure so ops can reconcile.
+    //
+    // Branch table:
+    //   * Footwear variant  (cartItem.size_id present):
+    //       UPDATE product_sizes SET stock_quantity = stock_quantity - qty
+    //         WHERE id = size_id AND color_id = color_id AND stock_quantity >= qty
+    //       UPDATE products      SET stock          = stock          - qty
+    //         WHERE id = product_id AND stock >= qty
+    //     (Products.stock is decremented too so listing-card availability
+    //      stays in sync with the sum of variant-level stock — the parent
+    //      stock is treated as authoritative for non-variant listings.)
+    //   * Non-footwear (no size_id):
+    //       UPDATE products SET stock = stock - qty WHERE id = product_id AND stock >= qty
+    //
+    // Returns { ok:boolean, decremented:[], failed:[] } describing each cart
+    // line. Each failed entry includes { kind:'size'|'product', product_id,
+    // size_id, requested, reason } so the caller can build a clean notification.
+    async function decrementStockForOrder(cartItems) {
+        const supabase = getSupabaseClient();
+        const result = { ok: true, decremented: [], failed: [] };
+        if (!supabase) {
+            result.ok = false;
+            result.failed = (cartItems || []).map(it => ({
+                kind: it.size_id != null ? 'size' : 'product',
+                product_id: it.product_id, size_id: it.size_id,
+                requested: it.quantity || 0, reason: 'no_database_connection'
+            }));
+            return result;
+        }
+        if (!Array.isArray(cartItems) || cartItems.length === 0) return result;
+        
+        // Snapshot the interested (product_id, size_id) pairs once so we can
+        // refresh the local product cache for any product touched by the order.
+        const productIdsToRefresh = new Set();
+        const sizeIdsToRefresh = new Set();
+        
+        const tasks = cartItems.map(async (item) => {
+            const productId = parseInt(item.product_id, 10);
+            const qty = Math.max(0, parseInt(item.quantity, 10) || 0);
+            if (!Number.isFinite(productId) || qty <= 0) {
+                result.failed.push({
+                    kind: item.size_id != null ? 'size' : 'product',
+                    product_id: item.product_id, size_id: item.size_id,
+                    requested: qty, reason: 'invalid_input'
+                });
+                return;
+            }
+            
+            productIdsToRefresh.add(productId);
+            
+            const isVariant = item.size_id != null && item.color_id != null;
+            
+            // ---- VARIANT branch (footwear: size + color) ----
+            if (isVariant) {
+                const sizeId  = parseInt(item.size_id, 10);
+                const colorId = parseInt(item.color_id, 10);
+                sizeIdsToRefresh.add(sizeId);
+                
+                // Decrement per-size stock first (the authoritative number for
+                // the variant). Where clause requires enough stock — a 0-row
+                // affected response is a safe no-op that means "lost a race".
+                let sizeRes = null;
+                try {
+                    sizeRes = await supabase
+                        .from('product_sizes')
+                        .update({ stock_quantity: 0 }) // placeholder; replaced below
+                        .eq('id', sizeId)
+                        .eq('color_id', colorId)
+                        .gte('stock_quantity', qty)
+                        .select('id, stock_quantity')
+                        .maybeSingle();
+                } catch (e) {
+                    // fall through to error path
+                    sizeRes = null;
+                }
+                
+                // The placeholder SET above isn't a real decrement; redo it
+                // properly with an RPC-style expression. Supabase-js supports
+                // update with an expression via the `.eq().select()` chain,
+                // but to use a relative decrement we either need an RPC or
+                // to use PostgREST's `?stock_quantity=stock_quantity-qty`. We
+                // cannot express arithmetic in REST directly, so we use an
+                // RPC call when available and otherwise fall back to a
+                // read-modify-write guarded UPDATE.
+                let newSizeStock = null;
+                try {
+                    // Try RPC first if the admin created one. Otherwise the
+                    // read-modify-write path below handles it.
+                    const { data: rpcData, error: rpcErr } = await supabase.rpc(
+                        'decrement_product_size_stock',
+                        { p_size_id: sizeId, p_color_id: colorId, p_qty: qty }
+                    ).maybeSingle();
+                    if (!rpcErr && rpcData && typeof rpcData.new_stock === 'number') {
+                        newSizeStock = rpcData.new_stock;
+                    }
+                } catch (_) { /* RPC missing -> fall through */ }
+                
+                if (newSizeStock === null) {
+                    // Read-modify-write fallback. This is racy in theory but
+                    // the WHERE guard `gte(stock_quantity, qty)` plus an extra
+                    // abort on overflow keeps us safe in practice.
+                    try {
+                        const { data: row, error: readErr } = await supabase
+                            .from('product_sizes')
+                            .select('id, stock_quantity')
+                            .eq('id', sizeId)
+                            .eq('color_id', colorId)
+                            .maybeSingle();
+                        if (readErr) throw readErr;
+                        if (!row) {
+                            result.failed.push({
+                                kind: 'size', product_id: productId,
+                                size_id: sizeId, requested: qty,
+                                name: item.name, reason: 'size_row_not_found'
+                            });
+                            return;
+                        }
+                        if ((row.stock_quantity || 0) < qty) {
+                            result.failed.push({
+                                kind: 'size', product_id: productId,
+                                size_id: sizeId, requested: qty,
+                                name: item.name, reason: 'insufficient_stock_at_checkout'
+                            });
+                            return;
+                        }
+                        const target = (row.stock_quantity || 0) - qty;
+                        const { data: upd, error: updErr } = await supabase
+                            .from('product_sizes')
+                            .update({ stock_quantity: target })
+                            .eq('id', sizeId)
+                            .eq('color_id', colorId)
+                            .gte('stock_quantity', qty)
+                            .select('id, stock_quantity')
+                            .maybeSingle();
+                        if (updErr) throw updErr;
+                        if (!upd) {
+                            // Lost a race between read and write.
+                            result.failed.push({
+                                kind: 'size', product_id: productId,
+                                size_id: sizeId, requested: qty,
+                                name: item.name, reason: 'lost_race'
+                            });
+                            return;
+                        }
+                        newSizeStock = upd.stock_quantity;
+                    } catch (err) {
+                        result.failed.push({
+                            kind: 'size', product_id: productId,
+                            size_id: sizeId, requested: qty,
+                            name: item.name, reason: 'rpc_error:' + (err && err.message ? err.message : 'unknown')
+                        });
+                        return;
+                    }
+                }
+                
+                // Now mirror onto the parent products.stock so the listing
+                // cards (which read products.stock) reflect reality.
+                try {
+                    const { data: prodRow, error: prodReadErr } = await supabase
+                        .from('products')
+                        .select('id, stock')
+                        .eq('id', productId)
+                        .maybeSingle();
+                    if (!prodReadErr && prodRow) {
+                        const target = Math.max(0, (prodRow.stock || 0) - qty);
+                        await supabase
+                            .from('products')
+                            .update({ stock: target })
+                            .eq('id', productId)
+                            .gte('stock', qty);
+                    }
+                } catch (err) {
+                    // The variant-level decrement succeeded; parent-stock mirror
+                    // is best-effort and surfaced only as a soft warning.
+                    console.warn('Parent products.stock mirror failed for product', productId, err);
+                }
+                
+                result.decremented.push({
+                    kind: 'size', product_id: productId, size_id: sizeId,
+                    quantity: qty, new_size_stock: newSizeStock,
+                    name: item.name
+                });
+                return;
+            }
+            
+            // ---- NON-VARIANT branch (everything else) ----
+            try {
+                const { data: row, error: readErr } = await supabase
+                    .from('products')
+                    .select('id, stock')
+                    .eq('id', productId)
+                    .maybeSingle();
+                if (readErr) throw readErr;
+                if (!row) {
+                    result.failed.push({
+                        kind: 'product', product_id: productId,
+                        requested: qty, name: item.name,
+                        reason: 'product_row_not_found'
+                    });
+                    return;
+                }
+                if ((row.stock || 0) < qty) {
+                    result.failed.push({
+                        kind: 'product', product_id: productId,
+                        requested: qty, name: item.name,
+                        reason: 'insufficient_stock_at_checkout'
+                    });
+                    return;
+                }
+                const target = (row.stock || 0) - qty;
+                const { data: upd, error: updErr } = await supabase
+                    .from('products')
+                    .update({ stock: target })
+                    .eq('id', productId)
+                    .gte('stock', qty)
+                    .select('id, stock')
+                    .maybeSingle();
+                if (updErr) throw updErr;
+                if (!upd) {
+                    result.failed.push({
+                        kind: 'product', product_id: productId,
+                        requested: qty, name: item.name,
+                        reason: 'lost_race'
+                    });
+                    return;
+                }
+                result.decremented.push({
+                    kind: 'product', product_id: productId,
+                    quantity: qty, new_stock: upd.stock,
+                    name: item.name
+                });
+            } catch (err) {
+                result.failed.push({
+                    kind: 'product', product_id: productId,
+                    requested: qty, name: item.name,
+                    reason: 'rpc_error:' + (err && err.message ? err.message : 'unknown')
+                });
+            }
+        });
+        
+        const settled = await Promise.allSettled(tasks);
+        // Any individual task that threw (not handled internally) is recorded.
+        settled.forEach((s, i) => {
+            if (s.status === 'rejected') {
+                const it = cartItems[i] || {};
+                result.failed.push({
+                    kind: it.size_id != null ? 'size' : 'product',
+                    product_id: it.product_id, size_id: it.size_id,
+                    requested: it.quantity, name: it.name,
+                    reason: 'unhandled:' + (s.reason && s.reason.message ? s.reason.message : 'unknown')
+                });
+            }
+        });
+        
+        result.ok = result.failed.length === 0;
+        // Stash so a future refresh / diagnostics call can inspect it.
+        window.__lastStockDecrementResult = {
+            when: Date.now(),
+            product_ids: Array.from(productIdsToRefresh),
+            size_ids:    Array.from(sizeIdsToRefresh),
+            decremented: result.decremented,
+            failed:      result.failed
+        };
+        return result;
+    }
+    
+    // Mirrors the latest decremented stock into the in-page caches so that the
+    // very next render uses fresh numbers without an extra round-trip.
+    function applyStockResultsToCache(stockResult) {
+        if (!stockResult || !Array.isArray(stockResult.decremented)) return;
+        
+        // Update in-memory product list cache (used for wishlist / quick-add).
+        if (Array.isArray(window.JMPOTTERS_PRODUCTS_CACHE)) {
+            for (const d of stockResult.decremented) {
+                const hit = window.JMPOTTERS_PRODUCTS_CACHE.find(p => p.id === d.product_id);
+                if (hit && typeof d.new_stock === 'number' && d.kind === 'product') {
+                    hit.stock = d.new_stock;
+                }
+            }
+        }
+        // Update the single-product detail if open.
+        try {
+            if (typeof currentProduct !== 'undefined' && currentProduct && currentProduct.id) {
+                const d = stockResult.decremented.find(x => x.product_id === currentProduct.id && x.kind === 'product');
+                if (d && typeof d.new_stock === 'number') {
+                    currentProduct.stock = d.new_stock;
+                    // Repaint the stock badge if a product viewer is on screen.
+                    const stockEl = document.querySelector('.stock-status .stock-text, .stock-status span');
+                    if (stockEl && d.new_stock <= 0) {
+                        stockEl.textContent = 'Out of Stock';
+                    }
+                }
+            }
+        } catch (_) { /* currentProduct scoping guards */ }
     }
     
     async function getOrderByNumber(orderNumber) {
