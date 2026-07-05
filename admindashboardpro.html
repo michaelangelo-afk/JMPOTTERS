@@ -1506,13 +1506,13 @@
                 );
                 loadPrefs();
                 setupEvents();
+                initImageUpload();
                 await loadInitialData();
                 await loadOrders();
                 await loadUsers();
                 await loadCoupons();
                 updateDashboardStats();
                 // Auto-refresh disabled per user request
-                initImageUpload();
                 populateColorPickerGrid();
                 renderHeroBanners();
                 renderAds();
