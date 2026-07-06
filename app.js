@@ -1575,32 +1575,6 @@
                 const colorId = parseInt(item.color_id, 10);
                 sizeIdsToRefresh.add(sizeId);
                 
-                // Decrement per-size stock first (the authoritative number for
-                // the variant). Where clause requires enough stock — a 0-row
-                // affected response is a safe no-op that means "lost a race".
-                let sizeRes = null;
-                try {
-                    sizeRes = await supabase
-                        .from('product_sizes')
-                        .update({ stock_quantity: 0 }) // placeholder; replaced below
-                        .eq('id', sizeId)
-                        .eq('color_id', colorId)
-                        .gte('stock_quantity', qty)
-                        .select('id, stock_quantity')
-                        .maybeSingle();
-                } catch (e) {
-                    // fall through to error path
-                    sizeRes = null;
-                }
-                
-                // The placeholder SET above isn't a real decrement; redo it
-                // properly with an RPC-style expression. Supabase-js supports
-                // update with an expression via the `.eq().select()` chain,
-                // but to use a relative decrement we either need an RPC or
-                // to use PostgREST's `?stock_quantity=stock_quantity-qty`. We
-                // cannot express arithmetic in REST directly, so we use an
-                // RPC call when available and otherwise fall back to a
-                // read-modify-write guarded UPDATE.
                 let newSizeStock = null;
                 try {
                     // Try RPC first if the admin created one. Otherwise the
