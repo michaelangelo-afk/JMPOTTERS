@@ -1640,7 +1640,7 @@
                         result.failed.push({
                             kind: 'size', product_id: productId,
                             size_id: sizeId, requested: qty,
-                            name: item.name, reason: 'rpc_error:' + (err && err.message ? err.message : 'unknown')
+                            name: item.name, reason: 'fallback_error:' + (err && err.message ? err.message : 'unknown')
                         });
                         return;
                     }
@@ -1726,7 +1726,7 @@
                 result.failed.push({
                     kind: 'product', product_id: productId,
                     requested: qty, name: item.name,
-                    reason: 'rpc_error:' + (err && err.message ? err.message : 'unknown')
+                    reason: 'fallback_error:' + (err && err.message ? err.message : 'unknown')
                 });
             }
         });
