@@ -978,6 +978,7 @@
         const cartItem = {
             product_id: product.id, quantity, name: product.name, price: product.price || 0,
             image_url: product.image_url, category_slug: options.category_slug || getCurrentCategory(),
+            stock: product.stock || 0,
             // Display fields (kept for legacy compatibility & UI labels)
             color_name: options.color_name || null, size_value: options.size_value || null,
             // Stable variant identity so stock decrements target the exact DB row

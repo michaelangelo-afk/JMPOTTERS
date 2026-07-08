@@ -646,12 +646,18 @@
                 (item.size_value || null) === normSize
             );
             if (index !== -1) {
-                const newQty = cart[index].quantity + change;
+                const item = cart[index];
+                // Cap at product stock (fallback 99 for legacy items without stock field)
+                const maxStock = item.stock || 99;
+                const newQty = item.quantity + change;
                 if (newQty <= 0) {
                     cart.splice(index, 1);
                     showNotification('Item removed from cart', 'info');
+                } else if (newQty > maxStock) {
+                    showNotification('Only ' + maxStock + ' units available', 'warning');
+                    return;
                 } else {
-                    cart[index].quantity = newQty;
+                    item.quantity = newQty;
                 }
                 saveCart(cart);
             } else {
