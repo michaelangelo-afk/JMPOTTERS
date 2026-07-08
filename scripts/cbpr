@@ -1,0 +1,275 @@
+#!/usr/bin/env bash
+# =============================================================
+# cbpr — Codebuff Push-and-PR
+# =============================================================
+# Commit current local changes, push to origin, and open a
+# GitHub PR via the `gh` CLI — all in one command.
+#
+# Designed to be used right after Codebuff finishes a session.
+#
+# Install:
+#   cp scripts/cbpr ~/.local/bin/cbpr      # or anywhere on PATH
+#   chmod +x ~/.local/bin/cbpr
+#
+# Or source it from your shell rc to get a function:
+#   source scripts/cbpr
+#
+# Prerequisites:
+#   - git installed
+#   - GitHub CLI (gh) installed and authenticated:  gh auth login
+#   - git user.name and user.email set locally or globally
+# =============================================================
+
+set -euo pipefail
+
+VERSION="1.0.0"
+DEFAULT_BASE="main"
+
+# ---------- helpers ----------
+require() {
+  command -v "$1" >/dev/null 2>&1 || {
+    echo "❌ '$1' is required but not installed." >&2
+    echo "   Install: $2" >&2
+    exit 1
+  }
+}
+
+die() { echo "❌ $*" >&2; exit 1; }
+info() { echo "ℹ️  $*"; }
+ok()   { echo "✅ $*"; }
+warn() { echo "⚠️  $*"; }
+
+usage() {
+  cat <<'EOF'
+cbpr — Open a GitHub PR for your local Codebuff changes.
+
+USAGE
+  cbpr [options] [commit-message]
+
+OPTIONS
+  -b, --base <branch>     PR base branch        (default: main)
+      --branch <name>      New branch name       (default: codebuff/<date>-<sha>)
+  -d, --draft             Open PR as draft
+  -n, --no-push           Only commit locally; do not push or open PR
+      --amend             Amend the last commit instead of creating new
+  -y, --yes               Skip the "are you sure?" confirmation
+  -h, --help              Show this help
+  -v, --version           Show version
+
+EXAMPLES
+  cbpr                                       # default commit + push + PR
+  cbpr "fix: hero banner mobile overflow"
+  cbpr --base develop "deploy to staging"
+  cbpr --branch hotfix/colors "patch colors endpoint"
+  cbpr --draft "WIP: kick off review"
+  cbpr --no-push                             # commit only
+  cbpr --amend                              # add more changes to last commit
+
+PREREQUISITES
+  • git installed, this dir is a git repo tracking GitHub
+  • gh installed and authenticated: gh auth login
+  • git user.name and user.email configured
+EOF
+}
+
+# ---------- arg parsing ----------
+BASE="$DEFAULT_BASE"
+BRANCH_OVERRIDE=""
+MSG=""
+MSG_PROVIDED="false"  # distinguish user-supplied msg from default fallback
+DRAFT="false"
+DO_PUSH="true"
+ASSUME_YES="false"
+AMEND="false"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)           usage; exit 0 ;;
+    -v|--version)        echo "cbpr $VERSION"; exit 0 ;;
+    -b|--base)           BASE="$2"; shift 2 ;;
+    --branch)            BRANCH_OVERRIDE="$2"; shift 2 ;;
+    -d|--draft)          DRAFT="true"; shift ;;
+    -n|--no-push)        DO_PUSH="false"; shift ;;
+    -y|--yes)            ASSUME_YES="true"; shift ;;
+    --amend)             AMEND="true"; shift ;;
+    --)                  shift; MSG="${*:-}"; MSG_PROVIDED="true"; break ;;
+    -*)                  die "Unknown option: $1. Run: cbpr --help" ;;
+    *)                   MSG="$1"; MSG_PROVIDED="true"; shift ;;
+  esac
+done
+
+# If amending without a message, preserve the previous commit's message
+# so that we never silently rewrite history.
+if [ "$AMEND" = "true" ] && [ "$MSG_PROVIDED" != "true" ]; then
+  if git rev-parse --verify HEAD >/dev/null 2>&1; then
+    MSG=$(git log -1 --pretty=%B)
+    info "Reusing previous commit message for --amend."
+  else
+    die "--amend requires an existing commit; pass an explicit message."
+  fi
+fi
+
+MSG="${MSG:-chore: codebuff changes}"
+
+# ---------- pre-flight ----------
+require git 'https://git-scm.com/downloads'
+require gh 'https://cli.github.com'
+
+if ! gh auth status >/dev/null 2>&1; then
+  die "Not authenticated to GitHub. Run: gh auth login"
+fi
+
+git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+  || die "Not inside a git repository. Run 'git init' first."
+
+REMOTE_URL=$(git config --get remote.origin.url || true)
+if [ -z "$REMOTE_URL" ]; then
+  die "No origin remote configured. Add it with: git remote add origin <url>"
+fi
+info "Origin: $REMOTE_URL"
+
+# Ensure git author identity is set
+if ! git config user.name >/dev/null 2>&1; then
+  die "git user.name is not set. Run:
+    git config --global user.name  \"Your Name\"
+    git config --global user.email \"you@example.com\""
+fi
+if ! git config user.email >/dev/null 2>&1; then
+  die "git user.email is not set. Run:
+    git config --global user.email \"you@example.com\""
+fi
+
+# ---------- branch logic ----------
+CURR=$(git rev-parse --abbrev-ref HEAD)
+BRANCH="$CURR"
+
+if [[ "$CURR" == "$BASE" || "$CURR" == "master" ]]; then
+  if [ -z "$BRANCH_OVERRIDE" ]; then
+    SHORT=$(git rev-parse --short HEAD 2>/dev/null || echo "wip")
+    BRANCH="codebuff/$(date +%Y%m%d-%H%M%S)-${SHORT}"
+    info "Auto-naming branch: $BRANCH"
+  else
+    BRANCH="$BRANCH_OVERRIDE"
+    info "Using override branch: $BRANCH"
+  fi
+  git checkout -b "$BRANCH"
+elif [ -n "$BRANCH_OVERRIDE" ] && [ "$BRANCH_OVERRIDE" != "$CURR" ]; then
+  BRANCH="$BRANCH_OVERRIDE"
+  info "Switching to: $BRANCH"
+  git checkout -b "$BRANCH" 2>/dev/null || git checkout "$BRANCH"
+fi
+
+# Make sure the branch name will trigger the workflow (only fires on codebuff/**)
+if ! [[ "$BRANCH" =~ ^codebuff/ ]]; then
+  warn "Branch '$BRANCH' is outside the 'codebuff/**' glob — the auto-PR workflow won't fire."
+  warn "Use --branch codebuff/something, or let cbpr auto-name it from main/master."
+fi
+
+# ---------- worktree sanity ----------
+if [ "$AMEND" != "true" ]; then
+  # Is there anything to commit?
+  if git diff --cached --quiet && git diff --quiet && \
+     [ -z "$(git ls-files --others --exclude-standard)" ]; then
+    die "Nothing to commit. Make some changes first."
+  fi
+fi
+
+# ---------- confirmation ----------
+if [ "$ASSUME_YES" != "true" ]; then
+  cat <<EOF
+
+About to:
+  • branch:   $BRANCH
+  • base:     $BASE
+  • message:  $MSG
+  • draft:    $DRAFT
+  • push+PR:  $DO_PUSH
+  • amend:    $AMEND
+
+[y/N]
+EOF
+  read -r REPLY
+  [[ "$REPLY" =~ ^[Yy]$ ]] || die "Aborted."
+fi
+
+# ---------- commit ----------
+if [ "$AMEND" = "true" ]; then
+  info "Amending last commit..."
+  git add -A
+  git commit --amend -m "$MSG"
+else
+  info "Staging and committing..."
+  git add -A
+  if git commit -m "$MSG"; then
+    ok "Committed."
+  else
+    info "Nothing to commit (working tree was clean)."
+  fi
+fi
+
+# ---------- early exit ----------
+if [ "$DO_PUSH" != "true" ]; then
+  ok "Committed locally only. Skipping push and PR (--no-push)."
+  exit 0
+fi
+
+# ---------- push ----------
+info "Pushing '$BRANCH' to origin..."
+PUSH_LOG=$(mktemp)
+if ! git push -u origin "HEAD" 2>&1 | tee "$PUSH_LOG"; then
+  if grep -qE "non-fast-forward|fetch first|rejected" "$PUSH_LOG"; then
+    info "Push rejected (non-fast-forward). Attempting pull --rebase..."
+    git pull --rebase --autostash origin "$BRANCH" || {
+      die "Rebase failed. Resolve manually:
+        git pull --rebase origin $BRANCH
+  (fix any conflicts)
+        git push -u origin HEAD"
+    }
+    git push -u origin HEAD
+  else
+    cat "$PUSH_LOG"
+    die "Push failed. Address the issue above and re-run cbpr --amend."
+  fi
+fi
+rm -f "$PUSH_LOG"
+ok "Pushed."
+
+# ---------- PR ----------
+EXISTING=$(gh pr list \
+             --head "$BRANCH" \
+             --state all \
+             --json number,state \
+             --jq '.[] | select(.state=="OPEN") | .number' 2>/dev/null || true)
+
+if [ -n "$EXISTING" ]; then
+  ok "PR #$EXISTING already exists for '$BRANCH'. Pushed commits will refresh it."
+  gh pr view "$EXISTING" --json url --jq '.url'
+  exit 0
+fi
+
+info "Opening PR via gh..."
+DRAFT_FLAG=""
+[ "$DRAFT" = "true" ] && DRAFT_FLAG="--draft"
+
+# Build the body via single-quoted heredoc so backticks survive intact
+# (otherwise \"\\`\" in a double-quoted bash string collapses and breaks markdown).
+PR_BODY=$(cat <<EOF
+Automated PR opened by \`cbpr\` from a Codebuff session.
+
+- **Branch:** \`$BRANCH\`
+- **Base:** \`$BASE\`
+- **Latest commit:** \`$(git rev-parse --short HEAD)\`
+
+Please review and merge when ready.
+EOF
+)
+
+PR_URL=$(gh pr create \
+  --base "$BASE" \
+  --head "$BRANCH" \
+  --title "$MSG" \
+  --body "$PR_BODY" \
+  $DRAFT_FLAG)
+
+ok "Done."
+echo "🔗 $PR_URL"

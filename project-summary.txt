@@ -1,0 +1,56 @@
+# JMPOTTERS — Premium Fashion & Lifestyle E-Commerce
+
+================================================================================
+ GIT REMOTE & BRANCH
+================================================================================
+
+Remote: git@github.com:michaelangelo-afk/JMPOTTERS.git
+Branch: main (default)
+
+================================================================================
+ BOOTSTRAP PROMPT FOR NEW CHAT
+================================================================================
+
+Paste this as the first message in your new Codebuff chat:
+
+"""
+You are working on /root/JMPOTTERS-main, a premium fashion & lifestyle
+e-commerce store for JMPOTTERS (Nigeria-based online retailer).
+
+REMOTE GIT REPO: git@github.com:michaelangelo-afk/JMPOTTERS.git (branch: main)
+
+POLICIES (MUST FOLLOW):
+1. ALWAYS commit and push after making changes:
+   git add -A && git commit -m "description of changes" && git push origin main
+2. ALWAYS read files before editing them.
+3. Read project-summary.txt in the project root for full details.
+
+Tech: Vanilla HTML/CSS/JS frontend, Supabase backend (PostgreSQL + Storage),
+Next.js (v16) in package.json for potential migration, Tailwind CSS (v3),
+Lucide icons, Playfair Display + Inter fonts.
+
+Key pages: index.html (home), product.html (detail), cart.html, login.html,
+register.html, account.html, invoice.html, admindashboardpro.html (admin),
+and category pages (mensfootwear, womensfootwear, bags, accessories,
+household, kids, healthcare, contact).
+
+Supabase: https://tmpggeeuwdvlngvfncaa.supabase.co
+Images: https://ebuzome.github.io/JMPOTTERS/assets/images/
+"""
+
+================================================================================
+ KEY RULES TO REMEMBER
+================================================================================
+
+✅ ALWAYS commit + push after changes:
+   git add -A && git commit -m "..." && git push origin main
+✅ Read files before editing them
+✅ Brand colors: Gold (#d4af37), Dark (#0a0d12), light background (#faf8f5)
+✅ Fonts: Playfair Display (headings), Inter (body)
+✅ Contact: +234 813 958 3320 / hello@jmpotters.com
+
+================================================================================
+ PROJECT PATH
+================================================================================
+
+The project lives at /root/JMPOTTERS-main/ on disk.
