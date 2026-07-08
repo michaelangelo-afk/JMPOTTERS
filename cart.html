@@ -575,6 +575,12 @@
     <script src="account-auth.js" defer></script>
 
     <script>
+    // Supabase client for stock fetching
+    var CART_SUPABASE_URL = 'https://tmpggeeuwdvlngvfncaa.supabase.co';
+    var CART_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtcGdnZWV1d2R2bG5ndmZuY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTc0MDYsImV4cCI6MjA3Nzc3MzQwNn0.EKzkKWmzYMvQuN11vEjRTDHrUbh6dYXk7clxVsYQ0b4';
+    var cartSb = null;
+    try { cartSb = window.supabase.createClient(CART_SUPABASE_URL, CART_SUPABASE_KEY); } catch(e) {}
+
     // Helper functions
         function formatPrice(price) {
             return `₦${parseInt(price || 0).toLocaleString()}`;
@@ -714,6 +720,34 @@
             const cart = JSON.parse(localStorage.getItem('jmpotters_cart')) || [];
             const container = document.getElementById('cartItemsContainer');
             const summaryContainer = document.querySelector('.cart-summary');
+            
+            // Fetch live stock from Supabase for all cart products
+            if (cart.length > 0 && cartSb) {
+                try {
+                    var ids = cart.map(function(it) { return it.product_id; });
+                    var { data: stockRows, error } = await cartSb
+                        .from('products')
+                        .select('id, stock')
+                        .in('id', ids);
+                    if (!error && stockRows) {
+                        var stockMap = {};
+                        stockRows.forEach(function(p) { stockMap[p.id] = p.stock; });
+                        var changed = false;
+                        cart.forEach(function(item) {
+                            var live = stockMap[item.product_id];
+                            if (live !== undefined && item.stock !== live) {
+                                item.stock = live;
+                                changed = true;
+                            }
+                        });
+                        if (changed) {
+                            localStorage.setItem('jmpotters_cart', JSON.stringify(cart));
+                        }
+                    }
+                } catch(e) {
+                    console.warn('Stock fetch failed, using cached values:', e);
+                }
+            }
             
             if (cart.length === 0) {
                 container.innerHTML = `
