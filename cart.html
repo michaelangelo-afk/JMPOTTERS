@@ -637,10 +637,13 @@
         
         function updateQuantity(productId, colorName, sizeValue, change) {
             let cart = JSON.parse(localStorage.getItem('jmpotters_cart')) || [];
+            // Normalize null vs empty string for variant-less items
+            const normColor = colorName || null;
+            const normSize = sizeValue || null;
             const index = cart.findIndex(item => 
-                item.product_id === productId && 
-                item.color_name === colorName && 
-                item.size_value === sizeValue
+                item.product_id == productId && 
+                (item.color_name || null) === normColor && 
+                (item.size_value || null) === normSize
             );
             if (index !== -1) {
                 const newQty = cart[index].quantity + change;
@@ -651,18 +654,27 @@
                     cart[index].quantity = newQty;
                 }
                 saveCart(cart);
+            } else {
+                console.warn('Cart item not found for updateQuantity:', { productId, colorName, sizeValue });
             }
         }
         
         function removeItem(productId, colorName, sizeValue) {
             let cart = JSON.parse(localStorage.getItem('jmpotters_cart')) || [];
+            const before = cart.length;
+            const normColor = colorName || null;
+            const normSize = sizeValue || null;
             cart = cart.filter(item => 
-                !(item.product_id === productId && 
-                  item.color_name === colorName && 
-                  item.size_value === sizeValue)
+                !(item.product_id == productId && 
+                  (item.color_name || null) === normColor && 
+                  (item.size_value || null) === normSize)
             );
-            saveCart(cart);
-            showNotification('Item removed from cart', 'info');
+            if (cart.length < before) {
+                saveCart(cart);
+                showNotification('Item removed from cart', 'info');
+            } else {
+                console.warn('Cart item not found for removal:', { productId, colorName, sizeValue });
+            }
         }
         
         async function proceedToCheckout() {

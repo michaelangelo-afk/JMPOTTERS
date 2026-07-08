@@ -1,1 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <title>Contact Us | JMPOTTERS</title>
 
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://tmpggeeuwdvlngvfncaa.supabase.co" />
+
+    <!-- Lucide Icons -->
+    <link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css" />
+    <!-- Playfair Display + Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --gold: #d4af37;
+            --gold-dark: #b8860b;
+            --gold-light: rgba(212, 175, 55, 0.12);
+            --gold-glow: 0 0 30px rgba(212, 175, 55, 0.3);
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --transition: 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.10);
+            --glass-dark: rgba(12, 15, 21, 0.92);
+            --glass-blur: blur(16px);
+            --radius: 16px;
+            --radius-lg: 24px;
+            --nav-height: 76px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #faf8f5; color: var(--gray-800);
+            overflow-x: hidden; min-height: 100vh;
+        }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; letter-spacing: -0.02em; }
+        h4, h5, h6 { font-family: 'Inter', sans-serif; }
+
+        .skip-link {
+            position: absolute; top: -100px; left: 16px; z-index: 9999;
+            background: var(--gold); color: #0c0f15; padding: 12px 24px;
+            border-radius: 0 0 var(--radius) var(--radius);
+            font-weight: 700; text-decoration: none; font-size: 0.9rem;
+            transition: top 0.2s ease;
+        }
+        .skip-link:focus { top: 0; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+
+        /* ===== HEADER ===== */
+        .nav-bar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1050;
+            background: var(--glass-dark); backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            transition: padding 0.3s ease, background 0.3s ease;
+        }
+        .nav-bar.shrunk { background: rgba(10, 13, 18, 0.97); border-bottom-color: rgba(212, 175, 55, 0.25); }
+        .nav-bar.shrunk .logo-img { height: 40px; }
+        .nav-bar.shrunk .header-container { padding-top: 6px; padding-bottom: 6px; }
+        .header-container {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 1.5rem; max-width: 1280px; margin: 0 auto;
+            transition: padding 0.3s ease;
+        }
+        .header-left { display: flex; align-items: center; gap: 8px; }
+        .mobile-toggle {
+            background: rgba(255,255,255,0.06); border: none; font-size: 1.4rem;
+            width: 44px; height: 44px; border-radius: 12px; color: var(--gold);
+            cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .mobile-toggle:hover { background: var(--gold); color: #0c0f15; }
+        .header-center { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; }
+        .logo-img {
+            height: 56px; width: auto; object-fit: contain; display: block;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); transition: height 0.3s ease;
+        }
+        .desktop-nav-links {
+            display: none; list-style: none; gap: 4px; align-items: center;
+        }
+        .desktop-nav-links a {
+            color: #c8cdd5; text-decoration: none; font-size: 0.82rem;
+            font-weight: 500; padding: 8px 14px; border-radius: 10px;
+            transition: var(--transition); font-family: 'Inter', sans-serif; white-space: nowrap;
+        }
+        .desktop-nav-links a:hover { color: white; background: rgba(255,255,255,0.06); }
+        .desktop-nav-links a.active { color: var(--gold); }
+        .header-right { display: flex; align-items: center; gap: 8px; }
+        .search-toggle, .header-icon {
+            position: relative; font-size: 1.25rem; color: #eef2f5; cursor: pointer;
+            transition: var(--transition); background: rgba(255,255,255,0.06);
+            width: 44px; height: 44px; display: flex; align-items: center;
+            justify-content: center; border-radius: 12px; border: none; text-decoration: none;
+        }
+        .search-toggle:hover, .header-icon:hover { background: var(--gold); color: #0c0f15; }
+        .nav-badge {
+            position: absolute; top: -4px; right: -4px; background: var(--gold);
+            color: #0c0f15; font-size: 0.65rem; font-weight: 800;
+            min-width: 18px; height: 18px; border-radius: 30px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .search-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(12,15,21,0.92); backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1100; display: none; flex-direction: column; align-items: center;
+            padding-top: 100px; overflow-y: auto;
+        }
+        .search-overlay.active { display: flex; }
+        .search-box { width: 92%; max-width: 640px; position: relative; }
+        .search-box input {
+            width: 100%; padding: 18px 56px 18px 50px; font-size: 1.1rem;
+            border: 2px solid rgba(212,175,55,0.3); border-radius: 50px;
+            background: rgba(15,18,25,0.95); color: white; outline: none;
+            font-family: 'Inter', sans-serif; transition: border-color 0.3s ease;
+        }
+        .search-box input:focus { border-color: var(--gold); }
+        .search-box input::placeholder { color: #64748b; }
+        .search-box .search-icon-input { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 1.1rem; pointer-events: none; }
+        .search-box .search-close { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer; padding: 4px; transition: var(--transition); }
+        .search-box .search-close:hover { color: var(--gold); }
+        .search-results-container { width: 92%; max-width: 640px; margin-top: 16px; padding-bottom: 60px; }
+        .search-status { color: #94a3b8; font-size: 0.85rem; padding: 8px 4px; }
+        .search-results-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .search-result-item {
+            display: flex; gap: 14px; padding: 14px; background: rgba(30,35,48,0.9);
+            border-radius: 14px; cursor: pointer; transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.05); text-decoration: none; align-items: center;
+        }
+        .search-result-item:hover { background: rgba(45,50,65,0.95); border-color: rgba(212,175,55,0.3); }
+        .search-result-img { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+        .search-result-info { flex: 1; min-width: 0; }
+        .search-result-name { font-size: 0.9rem; font-weight: 600; color: #f1f5f9; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .search-result-category { font-size: 0.72rem; color: var(--gold); background: rgba(212,175,55,0.12); padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .search-result-price { font-size: 0.85rem; font-weight: 700; color: var(--gold-dark); }
+        .search-empty { text-align: center; padding: 40px 20px; color: #64748b; }
+        .search-empty i { font-size: 2.5rem; display: block; margin-bottom: 12px; opacity: 0.4; }
+        .search-empty p { font-size: 0.9rem; margin-bottom: 4px; }
+        @media (min-width: 640px) { .search-results-grid { grid-template-columns: 1fr 1fr; } }
+
+        /* Mobile Nav */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 1060; display: none; cursor: pointer;
+        }
+        .overlay.active { display: block; }
+        .mobile-nav {
+            position: fixed; top: 0; left: -100%; width: 85%; max-width: 360px;
+            height: 100vh; height: 100dvh;
+            background: rgba(15, 18, 25, 0.97); backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            z-index: 1070; transition: left 0.4s ease;
+            padding: 28px 20px; border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+            overflow-y: auto;
+        }
+        .mobile-nav.active { left: 0; }
+        .mobile-nav-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 32px; padding-bottom: 16px;
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+        }
+        .mobile-nav-header .logo-img { height: 44px; }
+        .close-nav {
+            background: rgba(255,255,255,0.06); border: none; font-size: 1.4rem;
+            width: 44px; height: 44px; border-radius: 12px; color: var(--gold);
+            cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .close-nav:hover { background: var(--gold); color: #0c0f15; }
+        .mobile-nav-links { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .mobile-nav-links li a {
+            display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+            background: rgba(255,255,255,0.03); border-radius: 14px;
+            font-weight: 500; color: #f0f3f8; text-decoration: none;
+            transition: var(--transition); font-size: 0.95rem;
+        }
+        .mobile-nav-links li a i { font-size: 1.2rem; color: var(--gold); }
+        .mobile-nav-links li a:hover { background: var(--gold); color: #0c0f15; transform: translateX(6px); }
+        .mobile-nav-links li a:hover i { color: #0c0f15; }
+        .mobile-nav-links li a.active { background: rgba(212,175,55,0.15); color: var(--gold); }
+
+        /* Back to top */
+        .back-to-top {
+            position: fixed; bottom: 24px; right: 24px; z-index: 1030;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--gold); color: #0c0f15; border: none;
+            font-size: 1.3rem; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            box-shadow: 0 4px 16px rgba(212,175,55,0.3);
+            opacity: 0; transform: translateY(20px); pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .back-to-top:hover { transform: translateY(-3px); box-shadow: var(--gold-glow); }
+
+        /* Scroll reveal */
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* ===== SILHOUETTE FOOTER ===== */
+        .silhouette-footer { position: relative; background: #05070a; color: #eef2f5; padding: 80px 0 0; overflow: hidden; }
+        .footer-skyline { position: absolute; bottom: 0; left: 0; right: 0; height: 120px; pointer-events: none; z-index: 0; }
+        .footer-grid { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1.2fr; gap: 2.5rem; max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 1; }
+        .footer-brand p { color: #94a3b8; font-size: 0.85rem; line-height: 1.7; margin-top: 12px; }
+        .footer-logo-img { height: 56px; width: auto; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.9; }
+        .social-links { display: flex; gap: 10px; margin-top: 20px; }
+        .social-links a { background: rgba(255,255,255,0.06); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 1.2rem; transition: var(--transition); text-decoration: none; }
+        .social-links a:hover { background: var(--gold); color: #0c0f15; transform: translateY(-2px); }
+        .footer-col h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 16px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { color: #94a3b8; text-decoration: none; font-size: 0.85rem; transition: var(--transition); }
+        .footer-links a:hover { color: white; padding-left: 4px; }
+        .footer-links li.contact-item { display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 0.85rem; }
+        .footer-links li.contact-item i { color: var(--gold); font-size: 1rem; }
+        .payment-methods { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+        .payment-icon { background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 8px; font-size: 0.72rem; font-weight: 600; color: #94a3b8; border: 1px solid rgba(255,255,255,0.06); transition: var(--transition); }
+        .payment-icon:hover { border-color: rgba(212,175,55,0.3); }
+        .footer-bottom { margin-top: 48px; padding: 24px 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); position: relative; z-index: 1; }
+        .footer-bottom-inner { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .copyright { font-size: 0.75rem; color: #64748b; }
+        .footer-bottom-links { display: flex; gap: 20px; list-style: none; }
+        .footer-bottom-links a { color: #64748b; text-decoration: none; font-size: 0.75rem; transition: var(--transition); }
+        .footer-bottom-links a:hover { color: var(--gold); }
+
+        /* ===== CONTACT PAGE SPECIFIC ===== */
+        .contact-hero {
+            background: linear-gradient(135deg, #0a0d12 0%, #151a25 100%);
+            padding: 140px 0 80px; text-align: center; position: relative; overflow: hidden;
+        }
+        .contact-hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(212,175,55,0.08), transparent);
+            pointer-events: none;
+        }
+        .contact-hero h1 {
+            font-size: clamp(2rem, 4vw, 3rem); color: white; margin-bottom: 0.75rem;
+        }
+        .contact-hero p {
+            color: #94a3b8; font-size: 1.05rem; max-width: 520px; margin: 0 auto;
+        }
+        .contact-hero .accent-line {
+            width: 48px; height: 3px; background: var(--gold); margin: 16px auto 0; border-radius: 2px;
+        }
+
+        .contact-main { padding: 80px 0; }
+        .contact-grid {
+            display: grid; grid-template-columns: 1fr 1.2fr; gap: 3rem; align-items: start;
+        }
+        @media (max-width: 1024px) { .contact-grid { grid-template-columns: 1fr; gap: 2.5rem; } }
+
+        /* Contact info cards */
+        .contact-info-section { display: flex; flex-direction: column; gap: 1.5rem; }
+        .contact-info-card {
+            background: white; border-radius: var(--radius);
+            padding: 1.5rem; border: 1px solid var(--gray-100);
+            display: flex; gap: 1rem; align-items: flex-start;
+            transition: var(--transition); box-shadow: var(--shadow);
+        }
+        .contact-info-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .contact-info-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: var(--gold-light); display: flex;
+            align-items: center; justify-content: center;
+            color: var(--gold-dark); font-size: 1.3rem; flex-shrink: 0;
+        }
+        .contact-info-text { flex: 1; }
+        .contact-info-text h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; font-family: 'Inter', sans-serif; }
+        .contact-info-text p { font-size: 0.85rem; color: var(--gray-500); line-height: 1.6; }
+        .contact-info-text a {
+            color: var(--gold-dark); text-decoration: none; font-weight: 600;
+            transition: var(--transition);
+        }
+        .contact-info-text a:hover { color: var(--gold); }
+        .contact-info-text .timing { font-size: 0.8rem; color: var(--gray-400); margin-top: 2px; }
+
+        /* Social section */
+        .contact-social-section {
+            background: white; border-radius: var(--radius);
+            padding: 1.5rem; border: 1px solid var(--gray-100);
+            box-shadow: var(--shadow);
+        }
+        .contact-social-section h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; font-family: 'Inter', sans-serif; }
+        .contact-social-grid {
+            display: flex; gap: 0.75rem; flex-wrap: wrap;
+        }
+        .contact-social-link {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 18px; background: var(--gray-50); border-radius: 12px;
+            text-decoration: none; color: var(--gray-700); font-size: 0.85rem; font-weight: 500;
+            border: 1px solid var(--gray-100); transition: var(--transition);
+        }
+        .contact-social-link i { font-size: 1.1rem; }
+        .contact-social-link:hover { background: var(--gold); color: #0c0f15; border-color: var(--gold); transform: translateY(-2px); }
+
+        /* Map placeholder */
+        .contact-map-section {
+            background: var(--gray-100); border-radius: var(--radius);
+            height: 200px; display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--gray-200); overflow: hidden;
+        }
+        .contact-map-placeholder {
+            text-align: center; color: var(--gray-500);
+        }
+        .contact-map-placeholder i { font-size: 2rem; display: block; margin-bottom: 8px; opacity: 0.5; }
+
+        /* Contact form */
+        .contact-form-section {
+            background: white; border-radius: var(--radius-lg);
+            padding: 2.5rem; border: 1px solid var(--gray-100);
+            box-shadow: var(--shadow-lg);
+        }
+        .contact-form-section h2 {
+            font-size: 1.5rem; margin-bottom: 0.5rem;
+        }
+        .contact-form-section .form-subtitle {
+            color: var(--gray-500); font-size: 0.9rem; margin-bottom: 1.5rem;
+        }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label {
+            display: block; font-size: 0.8rem; font-weight: 600;
+            color: var(--gray-700); margin-bottom: 6px;
+        }
+        .form-group label .required { color: #dc2626; }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%; padding: 12px 16px; font-size: 0.9rem;
+            border: 1px solid var(--gray-200); border-radius: 12px;
+            outline: none; transition: var(--transition);
+            font-family: 'Inter', sans-serif; background: var(--gray-50);
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-light); background: white;
+        }
+        .form-group textarea { resize: vertical; min-height: 120px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+        .btn-submit {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 36px; background: linear-gradient(135deg, var(--gold), #c4a030);
+            color: #0c0f15; border: none; border-radius: 50px;
+            font-weight: 700; font-size: 0.95rem; cursor: pointer;
+            transition: var(--transition); font-family: 'Inter', sans-serif;
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: var(--gold-glow); }
+        .btn-submit:disabled {
+            opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none;
+        }
+        .form-success {
+            display: none; background: #f0fdf4; border: 1px solid #22c55e;
+            border-radius: var(--radius); padding: 1.5rem; text-align: center;
+            color: #166534; font-weight: 500;
+        }
+        .form-success i { font-size: 2rem; display: block; margin-bottom: 8px; color: #22c55e; }
+        .form-error {
+            color: #dc2626; font-size: 0.8rem; margin-top: 4px; display: none;
+        }
+
+        /* FAQ mini section */
+        .contact-faq { margin-top: 3rem; }
+        .contact-faq h3 {
+            font-size: 1.3rem; margin-bottom: 1.5rem; text-align: center;
+        }
+        .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media (max-width: 768px) { .faq-grid { grid-template-columns: 1fr; } }
+        .faq-item {
+            background: white; border-radius: var(--radius);
+            padding: 1.25rem; border: 1px solid var(--gray-100);
+            transition: var(--transition); cursor: pointer;
+        }
+        .faq-item:hover { border-color: var(--gold); }
+        .faq-question {
+            font-weight: 600; font-size: 0.9rem; display: flex;
+            justify-content: space-between; align-items: center; gap: 8px;
+        }
+        .faq-question i { color: var(--gold); font-size: 0.85rem; transition: transform 0.3s ease; flex-shrink: 0; }
+        .faq-item.open .faq-question i { transform: rotate(180deg); }
+        .faq-answer {
+            font-size: 0.82rem; color: var(--gray-500); line-height: 1.6;
+            margin-top: 0; max-height: 0; overflow: hidden;
+            transition: max-height 0.3s ease, margin-top 0.3s ease;
+        }
+        .faq-item.open .faq-answer { max-height: 200px; margin-top: 10px; }
+
+        @media (min-width: 1025px) { .mobile-toggle { display: none; } .desktop-nav-links { display: flex; } }
+        @media (max-width: 768px) {
+            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .footer-bottom-inner { flex-direction: column; text-align: center; }
+            .contact-form-section { padding: 1.5rem; }
+            .contact-hero { padding: 120px 0 60px; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- ===== HEADER ===== -->
+    <nav class="nav-bar" id="navBar">
+        <div class="header-container">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle" aria-label="Open navigation menu">
+                    <i class="icon-menu"></i>
+                </button>
+                <ul class="desktop-nav-links">
+                    <li><a href="mensfootwear.html">Men</a></li>
+                    <li><a href="womensfootwear.html">Women</a></li>
+                    <li><a href="bags.html">Bags</a></li>
+                    <li><a href="accessories.html">Accessories</a></li>
+                    <li><a href="household.html">Home</a></li>
+                    <li><a href="kids.html">Kids</a></li>
+                </ul>
+            </div>
+            <div class="header-center">
+                <a href="index.html" aria-label="JMPOTTERS Home">
+                    <img src="assets/logos/logo1.png" alt="JMPOTTERS" class="logo-img" width="56" height="56">
+                </a>
+            </div>
+            <div class="header-right">
+                <button class="search-toggle" id="searchToggle" aria-label="Search products">
+                    <i class="icon-search"></i>
+                </button>
+                <a href="cart.html" class="header-icon" id="cartIcon" aria-label="Shopping cart">
+                    <i class="icon-shopping-bag"></i>
+                    <span class="nav-badge" id="cartCount" style="display:none">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-box">
+            <i class="icon-search search-icon-input"></i>
+            <input type="text" id="searchInput" placeholder="Search products, categories..." autocomplete="off" aria-label="Search">
+            <button class="search-close" id="searchClose" aria-label="Close search"><i class="icon-x"></i></button>
+        </div>
+        <div class="search-results-container" id="searchResultsContainer"></div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="overlay" id="navOverlay" role="presentation"></div>
+    <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+        <div class="mobile-nav-header">
+            <img src="assets/logos/logo1.png" alt="JMPOTTERS" class="logo-img" width="44" height="44">
+            <button class="close-nav" id="closeNavBtn" aria-label="Close navigation">
+                <i class="icon-x"></i>
+            </button>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="index.html"><i class="icon-house"></i> Home</a></li>
+            <li><a href="mensfootwear.html"><i class="icon-footprints"></i> Men's Footwear</a></li>
+            <li><a href="womensfootwear.html"><i class="icon-sparkles"></i> Women's Footwear</a></li>
+            <li><a href="bags.html"><i class="icon-briefcase"></i> Bags</a></li>
+            <li><a href="accessories.html"><i class="icon-gem"></i> Accessories</a></li>
+            <li><a href="household.html"><i class="icon-lamp"></i> Household</a></li>
+            <li><a href="kids.html"><i class="icon-baby"></i> Kids & Babies</a></li>
+            <li><a href="healthcare.html"><i class="icon-heart-pulse"></i> Healthcare</a></li>
+            <li><a href="contact.html" class="active"><i class="icon-phone"></i> Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main id="main-content">
+
+        <!-- Hero -->
+        <section class="contact-hero">
+            <div class="container">
+                <h1>Get in Touch</h1>
+                <p>We'd love to hear from you. Reach out with questions, feedback, or collaboration ideas.</p>
+                <div class="accent-line"></div>
+            </div>
+        </section>
+
+        <!-- Contact main -->
+        <section class="contact-main">
+            <div class="container">
+                <div class="contact-grid">
+
+                    <!-- Left: Contact Info -->
+                    <div class="contact-info-section reveal">
+
+                        <div class="contact-info-card">
+                            <div class="contact-info-icon"><i class="icon-phone"></i></div>
+                            <div class="contact-info-text">
+                                <h3>Call Us</h3>
+                                <p><a href="tel:+2348139583320">+234 813 958 3320</a></p>
+                                <p class="timing">Mon - Sat, 9am - 7pm (WAT)</p>
+                            </div>
+                        </div>
+
+                        <div class="contact-info-card">
+                            <div class="contact-info-icon"><i class="icon-mail"></i></div>
+                            <div class="contact-info-text">
+                                <h3>Email Us</h3>
+                                <p><a href="mailto:hello@jmpotters.com">hello@jmpotters.com</a></p>
+                                <p class="timing">We respond within 24 hours</p>
+                            </div>
+                        </div>
+
+                        <div class="contact-info-card">
+                            <div class="contact-info-icon"><i class="icon-map-pin"></i></div>
+                            <div class="contact-info-text">
+                                <h3>Location</h3>
+                                <p>Lagos, Nigeria</p>
+                                <p class="timing">Nationwide delivery available</p>
+                            </div>
+                        </div>
+
+                        <div class="contact-info-card">
+                            <div class="contact-info-icon"><i class="icon-clock"></i></div>
+                            <div class="contact-info-text">
+                                <h3>Business Hours</h3>
+                                <p>Monday - Saturday: 9:00 AM - 7:00 PM</p>
+                                <p class="timing">Sunday: Closed</p>
+                            </div>
+                        </div>
+
+                        <!-- Social section -->
+                        <div class="contact-social-section">
+                            <h3>Follow Us</h3>
+                            <div class="contact-social-grid">
+                                <a href="#" class="contact-social-link" aria-label="WhatsApp"><i class="icon-message-circle" style="color:#25D366"></i> WhatsApp</a>
+                                <a href="#" class="contact-social-link" aria-label="Instagram"><i class="icon-instagram" style="color:#E4405F"></i> Instagram</a>
+                                <a href="#" class="contact-social-link" aria-label="Facebook"><i class="icon-facebook" style="color:#1877F2"></i> Facebook</a>
+                                <a href="#" class="contact-social-link" aria-label="Twitter"><i class="icon-twitter" style="color:#1DA1F2"></i> Twitter</a>
+                            </div>
+                        </div>
+
+                        <!-- Map -->
+                        <div class="contact-map-section">
+                            <div class="contact-map-placeholder">
+                                <i class="icon-map-pin"></i>
+                                <p><strong>Lagos, Nigeria</strong></p>
+                                <p style="font-size:0.8rem;margin-top:4px;">Serving customers nationwide</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right: Contact Form -->
+                    <div class="contact-form-section reveal">
+                        <h2>Send Us a Message</h2>
+                        <p class="form-subtitle">Fill in the form below and we'll get back to you as soon as possible.</p>
+
+                        <div class="form-success" id="formSuccess">
+                            <i class="icon-circle-check"></i>
+                            Thank you! Your message has been sent successfully. We'll get back to you within 24 hours.
+                        </div>
+
+                        <form id="contactForm" novalidate>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="contactName">Full Name <span class="required">*</span></label>
+                                    <input type="text" id="contactName" name="name" required placeholder="Your full name">
+                                    <div class="form-error" id="nameError">Please enter your name</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactEmail">Email Address <span class="required">*</span></label>
+                                    <input type="email" id="contactEmail" name="email" required placeholder="you@example.com">
+                                    <div class="form-error" id="emailError">Please enter a valid email</div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="contactPhone">Phone Number</label>
+                                    <input type="tel" id="contactPhone" name="phone" placeholder="+234 800 000 0000">
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactSubject">Subject <span class="required">*</span></label>
+                                    <select id="contactSubject" name="subject" required>
+                                        <option value="">Select a subject</option>
+                                        <option value="Order Inquiry">Order Inquiry</option>
+                                        <option value="Product Question">Product Question</option>
+                                        <option value="Delivery & Shipping">Delivery & Shipping</option>
+                                        <option value="Returns & Refunds">Returns & Refunds</option>
+                                        <option value="Wholesale / Bulk">Wholesale / Bulk</option>
+                                        <option value="Partnership">Partnership</option>
+                                        <option value="Feedback">Feedback</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <div class="form-error" id="subjectError">Please select a subject</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="contactMessage">Message <span class="required">*</span></label>
+                                <textarea id="contactMessage" name="message" required placeholder="Tell us how we can help you..."></textarea>
+                                <div class="form-error" id="messageError">Please enter your message</div>
+                            </div>
+                            <button type="submit" class="btn-submit" id="contactSubmitBtn">
+                                <i class="icon-send"></i> Send Message
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
+                <!-- FAQ Section -->
+                <div class="contact-faq reveal" style="margin-top:4rem;">
+                    <h3>Frequently Asked Questions</h3>
+                    <div class="faq-grid">
+                        <div class="faq-item open">
+                            <div class="faq-question">How do I track my order? <i class="icon-chevron-down"></i></div>
+                            <div class="faq-answer">Once your order is dispatched, you'll receive a tracking link via email and SMS. You can also check your order status in your account dashboard under "My Orders."</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">What is your return policy? <i class="icon-chevron-down"></i></div>
+                            <div class="faq-answer">We accept returns within 7 days of delivery for unworn, unused items in their original packaging. Footwear must be tried on indoors only. Contact us to initiate a return.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">How long does delivery take? <i class="icon-chevron-down"></i></div>
+                            <div class="faq-answer">Delivery within Lagos typically takes 1-3 business days. For interstate orders (across Nigeria), delivery takes 3-7 business days depending on your location.</div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question">Do you offer international shipping? <i class="icon-chevron-down"></i></div>
+                            <div class="faq-answer">Currently, we only ship within Nigeria. We're working on expanding internationally — stay tuned!</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== SILHOUETTE FOOTER ===== -->
+    <footer class="silhouette-footer">
+        <svg class="footer-skyline" viewBox="0 0 1440 120" preserveAspectRatio="none" fill="rgba(212,175,55,0.04)">
+            <path d="M0,120 L0,80 L60,80 L60,50 L80,50 L80,35 L100,35 L100,50 L120,50 L120,80 L200,80 L200,60 L220,60 L220,40 L240,40 L240,20 L260,20 L260,40 L280,40 L280,60 L300,60 L300,80 L400,80 L400,55 L420,55 L420,30 L440,30 L440,10 L460,10 L460,30 L480,30 L480,55 L500,55 L500,80 L580,80 L580,65 L600,65 L600,45 L620,45 L620,65 L640,65 L640,80 L720,80 L720,50 L740,50 L740,25 L760,25 L760,50 L780,50 L780,80 L860,80 L860,70 L880,70 L880,40 L900,40 L900,15 L920,15 L920,40 L940,40 L940,70 L960,70 L960,80 L1040,80 L1040,55 L1060,55 L1060,35 L1080,35 L1080,55 L1100,55 L1100,80 L1180,80 L1180,60 L1200,60 L1200,30 L1220,30 L1220,60 L1240,60 L1240,80 L1320,80 L1320,70 L1340,70 L1340,45 L1360,45 L1360,70 L1380,70 L1380,80 L1440,80 L1440,120 Z" />
+        </svg>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <img src="assets/logos/logo1.png" alt="JMPOTTERS" class="footer-logo-img" width="56" height="56">
+                <p>Premium fashion and lifestyle products for the modern individual. Quality you can trust, style you'll love.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="WhatsApp"><i class="icon-message-circle"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="icon-instagram"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="icon-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="icon-twitter"></i></a>
+                </div>
+                <div class="payment-methods">
+                    <span class="payment-icon"><i class="icon-credit-card" style="font-size:0.9rem;vertical-align:middle;margin-right:4px"></i> Visa</span>
+                    <span class="payment-icon"><i class="icon-credit-card" style="font-size:0.9rem;vertical-align:middle;margin-right:4px"></i> Mastercard</span>
+                    <span class="payment-icon"><i class="icon-banknote" style="font-size:0.9rem;vertical-align:middle;margin-right:4px"></i> Transfer</span>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Shop</h4>
+                <ul class="footer-links">
+                    <li><a href="mensfootwear.html">Men's Footwear</a></li>
+                    <li><a href="womensfootwear.html">Women's Footwear</a></li>
+                    <li><a href="bags.html">Bags</a></li>
+                    <li><a href="accessories.html">Accessories</a></li>
+                    <li><a href="household.html">Household</a></li>
+                    <li><a href="kids.html">Kids & Babies</a></li>
+                    <li><a href="healthcare.html">Healthcare</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Company</h4>
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="#">Shipping Policy</a></li>
+                    <li><a href="#">Returns & Refunds</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Get in Touch</h4>
+                <ul class="footer-links">
+                    <li class="contact-item"><i class="icon-phone"></i> +234 813 958 3320</li>
+                    <li class="contact-item"><i class="icon-mail"></i> hello@jmpotters.com</li>
+                    <li class="contact-item"><i class="icon-map-pin"></i> Lagos, Nigeria</li>
+                    <li class="contact-item"><i class="icon-clock"></i> Mon-Sat, 9am - 7pm</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-inner">
+                <div class="copyright">&copy; 2025 JMPOTTERS. All rights reserved.</div>
+                <ul class="footer-bottom-links">
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to top -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="icon-arrow-up"></i></button>
+
+    <script src="app.js" defer></script>
+    <script src="account-auth.js" defer></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var SUPABASE_URL = 'https://tmpggeeuwdvlngvfncaa.supabase.co';
+        var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtcGdnZWV1d2R2bG5ndmZuY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTc0MDYsImV4cCI6MjA3Nzc3MzQwNn0.EKzkKWmzYMvQuN11vEjRTDHrUbh6dYXk7clxVsYQ0b4';
+        var supabase = null;
+        try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) {}
+
+        function escapeHtml(t) { if (!t) return ''; var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+        // Mobile Nav
+        var mobileToggle = document.getElementById('mobileToggle');
+        var mobileNav = document.getElementById('mobileNav');
+        var navOverlay = document.getElementById('navOverlay');
+        var closeNavBtn = document.getElementById('closeNavBtn');
+        function openNav() { mobileNav.classList.add('active'); navOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeNav() { mobileNav.classList.remove('active'); navOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+        if (mobileToggle) mobileToggle.addEventListener('click', openNav);
+        if (closeNavBtn) closeNavBtn.addEventListener('click', closeNav);
+        if (navOverlay) navOverlay.addEventListener('click', closeNav);
+
+        // Search
+        var searchToggle = document.getElementById('searchToggle');
+        var searchOverlay = document.getElementById('searchOverlay');
+        var searchClose = document.getElementById('searchClose');
+        var searchInput = document.getElementById('searchInput');
+        var searchResultsContainer = document.getElementById('searchResultsContainer');
+        var searchDebounceTimer = null, searchCache = {};
+        function openSearch() { searchOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; setTimeout(function() { searchInput.focus(); }, 100); }
+        function closeSearch() { searchOverlay.classList.remove('active'); document.body.style.overflow = ''; searchInput.value = ''; if (searchResultsContainer) searchResultsContainer.innerHTML = ''; }
+        if (searchToggle) searchToggle.addEventListener('click', openSearch);
+        if (searchClose) searchClose.addEventListener('click', closeSearch);
+        if (searchOverlay) searchOverlay.addEventListener('click', function(e) { if (e.target === searchOverlay) closeSearch(); });
+
+        function highlightMatch(text, query) { if (!query) return escapeHtml(text); var escaped = escapeHtml(text); var regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&') + ')', 'gi'); return escaped.replace(regex, '<mark>$1</mark>'); }
+
+        async function performSearch(query) {
+            if (!searchResultsContainer) return;
+            if (!query || query.length < 2) { searchResultsContainer.innerHTML = ''; return; }
+            if (searchCache[query.toLowerCase()]) { renderSearchResults(searchCache[query.toLowerCase()], query); return; }
+            searchResultsContainer.innerHTML = '<div class="search-status"><i class="icon-loader" style="animation:spin 1s linear infinite;display:inline-block"></i> Searching...</div>';
+            try {
+                var sb = supabase || (window.JMPOTTERS && window.JMPOTTERS.getSupabaseClient ? window.JMPOTTERS.getSupabaseClient() : null);
+                if (!sb) { searchResultsContainer.innerHTML = '<div class="search-empty"><i class="icon-alert-circle"></i><p>Search unavailable</p></div>'; return; }
+                var terms = query.toLowerCase().split(/\\s+/).filter(function(t) { return t.length > 0; });
+                var { data: products, error } = await sb.from('products').select('id, name, slug, price, image_url, description, category_id, is_active, categories(name, slug)').eq('is_active', true).order('name');
+                if (error) throw error;
+                var results = (products || []).filter(function(p) {
+                    var searchable = [(p.name || '').toLowerCase(), (p.slug || '').toLowerCase(), (p.description || '').toLowerCase(), (p.categories && p.categories.name ? p.categories.name.toLowerCase() : ''), (p.categories && p.categories.slug ? p.categories.slug.toLowerCase() : '')].join(' ');
+                    return terms.every(function(term) { return searchable.indexOf(term) !== -1; });
+                });
+                searchCache[query.toLowerCase()] = results;
+                renderSearchResults(results, query);
+            } catch(err) { searchResultsContainer.innerHTML = '<div class="search-empty"><i class="icon-alert-circle"></i><p>Search unavailable</p></div>'; }
+        }
+        function renderSearchResults(results, query) {
+            if (!searchResultsContainer) return;
+            if (results.length === 0) { searchResultsContainer.innerHTML = '<div class="search-empty"><i class="icon-search"></i><p>No products found for "' + escapeHtml(query) + '"</p></div>'; return; }
+            var html = '<div class="search-status">' + results.length + ' product' + (results.length !== 1 ? 's' : '') + ' found</div><div class="search-results-grid">';
+            results.slice(0, 20).forEach(function(p) {
+                var catName = p.categories && p.categories.name ? p.categories.name : '';
+                var imgUrl = p.image_url ? (p.image_url.startsWith('http') ? p.image_url : 'https://ebuzome.github.io/JMPOTTERS/assets/images/' + p.image_url) : 'https://via.placeholder.com/400x400?text=JMPOTTERS';
+                html += '<a href="product.html?slug=' + encodeURIComponent(p.slug || p.id) + '" class="search-result-item"><img class="search-result-img" src="' + imgUrl + '" alt="' + escapeHtml(p.name) + '" loading="lazy"><div class="search-result-info">' + (catName ? '<span class="search-result-category">' + escapeHtml(catName) + '</span>' : '') + '<div class="search-result-name">' + highlightMatch(p.name || '', query) + '</div><div class="search-result-price">₦' + (p.price || 0).toLocaleString() + '</div></div></a>';
+            });
+            html += '</div>';
+            searchResultsContainer.innerHTML = html;
+        }
+        if (searchInput) {
+            searchInput.addEventListener('input', function() { var q = searchInput.value.trim(); clearTimeout(searchDebounceTimer); searchDebounceTimer = setTimeout(function() { performSearch(q); }, 300); });
+            searchInput.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeSearch(); });
+        }
+
+        // Nav shrink
+        var navBar = document.getElementById('navBar');
+        window.addEventListener('scroll', function() { if ((window.scrollY || window.pageYOffset) > 80) navBar.classList.add('shrunk'); else navBar.classList.remove('shrunk'); }, { passive: true });
+
+        // Cart count
+        function updateCartCount() {
+            var cart = JSON.parse(localStorage.getItem('jmpotters_cart')) || [];
+            var total = cart.reduce(function(s,i){ return s + i.quantity; }, 0);
+            var el = document.getElementById('cartCount');
+            if (el) { el.textContent = total; el.style.display = total > 0 ? 'flex' : 'none'; }
+        }
+        updateCartCount();
+
+        // Back to top
+        var backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', function() { if ((window.scrollY || window.pageYOffset) > 500) backToTop.classList.add('visible'); else backToTop.classList.remove('visible'); }, { passive: true });
+        if (backToTop) backToTop.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+        // Scroll reveal
+        var reveals = document.querySelectorAll('.reveal');
+        var revealObserver = new IntersectionObserver(function(entries) { entries.forEach(function(entry) { if (entry.isIntersecting) { entry.target.classList.add('visible'); revealObserver.unobserve(entry.target); } }); }, { threshold: 0.1 });
+        reveals.forEach(function(el) { revealObserver.observe(el); });
+
+        // FAQ accordion
+        document.querySelectorAll('.faq-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                this.classList.toggle('open');
+            });
+        });
+
+        // Contact form handling
+        var contactForm = document.getElementById('contactForm');
+        if (contactForm) {
+            contactForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                var isValid = true;
+
+                // Validate fields
+                var name = document.getElementById('contactName').value.trim();
+                var email = document.getElementById('contactEmail').value.trim();
+                var subject = document.getElementById('contactSubject').value;
+                var message = document.getElementById('contactMessage').value.trim();
+
+                document.getElementById('nameError').style.display = name ? 'none' : 'block';
+                if (!name) isValid = false;
+
+                var emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+                document.getElementById('emailError').style.display = emailRegex.test(email) ? 'none' : 'block';
+                if (!emailRegex.test(email)) isValid = false;
+
+                document.getElementById('subjectError').style.display = subject ? 'none' : 'block';
+                if (!subject) isValid = false;
+
+                document.getElementById('messageError').style.display = message ? 'none' : 'block';
+                if (!message) isValid = false;
+
+                if (!isValid) return;
+
+                var submitBtn = document.getElementById('contactSubmitBtn');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="icon-loader" style="animation:spin 1s linear infinite"></i> Sending...';
+
+                try {
+                    if (supabase) {
+                        // Store in Supabase contact_submissions table
+                        var phone = document.getElementById('contactPhone').value.trim();
+                        var { error } = await supabase
+                            .from('contact_submissions')
+                            .insert({
+                                name: name,
+                                email: email,
+                                phone: phone || null,
+                                subject: subject,
+                                message: message,
+                                created_at: new Date().toISOString()
+                            });
+                        if (error) console.error('Supabase insert error:', error);
+                    } else {
+                        // Fallback: log to console
+                        console.log('Contact form submission (no Supabase):', { name, email, subject, message });
+                    }
+
+                    // Show success
+                    document.getElementById('formSuccess').style.display = 'block';
+                    contactForm.style.display = 'none';
+                } catch(err) {
+                    console.error('Contact form error:', err);
+                    showNotification('Failed to send message. Please try again.', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+
+        // ESC handler
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeNav(); closeSearch(); } });
+    });
+    </script>
+
+</body>
+</html>
