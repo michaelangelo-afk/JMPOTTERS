@@ -368,6 +368,59 @@
         .dark-mode .status-option:hover{background:var(--dark-surface-2)}
         ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--gray-100);border-radius:3px}.dark-mode ::-webkit-scrollbar-track{background:var(--dark-surface-2)}::-webkit-scrollbar-thumb{background:var(--gray-400);border-radius:3px}.dark-mode ::-webkit-scrollbar-thumb{background:var(--gray-600)}
     </style>
+    <style>
+        /* ===== Multi-media gallery (admin) ===== */
+        .media-gallery-section{background:linear-gradient(135deg,rgba(99,102,241,0.04),rgba(129,140,248,0.02));border:1px solid rgba(99,102,241,0.15);border-radius:var(--radius-lg);padding:var(--space-3);margin-top:var(--space-2)}
+        .dark-mode .media-gallery-section{background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(129,140,248,0.05));border-color:rgba(129,140,248,0.25)}
+        .media-section-title{font-size:0.8125rem;font-weight:600;color:var(--gray-800);margin-bottom:var(--space-2);display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
+        .dark-mode .media-section-title{color:var(--dark-text)}
+        .media-section-count{font-size:0.6875rem;color:var(--gray-500);background:var(--gray-100);padding:0.1rem 0.5rem;border-radius:9999px;font-weight:500}
+        .dark-mode .media-section-count{background:var(--dark-surface-2);color:var(--dark-text-muted)}
+        .media-section-block{margin-bottom:var(--space-3)}
+        .media-section-block:last-child{margin-bottom:0}
+        .media-zone{border:2px dashed var(--gray-300);border-radius:var(--radius);padding:var(--space-3);background:var(--gray-50);cursor:pointer;text-align:center;transition:all var(--transition-fast);display:flex;align-items:center;justify-content:center;gap:0.5rem;min-height:60px;font-size:0.8125rem;color:var(--gray-600);font-weight:500}
+        .media-zone:hover{border-color:var(--primary-500);background:var(--primary-50);transform:translateY(-1px)}
+        .media-zone i{font-size:1.05rem;color:var(--primary-500)}
+        .dark-mode .media-zone{border-color:var(--dark-surface-2);background:var(--dark-surface);color:var(--dark-text-muted)}
+        .dark-mode .media-zone:hover{background:rgba(99,102,241,0.12)}
+        .media-thumbs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:var(--space-2);margin-top:var(--space-2)}
+        .media-thumb{background:white;border:1px solid var(--gray-200);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;transition:all var(--transition-fast);position:relative}
+        .media-thumb:hover{border-color:var(--primary-500);box-shadow:var(--shadow-md)}
+        .dark-mode .media-thumb{background:var(--dark-surface);border-color:var(--dark-surface-2)}
+        .media-thumb-inner{position:relative;aspect-ratio:1;background:var(--gray-100);overflow:hidden}
+        .dark-mode .media-thumb-inner{background:var(--dark-surface-2)}
+        .media-thumb-inner img,.media-thumb-inner video{width:100%;height:100%;object-fit:cover;display:block}
+        .media-thumb-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--primary-500);font-size:1.5rem}
+        .dark-mode .media-thumb-placeholder{color:var(--primary-400)}
+        .media-thumb-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to bottom,rgba(0,0,0,0.45) 0%,transparent 35%,transparent 65%,rgba(0,0,0,0.55) 100%);opacity:0;transition:opacity var(--transition-fast);display:flex;flex-direction:column;justify-content:space-between;padding:0.4rem;pointer-events:none}
+        .media-thumb:hover .media-thumb-overlay,.media-thumb:focus-within .media-thumb-overlay{opacity:1}
+        .media-thumb-overlay .media-action-row{display:flex;gap:4px;justify-content:flex-end;pointer-events:auto}
+        .media-thumb-overlay .media-action-row.bottom{justify-content:space-between}
+        .media-thumb-overlay .media-action{width:26px;height:26px;border-radius:var(--radius-sm);border:none;background:rgba(255,255,255,0.92);color:var(--gray-700);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;transition:all 0.15s ease}
+        .media-thumb-overlay .media-action:hover{transform:scale(1.08)}
+        .media-thumb-overlay .media-action:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+        .media-thumb-overlay .media-action.media-action-star:hover{background:#FBBF24;color:#92400E}
+        .media-thumb-overlay .media-action.media-action-up,.media-thumb-overlay .media-action.media-action-down:hover{background:var(--primary-500);color:white}
+        .media-thumb-overlay .media-action.media-action-remove{background:var(--danger-500);color:white}
+        .media-thumb-overlay .media-action.media-action-remove:hover{background:var(--danger-600)}
+        .media-status{position:absolute;top:0.4rem;left:0.4rem;padding:0.15rem 0.55rem;border-radius:9999px;font-size:0.65rem;font-weight:600;display:inline-flex;align-items:center;gap:0.25rem;z-index:5}
+        .media-status-uploading{background:rgba(99,102,241,0.9);color:white}
+        .media-status-error{background:rgba(239,68,68,0.95);color:white;left:auto;right:0.4rem;max-width:80%}
+        .media-status-saved{background:rgba(34,197,94,0.9);color:white}
+        .media-thumb-meta{padding:0.4rem;display:flex;flex-direction:column;gap:0.25rem;background:var(--gray-50)}
+        .dark-mode .media-thumb-meta{background:var(--dark-surface-2)}
+        .media-thumb-meta input{width:100%;border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:0.25rem 0.5rem;font-size:0.7rem;font-family:inherit;background:white;color:var(--gray-800)}
+        .dark-mode .media-thumb-meta input{background:var(--dark-surface);border-color:var(--dark-surface-2);color:var(--dark-text)}
+        .media-thumb-meta input:focus{outline:none;border-color:var(--primary-500)}
+        .media-meta-info{font-size:0.65rem;color:var(--gray-500);margin-top:0.25rem;display:flex;align-items:center;gap:0.3rem}
+        .dark-mode .media-meta-info{color:var(--dark-text-muted)}
+        .media-help{font-size:0.7rem;color:var(--gray-500);margin-bottom:var(--space-2);line-height:1.5}
+        .dark-mode .media-help{color:var(--dark-text-muted)}
+        .media-empty{grid-column:1/-1;text-align:center;padding:var(--space-3);color:var(--gray-400);font-size:0.775rem}
+        .dark-mode .media-empty{color:var(--gray-500)}
+        .media-saving-overlay{position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,var(--primary-600),var(--primary-700));color:white;padding:0.5rem 1rem;text-align:center;font-size:0.8125rem;z-index:99999;display:none;align-items:center;justify-content:center;gap:0.5rem;box-shadow:var(--shadow-md)}
+        .media-saving-overlay.show{display:flex}
+    </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -592,7 +645,7 @@
     </div></div></div>
 
     <!-- PRODUCT MODAL (unchanged) -->
-    <div class="modal-overlay" id="productModal"><div class="modal-content"><div class="modal-header"><h2 class="modal-title" id="modalTitle">Add Product</h2><button class="modal-close" onclick="AdminDashboard.closeModal()"><i class="fas fa-times"></i></button></div><div class="modal-body"><form id="productForm" onsubmit="return AdminDashboard.saveProduct(event)"><input type="hidden" id="productId"><input type="hidden" id="isFootwear"><div class="mb-4"><h3 class="section-title-sm mb-3">Basic Info</h3><div class="form-row"><div class="form-group"><label class="form-label required">Name</label><input type="text" id="productName" class="form-control" required oninput="AdminDashboard.generateSlug()"></div><div class="form-group"><label class="form-label">Slug</label><div class="flex gap-2"><input type="text" id="productSlug" class="form-control" readonly><button type="button" class="btn btn-sm btn-secondary" onclick="AdminDashboard.toggleSlugEdit()" id="editSlugBtn"><i class="fas fa-lock"></i></button></div></div></div><div class="form-row"><div class="form-group"><label class="form-label required">Price (₦)</label><input type="number" id="productPrice" class="form-control" required min="0" step="100"></div><div class="form-group"><label class="form-label">Compare Price (₦)</label><input type="number" id="productComparePrice" class="form-control" min="0" step="100"></div></div><div class="form-row"><div class="form-group"><label class="form-label required">Category</label><select id="productCategory" class="form-control" required onchange="AdminDashboard.onCategoryChange()"><option value="">Select</option></select></div><div class="form-group"><label class="form-label">Stock Quantity</label><input type="number" id="productStock" class="form-control" min="0" value="0" readonly><div class="form-help" id="stockHelpText">Auto-calculated for footwear.</div></div></div><div class="form-group"><label class="form-label required">Product Image</label><div class="upload-zone" id="imageUploadZone"><div class="upload-zone-icon" id="uploadIcon"><i class="fas fa-cloud-upload-alt"></i></div><div class="upload-zone-text">Drop image or click</div><input type="file" class="upload-zone-input" id="imageFileInput" accept="image/*"><div id="uploadPreviewContainer" style="display:none"><div style="position:relative;display:inline-block"><img id="uploadPreview" class="upload-preview"><button type="button" class="upload-preview-remove" id="removePreviewBtn"><i class="fas fa-times"></i></button></div></div></div><input type="hidden" id="productImageUrl"><div id="uploadStatusContainer"></div></div><div class="form-group"><label class="form-label">Description</label><textarea id="productDescription" class="form-control" rows="3"></textarea></div></div><div class="color-management" id="colorManagementSection" style="display:none"><h3 class="section-title-sm mb-3"><i class="fas fa-palette"></i> Color Variants <span id="colorCount">(0)</span></h3><button type="button" class="btn btn-primary mb-3" onclick="AdminDashboard.openAddColorModal()"><i class="fas fa-plus"></i> Add Color</button><div class="colors-grid" id="colorsContainer"></div></div><div class="sizes-management" id="sizeManagementSection" style="display:none"><h3 class="section-title-sm mb-3"><i class="fas fa-ruler"></i> Size Management <span id="sizeCount">(Select color)</span></h3><div class="flex gap-2 mb-3 flex-wrap"><select id="colorSelector" class="form-control" style="width:auto" onchange="AdminDashboard.loadSizesForColor()"><option value="">Select color</option></select><button type="button" class="btn btn-secondary" onclick="AdminDashboard.openAddSizeModal()"><i class="fas fa-plus"></i> Add Size</button></div><div class="sizes-grid" id="sizesContainer"></div></div><div class="modal-footer"><button type="button" class="btn btn-danger" id="deleteProductBtn" style="display:none;margin-right:auto" onclick="AdminDashboard.showDeleteConfirmation()"><i class="fas fa-trash"></i> Delete</button><button type="button" class="btn btn-secondary" onclick="AdminDashboard.closeModal()">Cancel</button><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button></div></form></div></div></div>
+    <div class="modal-overlay" id="productModal"><div class="modal-content"><div class="modal-header"><h2 class="modal-title" id="modalTitle">Add Product</h2><button class="modal-close" onclick="AdminDashboard.closeModal()"><i class="fas fa-times"></i></button></div><div class="modal-body"><form id="productForm" onsubmit="return AdminDashboard.saveProduct(event)"><input type="hidden" id="productId"><input type="hidden" id="isFootwear"><div class="mb-4"><h3 class="section-title-sm mb-3">Basic Info</h3><div class="form-row"><div class="form-group"><label class="form-label required">Name</label><input type="text" id="productName" class="form-control" required oninput="AdminDashboard.generateSlug()"></div><div class="form-group"><label class="form-label">Slug</label><div class="flex gap-2"><input type="text" id="productSlug" class="form-control" readonly><button type="button" class="btn btn-sm btn-secondary" onclick="AdminDashboard.toggleSlugEdit()" id="editSlugBtn"><i class="fas fa-lock"></i></button></div></div></div><div class="form-row"><div class="form-group"><label class="form-label required">Price (₦)</label><input type="number" id="productPrice" class="form-control" required min="0" step="100"></div><div class="form-group"><label class="form-label">Compare Price (₦)</label><input type="number" id="productComparePrice" class="form-control" min="0" step="100"></div></div><div class="form-row"><div class="form-group"><label class="form-label required">Category</label><select id="productCategory" class="form-control" required onchange="AdminDashboard.onCategoryChange()"><option value="">Select</option></select></div><div class="form-group"><label class="form-label">Stock Quantity</label><input type="number" id="productStock" class="form-control" min="0" value="0" readonly><div class="form-help" id="stockHelpText">Auto-calculated for footwear.</div></div></div><div class="form-group"><label class="form-label required">Product Image</label><div class="upload-zone" id="imageUploadZone"><div class="upload-zone-icon" id="uploadIcon"><i class="fas fa-cloud-upload-alt"></i></div><div class="upload-zone-text">Drop image or click</div><input type="file" class="upload-zone-input" id="imageFileInput" accept="image/*"><div id="uploadPreviewContainer" style="display:none"><div style="position:relative;display:inline-block"><img id="uploadPreview" class="upload-preview"><button type="button" class="upload-preview-remove" id="removePreviewBtn"><i class="fas fa-times"></i></button></div></div></div><input type="hidden" id="productImageUrl"><div id="uploadStatusContainer"></div></div><div class="form-group"><label class="form-label"><i class="fas fa-images" style="color:var(--primary-500);margin-right:0.3rem"></i>Sub-images &amp; video <span class="form-help" style="display:inline;margin-left:0.4rem">(optional)</span></label><div class="form-help" style="margin-bottom:var(--space-2)">Add up to <strong>8 sub-images</strong> (other angles, colors, details) and <strong>1 short product video</strong>. Click <i class="fas fa-star" style="color:var(--warning-500)"></i> on any sub-image to promote it to the cover. Drag arrows to reorder. Saved with the product.</div><div class="media-gallery-section"><div id="mediaGallery"></div></div></div><div class="form-group"><label class="form-label">Description</label><textarea id="productDescription" class="form-control" rows="3"></textarea></div></div><div class="color-management" id="colorManagementSection" style="display:none"><h3 class="section-title-sm mb-3"><i class="fas fa-palette"></i> Color Variants <span id="colorCount">(0)</span></h3><button type="button" class="btn btn-primary mb-3" onclick="AdminDashboard.openAddColorModal()"><i class="fas fa-plus"></i> Add Color</button><div class="colors-grid" id="colorsContainer"></div></div><div class="sizes-management" id="sizeManagementSection" style="display:none"><h3 class="section-title-sm mb-3"><i class="fas fa-ruler"></i> Size Management <span id="sizeCount">(Select color)</span></h3><div class="flex gap-2 mb-3 flex-wrap"><select id="colorSelector" class="form-control" style="width:auto" onchange="AdminDashboard.loadSizesForColor()"><option value="">Select color</option></select><button type="button" class="btn btn-secondary" onclick="AdminDashboard.openAddSizeModal()"><i class="fas fa-plus"></i> Add Size</button></div><div class="sizes-grid" id="sizesContainer"></div></div><div class="modal-footer"><button type="button" class="btn btn-danger" id="deleteProductBtn" style="display:none;margin-right:auto" onclick="AdminDashboard.showDeleteConfirmation()"><i class="fas fa-trash"></i> Delete</button><button type="button" class="btn btn-secondary" onclick="AdminDashboard.closeModal()">Cancel</button><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button></div></form></div></div></div>
 
     <div class="modal-overlay" id="addColorModal" style="display:none"><div class="modal-content" style="max-width:450px"><div class="modal-header"><h2 class="modal-title">Add Color</h2><button class="modal-close" onclick="AdminDashboard.closeAddColorModal()"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="form-group"><label class="form-label required">Color Name</label><div class="color-autocomplete"><input type="text" id="newColorName" class="form-control" oninput="AdminDashboard.searchColors(this.value)"><div class="color-options" id="colorOptions"></div></div></div><div class="form-group"><label class="form-label">Combination</label><div class="flex flex-wrap gap-2 mb-2" id="selectedColors"></div><div class="color-picker-grid" id="colorPickerGrid"></div></div><div class="form-group"><label class="form-label">Color Code</label><input type="text" id="newColorCode" class="form-control" readonly></div><div class="flex gap-3 pt-3"><button class="btn btn-secondary flex-1" onclick="AdminDashboard.closeAddColorModal()">Cancel</button><button class="btn btn-primary flex-1" onclick="AdminDashboard.saveNewColor()">Save</button></div></div></div></div>
 
@@ -1582,5 +1635,419 @@
 
     window.AdminDashboard = AdminDashboard;
     </script>
+<div class="media-saving-overlay" id="mediaSavingOverlay"><i class="fas fa-spinner fa-spin"></i><span id="mediaSavingText">Saving media…</span></div>
+<script>
+/* ===== Multi-media gallery: AdminDashboard extensions ===== */
+(function attachMediaExtensions() {
+    // Defensive: ensure AdminDashboard and supabase exist
+    if (!window.AdminDashboard) { console.warn('AdminDashboard not yet ready; media extensions deferred.'); document.addEventListener('DOMContentLoaded', attachMediaExtensions); return; }
+    const AdminDashboard = window.AdminDashboard;
+
+    // -------- State --------
+    AdminDashboard.subImages = [];      // [{tmpId|dbId, file?, previewUrl, publicUrl, storage_path, status, isExisting, alt_text, caption, sort_order, media_type, errorMsg}]
+    AdminDashboard.videoItem = null;    // similar but only one
+    AdminDashboard.deletedMediaIds = []; // [{id, storage_path, media_type}]
+    AdminDashboard.MAX_SUB_IMAGES = 8;
+    AdminDashboard.MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB
+    AdminDashboard.ALLOWED_IMAGE_TYPES = ['image/jpeg','image/png','image/webp','image/gif','image/avif','image/svg+xml'];
+    AdminDashboard.ALLOWED_VIDEO_TYPES = ['video/mp4','video/webm','video/quicktime'];
+
+    // -------- Helpers --------
+    AdminDashboard.getCategorySlugForMedia = function() {
+        try {
+            const sel = document.getElementById('productCategory');
+            const cats = (typeof categories !== 'undefined') ? categories : (AdminDashboard.categories || []);
+            if (!sel || !cats.length) return 'uncategorized';
+            const cat = cats.find(c => String(c.id) === String(sel.value));
+            return (cat && cat.slug) ? cat.slug : 'uncategorized';
+        } catch(e) { return 'uncategorized'; }
+    };
+
+    AdminDashboard.formatBytes = function(bytes) {
+        if (!bytes && bytes !== 0) return '';
+        if (bytes < 1024) return bytes + 'B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + 'KB';
+        return (bytes / 1024 / 1024).toFixed(1) + 'MB';
+    };
+
+    AdminDashboard.uploadOneFile = async function(file) {
+        const ts = Date.now();
+        const rs = Math.random().toString(36).slice(2, 8);
+        const ext = (file.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const fn = ts + '-' + rs + '.' + ext;
+        const fp = AdminDashboard.getCategorySlugForMedia() + '/' + fn;
+        const isVideo = file.type.startsWith('video/');
+        const opts = { cacheControl: '3600', contentType: file.type || (isVideo ? 'video/mp4' : 'image/jpeg') };
+        const sb = (typeof supabase !== 'undefined') ? supabase : (window.supabase_client || null);
+        if (!sb) throw new Error('Supabase client not available');
+        const { error } = await sb.storage.from('product-images').upload(fp, file, opts);
+        if (error) throw error;
+        const { data: urlData } = sb.storage.from('product-images').getPublicUrl(fp);
+        return { publicUrl: urlData.publicUrl, storage_path: fp, file_size_bytes: file.size, mime: file.type };
+    };
+
+    // -------- File handlers --------
+    AdminDashboard.handleSubImageFiles = async function(fileList) {
+        const files = Array.from(fileList || []);
+        if (!files.length) return;
+        const remaining = AdminDashboard.MAX_SUB_IMAGES - AdminDashboard.subImages.length;
+        if (remaining <= 0) { if (typeof showToast === 'function') showToast('Max ' + AdminDashboard.MAX_SUB_IMAGES + ' sub-images reached', 'warning'); return; }
+        const accepted = files.slice(0, remaining);
+        if (files.length > remaining && typeof showToast === 'function') showToast('Only ' + remaining + ' more sub-image(s) allowed', 'warning');
+        for (const file of accepted) {
+            if (!AdminDashboard.ALLOWED_IMAGE_TYPES.includes(file.type)) { if (typeof showToast === 'function') showToast(file.name + ': unsupported image type', 'error'); continue; }
+            if (file.size > AdminDashboard.MAX_FILE_SIZE) { if (typeof showToast === 'function') showToast(file.name + ': too large (max 200MB)', 'error'); continue; }
+            await AdminDashboard._addSubImage(file);
+        }
+    };
+
+    AdminDashboard._addSubImage = async function(file) {
+        const tmpId = 'tmp-' + Math.random().toString(36).slice(2, 9);
+        const previewUrl = URL.createObjectURL(file);
+        const row = { tmpId, file, previewUrl, publicUrl: null, storage_path: null, status: 'pending', isExisting: false, alt_text: '', caption: '', sort_order: (AdminDashboard.subImages.length + 1) * 10, media_type: 'image', errorMsg: '' };
+        AdminDashboard.subImages.push(row);
+        AdminDashboard.renderMediaGallery();
+        try {
+            const r = await AdminDashboard.uploadOneFile(file);
+            row.publicUrl = r.publicUrl; row.storage_path = r.storage_path; row.file_size_bytes = r.file_size_bytes;
+            row.status = 'ready';
+            AdminDashboard.renderMediaGallery();
+        } catch (err) {
+            row.status = 'error'; row.errorMsg = (err && err.message) ? err.message : 'Upload failed';
+            AdminDashboard.renderMediaGallery();
+            if (typeof showToast === 'function') showToast('Sub-image upload failed: ' + row.errorMsg, 'error');
+        }
+    };
+
+    AdminDashboard.handleVideoFile = async function(file) {
+        if (!file) return;
+        if (!AdminDashboard.ALLOWED_VIDEO_TYPES.includes(file.type)) { if (typeof showToast === 'function') showToast('Video type not supported (use MP4/WebM/MOV)', 'error'); return; }
+        if (file.size > AdminDashboard.MAX_FILE_SIZE) { if (typeof showToast === 'function') showToast('Video too large (max 200MB)', 'error'); return; }
+        // Replace existing pending or mark existing saved for delete
+        if (AdminDashboard.videoItem) {
+            if (AdminDashboard.videoItem.previewUrl) URL.revokeObjectURL(AdminDashboard.videoItem.previewUrl);
+            if (AdminDashboard.videoItem.isExisting) {
+                AdminDashboard.deletedMediaIds.push({ id: AdminDashboard.videoItem.dbId, storage_path: AdminDashboard.videoItem.storage_path, media_type: 'video' });
+            }
+        }
+        const tmpId = 'tmp-' + Math.random().toString(36).slice(2, 9);
+        const previewUrl = URL.createObjectURL(file);
+        AdminDashboard.videoItem = { tmpId, file, previewUrl, publicUrl: null, storage_path: null, status: 'pending', isExisting: false, alt_text: '', caption: '', media_type: 'video', file_size_bytes: file.size, errorMsg: '' };
+        AdminDashboard.renderMediaGallery();
+        try {
+            const r = await AdminDashboard.uploadOneFile(file);
+            AdminDashboard.videoItem.publicUrl = r.publicUrl;
+            AdminDashboard.videoItem.storage_path = r.storage_path;
+            AdminDashboard.videoItem.file_size_bytes = file.size;
+            AdminDashboard.videoItem.status = 'ready';
+            AdminDashboard.renderMediaGallery();
+        } catch (err) {
+            AdminDashboard.videoItem.status = 'error'; AdminDashboard.videoItem.errorMsg = (err && err.message) ? err.message : 'Upload failed';
+            AdminDashboard.renderMediaGallery();
+            if (typeof showToast === 'function') showToast('Video upload failed: ' + AdminDashboard.videoItem.errorMsg, 'error');
+        }
+    };
+
+    // -------- Mutations --------
+    AdminDashboard.removeSubImage = function(id) {
+        const idx = AdminDashboard.subImages.findIndex(s => s.tmpId === id || String(s.dbId) === String(id));
+        if (idx < 0) return;
+        const row = AdminDashboard.subImages[idx];
+        if (row.previewUrl) try { URL.revokeObjectURL(row.previewUrl); } catch(e){}
+        if (row.isExisting) {
+            AdminDashboard.deletedMediaIds.push({ id: row.dbId, storage_path: row.storage_path, media_type: 'image' });
+        }
+        AdminDashboard.subImages.splice(idx, 1);
+        AdminDashboard.subImages.forEach((r, i) => r.sort_order = (i + 1) * 10);
+        AdminDashboard.renderMediaGallery();
+    };
+
+    AdminDashboard.removeVideo = function() {
+        if (!AdminDashboard.videoItem) return;
+        if (AdminDashboard.videoItem.previewUrl) try { URL.revokeObjectURL(AdminDashboard.videoItem.previewUrl); } catch(e){}
+        if (AdminDashboard.videoItem.isExisting) {
+            AdminDashboard.deletedMediaIds.push({ id: AdminDashboard.videoItem.dbId, storage_path: AdminDashboard.videoItem.storage_path, media_type: 'video' });
+        }
+        AdminDashboard.videoItem = null;
+        AdminDashboard.renderMediaGallery();
+    };
+
+    AdminDashboard.makeSubImageCover = function(id) {
+        const row = AdminDashboard.subImages.find(s => s.tmpId === id || String(s.dbId) === String(id));
+        if (!row) return;
+        if (!row.publicUrl) { if (typeof showToast === 'function') showToast('Wait for image upload to finish', 'warning'); return; }
+        // Promote to cover: set image_url, remove from sub-images
+        const u = row.publicUrl;
+        document.getElementById('productImageUrl').value = u;
+        try { uploadedImageUrl = u; } catch(e){}
+        const prev = document.getElementById('uploadPreview');
+        if (prev) prev.src = u;
+        const prevWrap = document.getElementById('uploadPreviewContainer');
+        if (prevWrap) prevWrap.style.display = 'block';
+        const icon = document.getElementById('uploadIcon');
+        if (icon) icon.style.display = 'none';
+        // Remove from subImages list
+        if (row.previewUrl) try { URL.revokeObjectURL(row.previewUrl); } catch(e){}
+        const idx = AdminDashboard.subImages.indexOf(row);
+        if (idx >= 0) AdminDashboard.subImages.splice(idx, 1);
+        AdminDashboard.subImages.forEach((r, i) => r.sort_order = (i + 1) * 10);
+        AdminDashboard.renderMediaGallery();
+        if (typeof showToast === 'function') showToast('Cover updated. Click Save to keep.', 'success');
+    };
+
+    AdminDashboard.moveSubImage = function(id, direction) {
+        const idx = AdminDashboard.subImages.findIndex(s => s.tmpId === id || String(s.dbId) === String(id));
+        if (idx < 0) return;
+        const newIdx = direction === 'up' ? idx - 1 : idx + 1;
+        if (newIdx < 0 || newIdx >= AdminDashboard.subImages.length) return;
+        const arr = AdminDashboard.subImages;
+        [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+        arr.forEach((r, i) => r.sort_order = (i + 1) * 10);
+        AdminDashboard.renderMediaGallery();
+    };
+
+    AdminDashboard.updateSubImageMeta = function(id, field, value) {
+        const row = AdminDashboard.subImages.find(s => s.tmpId === id || String(s.dbId) === String(id));
+        if (row) row[field] = value;
+    };
+    AdminDashboard.updateVideoMeta = function(field, value) {
+        if (AdminDashboard.videoItem) AdminDashboard.videoItem[field] = value;
+    };
+
+    // -------- Render --------
+    function escapeText(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+    AdminDashboard.renderMediaGallery = function() {
+        const container = document.getElementById('mediaGallery');
+        if (!container) return;
+        const subHtml = AdminDashboard.subImages.map((row) => {
+            const dataId = row.isExisting ? String(row.dbId) : row.tmpId;
+            const ready = row.isExisting || row.status === 'ready';
+            const previewSrc = row.publicUrl || row.previewUrl || '';
+            return '<div class="media-thumb" data-id="' + escapeText(dataId) + '">' +
+                '<div class="media-thumb-inner">' +
+                (previewSrc ? '<img src="' + escapeText(previewSrc) + '" alt="' + escapeText(row.alt_text || '') + '">' : '<div class="media-thumb-placeholder"><i class="fas fa-spinner fa-spin"></i></div>') +
+                '<div class="media-thumb-overlay">' +
+                '<div class="media-action-row">' +
+                '<button type="button" class="media-action" title="Move up" onclick="AdminDashboard.moveSubImage(\'' + escapeText(dataId) + '\',\'up\')"' + (ready ? '' : ' disabled') + '><i class="fas fa-arrow-up"></i></button>' +
+                '<button type="button" class="media-action" title="Move down" onclick="AdminDashboard.moveSubImage(\'' + escapeText(dataId) + '\',\'down\')"' + (ready ? '' : ' disabled') + '><i class="fas fa-arrow-down"></i></button>' +
+                '</div>' +
+                '<div class="media-action-row bottom">' +
+                '<button type="button" class="media-action media-action-star" title="Make this the cover" onclick="AdminDashboard.makeSubImageCover(\'' + escapeText(dataId) + '\')"' + (row.publicUrl ? '' : ' disabled') + '><i class="fas fa-star"></i></button>' +
+                '<button type="button" class="media-action media-action-remove" title="Remove" onclick="AdminDashboard.removeSubImage(\'' + escapeText(dataId) + '\')"><i class="fas fa-trash"></i></button>' +
+                '</div></div>' +
+                (row.status === 'pending' ? '<div class="media-status media-status-uploading"><i class="fas fa-spinner fa-spin"></i>Uploading</div>' : '') +
+                (row.status === 'error' ? '<div class="media-status media-status-error"><i class="fas fa-exclamation-triangle"></i>' + escapeText(row.errorMsg || 'Failed') + '</div>' : '') +
+                (row.isExisting ? '<div class="media-status media-status-saved"><i class="fas fa-check"></i>Saved</div>' : '') +
+                '</div>' +
+                '<div class="media-thumb-meta">' +
+                '<input type="text" placeholder="Alt text (SEO)" maxlength="200" value="' + escapeText(row.alt_text) + '" onchange="AdminDashboard.updateSubImageMeta(\'' + escapeText(dataId) + '\',\'alt_text\',this.value)">' +
+                '<input type="text" placeholder="Caption (e.g. Back view, Black)" maxlength="120" value="' + escapeText(row.caption) + '" onchange="AdminDashboard.updateSubImageMeta(\'' + escapeText(dataId) + '\',\'caption\',this.value)">' +
+                (row.file_size_bytes ? '<div class="media-meta-info"><i class="fas fa-image"></i>' + escapeText(AdminDashboard.formatBytes(row.file_size_bytes)) + '</div>' : '') +
+                '</div></div>';
+        }).join('');
+
+        let videoBlock = '';
+        if (AdminDashboard.videoItem) {
+            const v = AdminDashboard.videoItem;
+            const vUrl = v.publicUrl || v.previewUrl || '';
+            const vId = v.isExisting ? 'vid-' + v.dbId : v.tmpId;
+            videoBlock = '<div class="media-thumb media-thumb-video" data-id="' + escapeText(vId) + '">' +
+                '<div class="media-thumb-inner">' +
+                (vUrl ? '<video src="' + escapeText(vUrl) + '" muted playsinline preload="metadata" controls></video>' : '<div class="media-thumb-placeholder"><i class="fas fa-spinner fa-spin"></i></div>') +
+                '<div class="media-thumb-overlay">' +
+                '<div class="media-action-row"><span style="color:white;font-size:0.65rem;font-weight:600;background:rgba(0,0,0,0.55);padding:0.15rem 0.55rem;border-radius:9999px"><i class="fas fa-video"></i>VIDEO</span></div>' +
+                '<div class="media-action-row bottom"><button type="button" class="media-action media-action-remove" title="Remove video" onclick="AdminDashboard.removeVideo()"><i class="fas fa-trash"></i></button></div>' +
+                '</div>' +
+                (v.status === 'pending' ? '<div class="media-status media-status-uploading"><i class="fas fa-spinner fa-spin"></i>Uploading</div>' : '') +
+                (v.status === 'error' ? '<div class="media-status media-status-error"><i class="fas fa-exclamation-triangle"></i>' + escapeText(v.errorMsg || 'Failed') + '</div>' : '') +
+                (v.isExisting ? '<div class="media-status media-status-saved"><i class="fas fa-check"></i>Saved</div>' : '') +
+                '</div>' +
+                '<div class="media-thumb-meta">' +
+                '<input type="text" placeholder="Video caption (e.g. 360° spin)" maxlength="120" value="' + escapeText(v.caption) + '" onchange="AdminDashboard.updateVideoMeta(\'caption\',this.value)">' +
+                (v.file_size_bytes ? '<div class="media-meta-info"><i class="fas fa-file-video"></i>' + escapeText(AdminDashboard.formatBytes(v.file_size_bytes)) + (v.duration_seconds ? ' · ' + v.duration_seconds + 's' : '') + '</div>' : '') +
+                '</div></div>';
+        }
+
+        container.innerHTML =
+            '<div class="media-section-block">' +
+                '<div class="media-section-title"><i class="fas fa-images" style="color:var(--primary-500)"></i>Sub-images <span class="media-section-count">' + AdminDashboard.subImages.length + ' / ' + AdminDashboard.MAX_SUB_IMAGES + '</span></div>' +
+                '<div class="media-zone" onclick="document.getElementById(\'subImageInput\').click()"><i class="fas fa-plus"></i>Click or drop to add sub-image(s)</div>' +
+                '<input type="file" id="subImageInput" accept="image/*" multiple style="display:none" onchange="AdminDashboard.handleSubImageFiles(this.files);this.value=\'\';">' +
+                '<div class="media-thumbs-grid">' + (subHtml || '<div class="media-empty"><i class="fas fa-images" style="font-size:1.5rem;display:block;margin-bottom:0.4rem;color:var(--gray-300)"></i>No sub-images yet — click the box above.</div>') + '</div>' +
+                '<div class="media-help"><i class="fas fa-info-circle"></i> Sub-images appear on the storefront after this image. Use the arrows to change order; the star promotes it to the cover.</div>' +
+            '</div>' +
+            '<div class="media-section-block">' +
+                '<div class="media-section-title"><i class="fas fa-video" style="color:var(--primary-500)"></i>Product video <span class="media-section-count">max 1</span></div>' +
+                (AdminDashboard.videoItem ? videoBlock : '<div class="media-zone" onclick="document.getElementById(\'productVideoInput\').click()"><i class="fas fa-cloud-upload-alt"></i>Click to upload MP4 / WebM / MOV (≤ 200MB)</div>') +
+                '<input type="file" id="productVideoInput" accept="video/mp4,video/webm,video/quicktime" style="display:none" onchange="AdminDashboard.handleVideoFile(this.files[0]);this.value=\'\';">' +
+                (!AdminDashboard.videoItem ? '<div class="media-zone" style="cursor:default;border-style:dashed;color:var(--gray-400);background:transparent;min-height:0;padding:0.4rem" onclick="event.stopPropagation()"></div>' : '') +
+                '<div class="media-help"><i class="fas fa-info-circle"></i> Video plays on the storefront at the end of the gallery. Keep it short (under 30s) for fast loading.</div>' +
+            '</div>';
+    };
+
+    // -------- Load existing media on edit --------
+    AdminDashboard.loadProductMediaGallery = async function(productId) {
+        if (!productId) return;
+        AdminDashboard.subImages = [];
+        AdminDashboard.videoItem = null;
+        AdminDashboard.deletedMediaIds = [];
+        try {
+            const sb = (typeof supabase !== 'undefined') ? supabase : null;
+            if (!sb) return;
+            const { data, error } = await sb.from('product_media').select('*').eq('product_id', parseInt(productId)).order('sort_order', { ascending: true });
+            if (error) throw error;
+            (data || []).forEach(function(row) {
+                if (row.media_type === 'video') {
+                    AdminDashboard.videoItem = {
+                        dbId: row.id, publicUrl: row.url, storage_path: row.storage_path,
+                        previewUrl: null, status: 'ready', isExisting: true,
+                        alt_text: row.alt_text || '', caption: row.caption || '',
+                        media_type: 'video', file_size_bytes: row.file_size_bytes, duration_seconds: row.duration_seconds || null
+                    };
+                } else {
+                    AdminDashboard.subImages.push({
+                        dbId: row.id, publicUrl: row.url, storage_path: row.storage_path,
+                        previewUrl: null, status: 'ready', isExisting: true,
+                        alt_text: row.alt_text || '', caption: row.caption || '',
+                        sort_order: row.sort_order || (AdminDashboard.subImages.length + 1) * 10,
+                        media_type: 'image'
+                    });
+                }
+            });
+        } catch (err) { console.warn('product_media load:', err); }
+        AdminDashboard.renderMediaGallery();
+    };
+
+    // -------- Persist on save --------
+    AdminDashboard.persistProductMedia = async function(productId) {
+        if (!productId) return;
+        const sb = (typeof supabase !== 'undefined') ? supabase : null;
+        if (!sb) return;
+        const pid = parseInt(productId);
+        const overlay = document.getElementById('mediaSavingOverlay');
+        const overlayText = document.getElementById('mediaSavingText');
+        function showOverlay(msg) { if (overlay) { overlay.classList.add('show'); if (overlayText) overlayText.textContent = msg || 'Saving media…'; } }
+        function hideOverlay() { if (overlay) overlay.classList.remove('show'); }
+        try {
+            // 1) Apply deletions first (DB then storage)
+            if (AdminDashboard.deletedMediaIds.length) {
+                showOverlay('Removing ' + AdminDashboard.deletedMediaIds.length + ' item(s)…');
+                const dbIds = AdminDashboard.deletedMediaIds.map(d => d.id);
+                try { await sb.from('product_media').delete().in('id', dbIds); } catch(e) { console.warn('media delete:', e); }
+                const paths = AdminDashboard.deletedMediaIds.map(d => d.storage_path).filter(Boolean);
+                if (paths.length) { try { await sb.storage.from('product-images').remove(paths); } catch(e) { console.warn('storage delete:', e); } }
+            }
+            // 2) Insert new sub-images
+            const newSubs = AdminDashboard.subImages.filter(r => !r.isExisting && r.media_type === 'image' && r.status === 'ready' && r.publicUrl);
+            if (newSubs.length) {
+                showOverlay('Saving ' + newSubs.length + ' sub-image(s)…');
+                let order = (AdminDashboard.subImages.filter(r => r.isExisting && r.media_type === 'image').reduce((m, r) => Math.max(m, r.sort_order || 0), 0)) + 10;
+                for (const row of newSubs) {
+                    row.sort_order = order; order += 10;
+                    try {
+                        await sb.from('product_media').insert({
+                            product_id: pid, url: row.publicUrl, storage_path: row.storage_path,
+                            media_type: 'image', sort_order: row.sort_order,
+                            alt_text: row.alt_text || '', caption: row.caption || '',
+                            file_size_bytes: row.file_size_bytes || null
+                        });
+                    } catch (e) { console.warn('media insert:', e); }
+                }
+            }
+            // 3) Update existing sub-images (meta + order)
+            const updateSubs = AdminDashboard.subImages.filter(r => r.isExisting && r.media_type === 'image');
+            if (updateSubs.length) {
+                showOverlay('Updating sub-image metadata…');
+                for (const row of updateSubs) {
+                    try {
+                        await sb.from('product_media').update({
+                            sort_order: row.sort_order || 0,
+                            alt_text: row.alt_text || '',
+                            caption: row.caption || ''
+                        }).eq('id', row.dbId);
+                    } catch (e) { console.warn('media update:', e); }
+                }
+            }
+            // 4) Insert/replace video
+            const v = AdminDashboard.videoItem;
+            if (v && !v.isExisting && v.status === 'ready' && v.publicUrl) {
+                showOverlay('Saving video…');
+                try { await sb.from('product_media').delete().eq('product_id', pid).eq('media_type', 'video'); } catch(e){}
+                try {
+                    await sb.from('product_media').insert({
+                        product_id: pid, url: v.publicUrl, storage_path: v.storage_path,
+                        media_type: 'video', sort_order: -1,
+                        alt_text: v.alt_text || '', caption: v.caption || '',
+                        file_size_bytes: v.file_size_bytes || null
+                    });
+                } catch (e) { console.warn('video insert:', e); }
+            } else if (v && v.isExisting) {
+                try {
+                    await sb.from('product_media').update({
+                        alt_text: v.alt_text || '', caption: v.caption || ''
+                    }).eq('id', v.dbId);
+                } catch(e){}
+            }
+            AdminDashboard.deletedMediaIds = [];
+        } finally { hideOverlay(); }
+    };
+
+    // -------- Hook into existing flow --------
+    // Defer until AdminDashboard exports core methods we need to wrap
+    function patchCore() {
+        const origEdit = AdminDashboard.editProduct;
+        if (typeof origEdit === 'function' && !origEdit.__mediaPatched) {
+            AdminDashboard.editProduct = async function(id) {
+                await origEdit.call(this, id);
+                await AdminDashboard.loadProductMediaGallery(id);
+            };
+            AdminDashboard.editProduct.__mediaPatched = true;
+        }
+        const origSave = AdminDashboard.saveProduct;
+        if (typeof origSave === 'function' && !origSave.__mediaPatched) {
+            AdminDashboard.saveProduct = async function(e) {
+                e.preventDefault();
+                // Capture product id before the modal closes (saveProduct may close it)
+                let productIdWillBe = document.getElementById('productId').value;
+                await origSave.call(this, e);
+                productIdWillBe = document.getElementById('productId').value || productIdWillBe;
+                if (productIdWillBe) {
+                    try {
+                        await AdminDashboard.persistProductMedia(productIdWillBe);
+                    } catch (err) {
+                        console.error('persistProductMedia failed:', err);
+                        if (typeof showToast === 'function') showToast('Saved — but media save failed: ' + (err.message || err), 'warning');
+                    }
+                }
+            };
+            AdminDashboard.saveProduct.__mediaPatched = true;
+        }
+    }
+    patchCore();
+    // Re-patch later in case the AdminDashboard assigns its API asynchronously
+    setTimeout(patchCore, 200);
+    setTimeout(patchCore, 1000);
+
+    // Render empty gallery when modal first opens
+    const origOpen = AdminDashboard.openModal;
+    if (typeof origOpen === 'function' && !origOpen.__mediaPatched) {
+        AdminDashboard.openModal = function() {
+            const r = origOpen.apply(this, arguments);
+            if (document.getElementById('mediaGallery') && (!AdminDashboard.subImages.length && !AdminDashboard.videoItem)) {
+                AdminDashboard.renderMediaGallery();
+            }
+            return r;
+        };
+        AdminDashboard.openModal.__mediaPatched = true;
+    }
+
+    // Initial render so the section is present even before any edit
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('mediaGallery')) AdminDashboard.renderMediaGallery();
+    });
+    if (document.getElementById('mediaGallery')) AdminDashboard.renderMediaGallery();
+})();
+</script>
 </body>
 </html>

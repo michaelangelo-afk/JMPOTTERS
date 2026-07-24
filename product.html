@@ -717,6 +717,38 @@
             .price-section .current-price { font-size: 1.2rem; }
         }
     </style>
+    <style>
+        /* ===== Storefront product gallery ===== */
+        .product-gallery{display:flex;flex-direction:column;gap:0.6rem;width:100%}
+        .product-gallery-main{aspect-ratio:1;background:#f5f5f5;border-radius:0.75rem;overflow:hidden;position:relative;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+        .product-gallery-main img,.product-gallery-main video{width:100%;height:100%;object-fit:cover;display:block;transition:opacity 0.25s ease}
+        .product-gallery-main video{background:#000}
+        .product-gallery-thumb-strip{display:flex;gap:0.5rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding:0.15rem 0.05rem 0.4rem;scroll-behavior:smooth}
+        .product-gallery-thumb-strip::-webkit-scrollbar{height:6px}
+        .product-gallery-thumb-strip::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+        .product-gallery-thumb{flex:0 0 78px;height:78px;border-radius:0.4rem;overflow:hidden;background:#f5f5f5;border:2px solid transparent;cursor:pointer;position:relative;transition:all 0.2s ease}
+        .product-gallery-thumb:hover{border-color:#d4af37;transform:translateY(-2px)}
+        .product-gallery-thumb.active{border-color:#d4af37;box-shadow:0 0 0 1px #d4af37}
+        .product-gallery-thumb img,.product-gallery-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+        .product-gallery-thumb .thumb-badge{position:absolute;top:4px;right:4px;background:rgba(212,175,55,0.95);color:#0a0d12;font-size:0.55rem;padding:2px 6px;border-radius:9999px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em}
+        .product-gallery-thumb .thumb-video-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.65);color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;pointer-events:none}
+        .product-gallery-thumb .thumb-zoom-hint{position:absolute;bottom:4px;right:4px;background:rgba(255,255,255,0.92);color:#0a0d12;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.55rem;opacity:0;transition:opacity 0.2s ease}
+        .product-gallery-thumb:hover .thumb-zoom-hint{opacity:1}
+        .gallery-caption{font-size:0.875rem;color:#4b5563;text-align:center;min-height:1.4em;padding:0.25rem 0.5rem;font-style:italic}
+        .gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;background:rgba(255,255,255,0.95);border:none;border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#0a0d12;z-index:5;opacity:0;transition:all 0.2s ease;font-size:0.875rem}
+        .product-gallery:hover .gallery-nav{opacity:1}
+        .gallery-nav.prev{left:10px}
+        .gallery-nav.next{right:10px}
+        .gallery-nav:hover{background:white;transform:translateY(-50%) scale(1.08)}
+        .gallery-nav:disabled{opacity:0.25;cursor:not-allowed;transform:translateY(-50%)}
+        .gallery-lightbox{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:10000;display:none;align-items:center;justify-content:center;padding:1rem;cursor:zoom-out}
+        .gallery-lightbox.show{display:flex;animation:fadeIn 0.2s ease}
+        .gallery-lightbox img,.gallery-lightbox video{max-width:95vw;max-height:88vh;object-fit:contain;border-radius:0.5rem;background:#000;cursor:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+        .gallery-lightbox-close{position:absolute;top:1rem;right:1rem;width:42px;height:42px;background:rgba(255,255,255,0.15);border:none;border-radius:50%;color:white;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s ease}
+        .gallery-lightbox-close:hover{background:rgba(255,255,255,0.3)}
+        @media(max-width:640px){.product-gallery-thumb{flex:0 0 64px;height:64px}.gallery-nav{opacity:1;width:32px;height:32px;font-size:0.75rem}}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    </style>
 </head>
 <body>
 
@@ -1159,12 +1191,9 @@
 
             productViewer.innerHTML = `
                 <div class="product-container">
-                    <div class="product-image-section" id="productImageSection">
-                        <div class="product-image-wrapper">
-                            <img src="${imageUrl}" alt="${escapeHtml(product.name)}" class="product-image"
-                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/400x400?text=JMPOTTERS'">
-                        </div>
-                    </div>
+        <div class="product-image-section" id="productImageSection">
+            ${buildGalleryMarkup(product, imageUrl, __productMediaList || [])}
+        </div>
                     <div class="product-details">
                         <h1 class="product-title">${escapeHtml(product.name)}</h1>
                         <div class="price-section">
@@ -1526,7 +1555,14 @@
                 currentSelectedSize = null;
 
                 buildColorSizeMappings(currentProductColors, currentProductSizes);
+                // NEW: load sub-images & video for this product (parallel — best effort, doesn't block page)
+                try {
+                    var mediaRes = await sb.from('product_media').select('*').eq('product_id', product.id).order('sort_order', { ascending: true });
+                    __productMediaList = (mediaRes && mediaRes.data) ? mediaRes.data : [];
+                } catch (me) { console.warn('product_media fetch failed:', me); __productMediaList = []; }
                 renderProductPage(currentProduct);
+                // If renderProductPage already executed before media arrived, hydrate the gallery now
+                if (window.__jmpottersGalleryHydrate) { try { window.__jmpottersGalleryHydrate(); } catch(e){} }
                 await loadRecommendations(currentProduct);
 
                 if (loadingState) loadingState.style.display = 'none';
@@ -1563,5 +1599,201 @@
     });
     </script>
 
+<script>
+        // ===== Product gallery helpers =====
+        (function () {
+            var STATE = {};
+            window.__productMediaList = window.__productMediaList || [];
+            window.__jmpottersGalleryState = STATE;
+
+            function escapeHtmlAttr(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+            function buildGalleryMarkup(product, coverUrl, mediaList) {
+                var stateKey = 'product-' + (product && product.id);
+                STATE[stateKey] = STATE[stateKey] || { items: [], activeIdx: 0 };
+                var state = STATE[stateKey];
+                state.items = [];
+                if (coverUrl) state.items.push({ type: 'image', url: coverUrl, alt: product.name || '', caption: '', isCover: true, dbId: null });
+                (mediaList || []).forEach(function (m) {
+                    if (!m || !m.url) return;
+                    var url;
+                    try { url = (typeof getImageUrl === 'function') ? getImageUrl(m.url) : m.url; } catch (e) { url = m.url; }
+                    if (m.media_type === 'video') {
+                        state.items.push({ type: 'video', url: url, caption: m.caption || '', alt: m.alt_text || '', dbId: m.id });
+                    } else {
+                        state.items.push({ type: 'image', url: url, alt: m.alt_text || (product.name || ''), caption: m.caption || '', isCover: !!m.is_cover, dbId: m.id, file_size_bytes: m.file_size_bytes });
+                    }
+                });
+                state.activeIdx = 0;
+
+                if (state.items.length === 0) {
+                    return '<div class="product-image-wrapper"><img src="https://via.placeholder.com/400x400?text=JMPOTTERS" alt="' + escapeHtmlAttr(product.name || '') + '" class="product-image"></div>';
+                }
+
+                var mainHtml = '<div class="product-gallery" id="jmpottersProductGallery" data-state-key="' + escapeHtmlAttr(stateKey) + '">' +
+                    '<div class="product-gallery-main" id="jmpottersGalleryMain"></div>' +
+                    '<button type="button" class="gallery-nav prev" id="jmpottersGalleryPrev" aria-label="Previous image" onclick="jmpottersGalleryPrev(\'' + stateKey + '\')" style="' + (state.items.length > 1 ? '' : 'display:none') + '">&#8249;</button>' +
+                    '<button type="button" class="gallery-nav next" id="jmpottersGalleryNext" aria-label="Next image" onclick="jmpottersGalleryNext(\'' + stateKey + '\')" style="' + (state.items.length > 1 ? '' : 'display:none') + '">&#8250;</button>' +
+                    (state.items.length > 1 ? '<div class="product-gallery-thumb-strip" id="jmpottersThumbStrip"></div>' : '') +
+                    '<div class="gallery-caption" id="jmpottersGalleryCaption" aria-live="polite"></div>' +
+                    '<div class="gallery-lightbox" id="jmpottersLightbox" onclick="jmpottersCloseLightbox()">' +
+                    '<button type="button" class="gallery-lightbox-close" onclick="jmpottersCloseLightbox()" aria-label="Close">&times;</button>' +
+                    '<div id="jmpottersLightboxContent"></div>' +
+                    '</div>' +
+                    '</div>';
+                return mainHtml;
+            }
+            window.buildGalleryMarkup = buildGalleryMarkup;
+
+            function renderGalleryContents(stateKey) {
+                var state = STATE[stateKey];
+                if (!state) return;
+                var main = document.getElementById('jmpottersGalleryMain');
+                var strip = document.getElementById('jmpottersThumbStrip');
+                var caption = document.getElementById('jmpottersGalleryCaption');
+                if (!main) return;
+                var item = state.items[state.activeIdx] || state.items[0];
+                if (!item) return;
+                if (item.type === 'video') {
+                    main.innerHTML = '<video src="' + escapeHtmlAttr(item.url) + '" controls muted playsinline preload="metadata" style="cursor:zoom-in" onclick="jmpottersOpenLightbox(\'' + stateKey + '\')"></video>';
+                } else {
+                    main.innerHTML = '<img src="' + escapeHtmlAttr(item.url) + '" alt="' + escapeHtmlAttr(item.alt || '') + '" loading="eager" style="cursor:zoom-in" onclick="jmpottersOpenLightbox(\'' + stateKey + '\')" onerror="this.onerror=null;this.src=\'https://via.placeholder.com/400x400?text=JMPOTTERS\';">';
+                }
+                if (caption) caption.textContent = item.caption || '';
+                if (strip) {
+                    strip.innerHTML = state.items.map(function (it, idx) {
+                        var thumbCls = 'product-gallery-thumb' + (idx === state.activeIdx ? ' active' : '');
+                        var innerSrc = it.type === 'video'
+                            ? '<video src="' + escapeHtmlAttr(it.url) + '" muted preload="metadata"></video><div class="thumb-video-badge">&#9654;</div>'
+                            : '<img src="' + escapeHtmlAttr(it.url) + '" alt="' + escapeHtmlAttr(it.alt || '') + '" loading="lazy">';
+                        var extra = '';
+                        if (it.isCover) extra = '<span class="thumb-badge">Cover</span>';
+                        var label = it.caption || (it.type === 'video' ? 'Product video' : 'Product image ' + (idx + 1));
+                        return '<div class="' + thumbCls + '" role="button" tabindex="0" aria-label="' + escapeHtmlAttr(label) + '" data-state-key="' + escapeHtmlAttr(stateKey) + '" data-thumb-idx="' + idx + '">' + innerSrc + extra + (it.type !== 'video' ? '<div class="thumb-zoom-hint" aria-hidden="true">&#x2922;</div>' : '') + '</div>';
+                    }).join('');
+                }
+                var prevBtn = document.getElementById('jmpottersGalleryPrev');
+                var nextBtn = document.getElementById('jmpottersGalleryNext');
+                if (prevBtn) prevBtn.disabled = (state.activeIdx <= 0);
+                if (nextBtn) nextBtn.disabled = (state.activeIdx >= state.items.length - 1);
+            }
+            window.jmpottersRenderGalleryContents = renderGalleryContents;
+
+            window.jmpottersSelectGalleryItem = function (stateKey, idx) {
+                var state = STATE[stateKey];
+                if (!state || idx < 0 || idx >= state.items.length) return;
+                state.activeIdx = idx;
+                renderGalleryContents(stateKey);
+            };
+            window.jmpottersGalleryPrev = function (stateKey) {
+                var state = STATE[stateKey];
+                if (!state) return;
+                state.activeIdx = Math.max(0, state.activeIdx - 1);
+                renderGalleryContents(stateKey);
+            };
+            window.jmpottersGalleryNext = function (stateKey) {
+                var state = STATE[stateKey];
+                if (!state) return;
+                state.activeIdx = Math.min(state.items.length - 1, state.activeIdx + 1);
+                renderGalleryContents(stateKey);
+            };
+            window.jmpottersOpenLightbox = function (stateKey) {
+                var state = STATE[stateKey]; if (!state) return;
+                var item = state.items[state.activeIdx]; if (!item) return;
+                var lb = document.getElementById('jmpottersLightbox'); var c = document.getElementById('jmpottersLightboxContent'); if (!lb || !c) return;
+                c.innerHTML = item.type === 'video'
+                    ? '<video src="' + escapeHtmlAttr(item.url) + '" controls autoplay playsinline></video>'
+                    : '<img src="' + escapeHtmlAttr(item.url) + '" alt="' + escapeHtmlAttr(item.alt || '') + '">';
+                lb.classList.add('show');
+            };
+            window.jmpottersCloseLightbox = function () {
+                var lb = document.getElementById('jmpottersLightbox'); var c = document.getElementById('jmpottersLightboxContent');
+                if (lb) lb.classList.remove('show');
+                if (c) c.innerHTML = '';
+            };
+            document.addEventListener('keydown', function (e) {
+                var lb = document.getElementById('jmpottersLightbox');
+                if (!lb || !lb.classList.contains('show')) {
+                    // Arrow nav on gallery
+                    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                        var gallery = document.getElementById('jmpottersProductGallery');
+                        if (!gallery) return;
+                        var key = gallery.getAttribute('data-state-key');
+                        if (e.key === 'ArrowLeft') window.jmpottersGalleryPrev(key);
+                        else window.jmpottersGalleryNext(key);
+                    }
+                    return;
+                }
+                if (e.key === 'Escape') window.jmpottersCloseLightbox();
+            });
+
+            // Delegated handlers for thumbnail clicks + keyboard activation (Enter / Space)
+            document.addEventListener('click', function (e) {
+                var t = e.target && e.target.closest && e.target.closest('.product-gallery-thumb');
+                if (!t || !t.dataset || !t.dataset.stateKey) return;
+                window.jmpottersSelectGalleryItem(t.dataset.stateKey, parseInt(t.dataset.thumbIdx, 10));
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+                var tag = e.target && e.target.tagName;
+                if (tag !== 'DIV') return;
+                var t = e.target.closest && e.target.closest('.product-gallery-thumb');
+                if (!t || !t.dataset || !t.dataset.stateKey) return;
+                e.preventDefault();
+                window.jmpottersSelectGalleryItem(t.dataset.stateKey, parseInt(t.dataset.thumbIdx, 10));
+            });
+
+            // Expose a hydration entry so the load flow can re-render the gallery after async media arrives
+            window.__jmpottersGalleryHydrate = function () {
+                var gallery = document.getElementById('jmpottersProductGallery');
+                if (!gallery) return;
+                var stateKey = gallery.getAttribute('data-state-key');
+                if (!stateKey) return;
+                var state = STATE[stateKey];
+                if (!state) return;
+                // Re-build items based on updated __productMediaList
+                var coverUrl = state.items.length ? state.items[0].url : null;
+                state.items = [];
+                if (coverUrl) state.items.push({ type: 'image', url: coverUrl, alt: '', caption: '', isCover: true });
+                (window.__productMediaList || []).forEach(function (m) {
+                    if (!m || !m.url) return;
+                    var url; try { url = (typeof getImageUrl === 'function') ? getImageUrl(m.url) : m.url; } catch (e) { url = m.url; }
+                    if (m.media_type === 'video') state.items.push({ type: 'video', url: url, caption: m.caption || '', alt: m.alt_text || '' });
+                    else state.items.push({ type: 'image', url: url, alt: m.alt_text || '', caption: m.caption || '' });
+                });
+                // Show/hide strip + nav depending on count
+                var navs = gallery.querySelectorAll('.gallery-nav');
+                var strip = document.getElementById('jmpottersThumbStrip');
+                if (state.items.length > 1) {
+                    navs.forEach(function (b) { b.style.display = ''; });
+                    if (strip) strip.style.display = '';
+                }
+                renderGalleryContents(stateKey);
+            };
+
+            // After DOM is built, populate the gallery contents
+            document.addEventListener('DOMContentLoaded', function () {
+                var gallery = document.getElementById('jmpottersProductGallery');
+                if (!gallery) return;
+                var stateKey = gallery.getAttribute('data-state-key');
+                renderGalleryContents(stateKey);
+                // Also re-render when window resizes (mobile may change strip layout)
+                var resizeTimer;
+                window.addEventListener('resize', function () {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(function () { renderGalleryContents(stateKey); }, 150);
+                });
+            });
+            // If DOM already ready, fire now too
+            if (document.readyState !== 'loading') {
+                var gallery = document.getElementById('jmpottersProductGallery');
+                if (gallery) {
+                    var sk = gallery.getAttribute('data-state-key');
+                    renderGalleryContents(sk);
+                }
+            }
+        })();
+        // ===== End product gallery =====
+    </script>
 </body>
 </html>
