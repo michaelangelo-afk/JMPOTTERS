@@ -1211,7 +1211,59 @@
                             <div style="display:flex;justify-content:space-between;font-size:1.05rem;font-weight:700;color:#a5b4fc;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);"><span>Grand Total</span><span>\u20A6${grandTotal.toLocaleString()}</span></div>
                         </div>
                     </div>
+                                        <!-- v16: bank-accounts -->
                     <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.06);">
+                        <h3 style="color:#818cf8;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;font-weight:600;"><i class="icon-credit-card"></i> Payment Account Details <span style="color:#ef4444;">*</span></h3>
+                        <p style="color:#94a3b8;font-size:0.8rem;margin-bottom:12px;">Select a bank account below, transfer the <strong style="color:#a5b4fc;">Grand Total</strong>, then upload your payment receipt below.</p>
+                        <label for="v16BankSelect" style="color:#94a3b8;font-size:0.7rem;display:block;margin-bottom:4px;letter-spacing:0.04em;text-transform:uppercase;">Choose Bank</label>
+                        <select id="v16BankSelect" onchange="window.JMPOTTERS_toggleBankCard(this)" style="width:100%;padding:10px 12px;background:rgba(15,23,42,0.6);border:1px solid rgba(99,102,241,0.25);color:#e2e8f0;border-radius:8px;font-size:0.85rem;font-family:inherit;cursor:pointer;outline:none;transition:all 0.2s;-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,#818cf8 50%),linear-gradient(135deg,#818cf8 50%,transparent 50%);background-position:calc(100% - 18px) center,calc(100% - 13px) center;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:32px;">
+                            <option value="uba">UBA — United Bank for Africa</option>
+                            <option value="opay">OPay — Paypoint by OPay</option>
+                        </select>
+                        <div id="v16UbaCard" style="display:block;margin-top:12px;background:linear-gradient(135deg,rgba(220,38,38,0.16),rgba(220,38,38,0.05));padding:14px 14px 12px;border-radius:10px;border-left:3px solid #dc2626;border-right:1px solid rgba(255,255,255,0.06);border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);">
+                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                                <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#dc2626,#b91c1c);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:0.78rem;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(220,38,38,0.35);">UBA</div>
+                                <div>
+                                    <div style="color:#f1f5f9;font-weight:600;font-size:0.9rem;">United Bank for Africa</div>
+                                    <div style="color:#94a3b8;font-size:0.7rem;">Account 1 of 2</div>
+                                </div>
+                            </div>
+                            <div style="display:grid;gap:8px;">
+                                <div><div style="color:#64748b;font-size:0.7rem;letter-spacing:0.04em;text-transform:uppercase;">Account Name</div><div style="color:#e2e8f0;font-weight:700;font-size:0.95rem;margin-top:2px;">JMPOTTERS STORE</div></div>
+                                <div>
+                                    <div style="color:#64748b;font-size:0.7rem;letter-spacing:0.04em;text-transform:uppercase;">Account Number</div>
+                                    <div style="display:flex;align-items:stretch;gap:8px;margin-top:4px;">
+                                        <div id="v16UbaNumber" style="flex:1;background:rgba(0,0,0,0.32);padding:10px 12px;border-radius:8px;color:#fef3c7;font-weight:700;font-size:1.05rem;letter-spacing:0.08em;font-family:'SF Mono','Monaco','Cascadia Code','Roboto Mono',monospace;border:1px solid rgba(255,255,255,0.06);user-select:all;">1026078101</div>
+                                        <button type="button" onclick="window.JMPOTTERS_copyBankAccount('1026078101', this)" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;border:none;border-radius:8px;padding:10px 14px;font-weight:600;font-size:0.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all 0.2s;white-space:nowrap;">
+                                            <i class="icon-copy"></i> Copy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="v16OpayCard" style="display:none;margin-top:12px;background:linear-gradient(135deg,rgba(16,185,129,0.16),rgba(16,185,129,0.05));padding:14px 14px 12px;border-radius:10px;border-left:3px solid #10b981;border-right:1px solid rgba(255,255,255,0.06);border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);">
+                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                                <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:0.74rem;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(16,185,129,0.35);">OPAY</div>
+                                <div>
+                                    <div style="color:#f1f5f9;font-weight:600;font-size:0.9rem;">Paypoint by OPay</div>
+                                    <div style="color:#94a3b8;font-size:0.7rem;">Account 2 of 2</div>
+                                </div>
+                            </div>
+                            <div style="display:grid;gap:8px;">
+                                <div><div style="color:#64748b;font-size:0.7rem;letter-spacing:0.04em;text-transform:uppercase;">Account Name</div><div style="color:#e2e8f0;font-weight:700;font-size:0.95rem;margin-top:2px;">IMHONTU JULIANA</div></div>
+                                <div>
+                                    <div style="color:#64748b;font-size:0.7rem;letter-spacing:0.04em;text-transform:uppercase;">Account Number</div>
+                                    <div style="display:flex;align-items:stretch;gap:8px;margin-top:4px;">
+                                        <div id="v16OpayNumber" style="flex:1;background:rgba(0,0,0,0.32);padding:10px 12px;border-radius:8px;color:#fef3c7;font-weight:700;font-size:1.05rem;letter-spacing:0.08em;font-family:'SF Mono','Monaco','Cascadia Code','Roboto Mono',monospace;border:1px solid rgba(255,255,255,0.06);user-select:all;">8139583320</div>
+                                        <button type="button" onclick="window.JMPOTTERS_copyBankAccount('8139583320', this)" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;border:none;border-radius:8px;padding:10px 14px;font-weight:600;font-size:0.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all 0.2s;white-space:nowrap;">
+                                            <i class="icon-copy"></i> Copy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+<div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.06);">
                         <h3 style="color:#818cf8;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;font-weight:600;"><i class="icon-receipt"></i> Payment Receipt <span style="color:#ef4444;">*</span></h3>
                         <p style="color:#94a3b8;font-size:0.8rem;margin-bottom:12px;">Upload a screenshot or photo of your payment receipt (JPG, PNG, WebP or PDF, max 5MB).</p>
                         <div id="receiptUploadZone" style="border:2px dashed rgba(99,102,241,0.3);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all 0.25s;background:rgba(99,102,241,0.04);position:relative;">
@@ -1831,15 +1883,19 @@
             // older checkout.html redirect). The modal contains UBA + OPay
             // account cards, a dropdown for selecting which account to copy,
             // receipt-upload dropzone, and place-order button.
+            /* v16: rewire-proceed-to-checkout */
             try {
-                if (typeof window.JMPOTTERS_openPaymentModal === 'function') {
-                    window.JMPOTTERS_openPaymentModal();
+                if (typeof showCheckoutModal === 'function') {
+                    showCheckoutModal();
                     return;
                 }
-                // Fallback if modal builder not loaded yet: navigate to checkout
-                // (kept as a safety net only).
-                window.location.href = 'checkout.html?from=proceed';
+                if (typeof window.showCheckoutModal === 'function') {
+                    window.showCheckoutModal();
+                    return;
+                }
             } catch(_e) { /* silent */ }
+            // Last-resort fallback: redirect to checkout.html.
+            window.location.href = 'checkout.html';
             return;
         }
         
@@ -2478,333 +2534,76 @@
 
 // showCheckoutModal shipping removed per user direction (v4/v5)
 
-/* v15: caller-modal-restore-and-expand */
-
-    // ============================================================
-    // v15: FULL-SCREEN PAYMENT MODAL (UBA + OPay + dropdown + receipt)
-    // ============================================================
-    function openPaymentModal() {
-        if (typeof _ensureModalStyles === 'function') _ensureModalStyles();
-        var existing = document.getElementById('paymentModalOverlay');
-        if (existing) { existing.classList.add('active'); document.body.style.overflow = 'hidden'; return; }
-        var overlay = document.createElement('div');
-        overlay.id = 'paymentModalOverlay';
-        overlay.className = 'payment-modal-overlay';
-        overlay.setAttribute('role', 'dialog');
-        overlay.setAttribute('aria-modal', 'true');
-        overlay.setAttribute('aria-labelledby', 'paymentModalTitle');
-
-        overlay.innerHTML = `
-            <div class="payment-modal">
-                <button type="button" class="payment-modal-close" id="closePaymentModalBtn" aria-label="Close payment">
-                    <i class="fas fa-times"></i>
-                </button>
-                <h2 id="paymentModalTitle"><i class="fas fa-university"></i> Pay via Bank Transfer</h2>
-                <p class="payment-modal-sub">Choose a bank, copy the account number, transfer the order total, then upload your payment receipt and click Place Order.</p>
-
-                <div class="payment-account-picker">
-                    <label for="paymentAccountSelect">Choose account</label>
-                    <select id="paymentAccountSelect" class="payment-account-select">
-                        <option value="uba">UBA · United Bank for Africa — JMPOTTERS STORE — 1026078101</option>
-                        <option value="opay">OPAY · Paypoint by OPay — IMHONTU JULIANA — 8139583320</option>
-                    </select>
-                </div>
-
-                <div class="payment-account-detail" id="paymentAccountUba">
-                    <div class="pay-card">
-                        <div class="pay-card-eyebrow">UBA · United Bank for Africa</div>
-                        <div class="pay-card-name">JMPOTTERS STORE</div>
-                        <div class="pay-card-row">
-                            <code id="ubaNum">1026078101</code>
-                            <button type="button" class="copy-btn" onclick="window.copyUbaNumber()">Copy</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="payment-account-detail" id="paymentAccountOpay" style="display:none">
-                    <div class="pay-card">
-                        <div class="pay-card-eyebrow">OPAY · Paypoint by OPay</div>
-                        <div class="pay-card-name">IMHONTU JULIANA</div>
-                        <div class="pay-card-row">
-                            <code id="opayNum">8139583320</code>
-                            <button type="button" class="copy-btn" onclick="window.copyOpayNumber()">Copy</button>
-                        </div>
-                    </div>
-                </div>
-
-                <p class="payment-modal-foot">After paying, <strong>it is mandatory</strong> to upload your payment receipt below to continue and complete your order. Need help? Contact us via <a href="__WA__" target="_blank" rel="noopener">WhatsApp&nbsp;+234&nbsp;813&nbsp;958&nbsp;3320</a>.</p>
-
-                <div class="receipt-upload-card">
-                    <h3><i class="fas fa-upload"></i> Upload Payment Receipt <span class="required-mark" aria-label="required">*</span></h3>
-                    <p class="hint">Required — please provide your payment confirmation.</p>
-                    <div class="page-dropzone" id="pageDropzone">
-                        <input type="file" id="pageDropzoneInput" accept="image/jpeg,image/png,image/webp,application/pdf" />
-                        <div class="page-dropzone-content">
-                            <i class="fas fa-cloud-upload-alt icon-cell" aria-hidden="true"></i>
-                            <div class="text-cell">
-                                <div class="bold">Drop receipt here or click to browse</div>
-                                <div class="sub">JPG, PNG, WebP or PDF · Max 5MB</div>
-                            </div>
-                        </div>
-                        <div class="page-dropzone-preview" id="pageDropzonePreview">
-                            <img id="pageDropzonePreviewImg" alt="Receipt preview" />
-                            <div class="preview-info">
-                                <div class="filename" id="pageDropzonePreviewName">receipt.jpg</div>
-                                <div class="filesize" id="pageDropzonePreviewSize">0 KB</div>
-                            </div>
-                            <button type="button" class="remove" id="pageDropzoneRemove" aria-label="Remove receipt">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="pageReceiptError" role="alert"></div>
-                </div>
-
-                <button type="button" class="place-order-btn" id="placeOrderBtn" disabled>
-                    <span class="loader" aria-hidden="true"></span>
-                    <i class="fas fa-check-circle"></i>
-                    <span id="placeOrderBtnLabel">Upload receipt to enable</span>
-                </button>
-                <a href="cart.html" class="continue-shopping" id="modalBackToCart"><i class="fas fa-arrow-left"></i> Back to Cart</a>
-            </div>
-        `;
-
-        document.body.appendChild(overlay);
-        document.body.style.overflow = 'hidden';
-        requestAnimationFrame(function(){ overlay.classList.add('active'); });
-
-        var closeBtn = overlay.querySelector('#closePaymentModalBtn');
-        if (closeBtn) closeBtn.addEventListener('click', window.JMPOTTERS_closePaymentModal);
-
-        var select = overlay.querySelector('#paymentAccountSelect');
-        if (select) select.addEventListener('change', function () {
-            var v = select.value;
-            var uba = overlay.querySelector('#paymentAccountUba');
-            var opay = overlay.querySelector('#paymentAccountOpay');
-            if (uba) uba.style.display = (v === 'uba') ? '' : 'none';
-            if (opay) opay.style.display = (v === 'opay') ? '' : 'none';
-        });
-
-        // Backdrop click closes
-        overlay.addEventListener('click', function (ev) {
-            if (ev.target === overlay) window.JMPOTTERS_closePaymentModal();
-        });
-
-        // Initialise dropzone & place-order bindings
+/* v16: enrich-old-checkout-modal */
+// v16: copy a bank account number to the clipboard, with animated
+// checkmark on success. Falls back to a hidden-textarea + execCommand
+// for browsers that block navigator.clipboard (e.g. older mobile Safari).
+window.JMPOTTERS_copyBankAccount = function (num, btnEl) {
+    if (!num || !btnEl) return;
+    var original = btnEl.dataset.v16Original || btnEl.innerHTML;
+    btnEl.dataset.v16Original = original;
+    var setState = function (kind) {
+        if (kind === 'ok') {
+            btnEl.innerHTML = '<i class="icon-check" style="margin-right:6px;"></i> Copied';
+            btnEl.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+            btnEl.style.color = '#ffffff';
+            btnEl.style.boxShadow = '0 0 14px rgba(16,185,129,0.5)';
+            btnEl.disabled = true;
+        } else if (kind === 'err') {
+            btnEl.innerHTML = '<i class="icon-x" style="margin-right:6px;"></i> Try again';
+            btnEl.style.background = 'linear-gradient(135deg,#ef4444,#b91c1c)';
+            btnEl.style.color = '#ffffff';
+            btnEl.style.boxShadow = '0 0 14px rgba(239,68,68,0.5)';
+            btnEl.disabled = true;
+        } else {
+            btnEl.innerHTML = original;
+            btnEl.disabled = false;
+            btnEl.style.background = '';
+            btnEl.style.color = '';
+            btnEl.style.boxShadow = '';
+        }
+    };
+    var fallback = function (text) {
         try {
-            if (typeof window.JMPOTTERS_bindPaymentUpload === 'function') {
-                window.JMPOTTERS_bindPaymentUpload(overlay);
-            }
-        } catch (_e) { /* keep silent */ }
-    }
-
-    function closePaymentModal() {
-        var overlay = document.getElementById('paymentModalOverlay');
-        if (!overlay) return;
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-        setTimeout(function () { overlay.remove(); }, 280);
-    }
-
-    function copyUbaNumber() {
-        try {
-            var n = document.getElementById('ubaNum');
-            if (!n) return;
-            navigator.clipboard && navigator.clipboard.writeText(n.textContent.trim());
-            showNotification('UBA number copied', 'success');
-        } catch (_e) { showNotification('Copy failed', 'error'); }
-    }
-    function copyOpayNumber() {
-        try {
-            var n = document.getElementById('opayNum');
-            if (!n) return;
-            navigator.clipboard && navigator.clipboard.writeText(n.textContent.trim());
-            showNotification('OPay number copied', 'success');
-        } catch (_e) { showNotification('Copy failed', 'error'); }
-    }
-
-    // Wire dropzone & place order inside the modal context.
-    function bindPaymentUpload(scope) {
-        var dz      = scope.querySelector('#pageDropzone');
-        var fi      = scope.querySelector('#pageDropzoneInput');
-        var prev    = scope.querySelector('#pageDropzonePreview');
-        var prevImg = scope.querySelector('#pageDropzonePreviewImg');
-        var prevNm  = scope.querySelector('#pageDropzonePreviewName');
-        var prevSz  = scope.querySelector('#pageDropzonePreviewSize');
-        var rem     = scope.querySelector('#pageDropzoneRemove');
-        var errBox  = scope.querySelector('#pageReceiptError');
-        var placeBtn     = scope.querySelector('#placeOrderBtn');
-        var placeBtnLbl  = scope.querySelector('#placeOrderBtnLabel');
-
-        function setEnabled(on) {
-            if (!placeBtn) return;
-            placeBtn.disabled = !on;
-            if (placeBtnLbl) placeBtnLbl.textContent = on ? 'Place Order' : 'Upload receipt to enable';
-        }
-
-        function clearErr() { if (errBox) { errBox.classList.remove('active'); errBox.textContent = ''; } }
-        function showErr(msg) { if (errBox) { errBox.textContent = msg; errBox.classList.add('active'); } }
-
-        function fmtSize(b) {
-            if (b < 1024) return b + ' B';
-            if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
-            return (b / 1048576).toFixed(2) + ' MB';
-        }
-
-        var selected = null;
-
-        function onPick() {
-            if (!fi || !fi.files || !fi.files[0]) return;
-            var f = fi.files[0];
-            var allowed = ['image/jpeg','image/png','image/webp','application/pdf'];
-            if (allowed.indexOf(f.type) === -1) { showErr('Unsupported file type'); return; }
-            if (f.size > 5 * 1024 * 1024) { showErr('File too large (max 5MB)'); return; }
-            clearErr();
-            selected = f;
-            if (prevNm) prevNm.textContent = f.name;
-            if (prevSz) prevSz.textContent = fmtSize(f.size);
-            if (prevImg) {
-                if (f.type.indexOf('image/') === 0) {
-                    var url = URL.createObjectURL(f);
-                    prevImg.src = url;
-                    prevImg.style.display = '';
-                } else {
-                    prevImg.removeAttribute('src');
-                    prevImg.style.display = 'none';
-                }
-            }
-            if (prev) prev.classList.add('active');
-            setEnabled(true);
-        }
-
-        function onClear() {
-            selected = null;
-            if (fi) fi.value = '';
-            if (prev) prev.classList.remove('active');
-            if (prevImg) prevImg.removeAttribute('src');
-            clearErr();
-            setEnabled(false);
-        }
-
-        if (fi) fi.addEventListener('change', onPick);
-        if (rem) rem.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); onClear(); });
-        if (dz) {
-            dz.addEventListener('click', function (e) {
-                if (e.target && e.target.closest && e.target.closest('#pageDropzonePreview')) return;
-                if (fi) fi.click();
-            });
-            dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('dragging'); });
-            dz.addEventListener('dragleave', function () { dz.classList.remove('dragging'); });
-            dz.addEventListener('drop', function (e) {
-                e.preventDefault(); dz.classList.remove('dragging');
-                if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files[0]) return;
-                if (fi) {
-                    try { fi.files = e.dataTransfer.files; } catch (_e) { /* some browsers block */ }
-                    onPick();
-                }
-            });
-        }
-
-        if (placeBtn) placeBtn.addEventListener('click', function () {
-            if (placeBtn.disabled) return;
-            if (!selected) { showErr('Please attach a receipt first'); return; }
-            placeBtn.classList.add('loading');
-            var user = null;
-            try { user = JSON.parse(localStorage.getItem('jmpotters_user') || 'null'); } catch (_e) {}
-            if (!user || !user.address || !user.city || !user.state) {
-                placeBtn.classList.remove('loading');
-                showErr('Please complete your profile (address, city, state) before placing your order.');
-                try { sessionStorage.setItem('checkoutRedirect', window.location.href); } catch (_e) {}
-                setTimeout(function(){ window.location.href = 'register.html'; }, 1200);
-                return;
-            }
-            var J = window.JMPOTTERS || null;
-            if (!J || typeof J.createOrder !== 'function' || typeof J.uploadReceiptToStorage !== 'function') {
-                placeBtn.classList.remove('loading');
-                showErr('Checkout system not ready yet. Please wait a moment and try again.');
-                return;
-            }
-            J.createOrder({ receiptFile: selected })
-                .then(function (orderNum) {
-                    return J.uploadReceiptToStorage(orderNum, selected).then(function () { return orderNum; });
-                })
-                .then(function (orderNum) {
-                    window.location.href = 'invoice.html?order=' + encodeURIComponent(orderNum);
-                })
-                .catch(function (err) {
-                    placeBtn.classList.remove('loading');
-                    console.error('Place order error', err);
-                    showErr('Could not place your order. Please try again.');
-                });
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.top = '0';
+            ta.style.left = '0';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            var ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return ok;
+        } catch (_e) { return false; }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(num).then(function () {
+            setState('ok');
+            setTimeout(function () { setState('reset'); }, 1800);
+        }, function () {
+            if (fallback(num)) { setState('ok'); setTimeout(function () { setState('reset'); }, 1800); }
+            else                { setState('err'); setTimeout(function () { setState('reset'); }, 1800); }
         });
-
-        setEnabled(false);
+    } else if (fallback(num)) {
+        setState('ok');
+        setTimeout(function () { setState('reset'); }, 1800);
+    } else {
+        setState('err');
+        setTimeout(function () { setState('reset'); }, 1800);
     }
-
-    window.JMPOTTERS_openPaymentModal = openPaymentModal;
-    window.JMPOTTERS_closePaymentModal = closePaymentModal;
-    window.JMPOTTERS_bindPaymentUpload = bindPaymentUpload;
-    window.copyUbaNumber = copyUbaNumber;
-    window.copyOpayNumber = copyOpayNumber;
-
-
-    function _ensureModalStyles() {
-        if (document.getElementById('paymentModalStyles')) return;
-        var s = document.createElement('style');
-        s.id = 'paymentModalStyles';
-        s.textContent = `<style>
-        .payment-modal-overlay{position:fixed;inset:0;background:rgba(15,18,25,.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:11000;display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow-y:auto;opacity:0;transition:opacity 280ms ease;}
-        .payment-modal-overlay.active{opacity:1;}
-        .payment-modal{position:relative;background:#ffffff;color:#111827;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.45);max-width:720px;width:92%;padding:36px 28px 28px;transform:translateY(20px);transition:transform 280ms cubic-bezier(.34,1.56,.64,1);font-family:'Plus Jakarta Sans',sans-serif;}
-        .payment-modal-overlay.active .payment-modal{transform:translateY(0);}
-        .payment-modal h2{margin:0 0 8px;font-size:1.6rem;}
-        .payment-modal h2 i{color:#d97706;margin-right:6px;}
-        .payment-modal-sub{margin:0 0 18px;color:#6b7280;font-size:.95rem;line-height:1.55;}
-        .payment-modal-close{position:absolute;top:14px;right:14px;background:#f3f4f6;border:none;width:36px;height:36px;border-radius:50%;color:#374151;font-size:1rem;cursor:pointer;transition:.2s;}
-        .payment-modal-close:hover{background:#e5e7eb;transform:rotate(90deg);}
-        .payment-account-picker{margin:0 0 14px;}
-        .payment-account-picker label{display:block;font-size:.78rem;font-weight:700;color:#374151;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
-        .payment-account-select{width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:10px;background:#fff;font-size:.95rem;color:#111827;cursor:pointer;}
-        .payment-account-select:focus{outline:none;border-color:#d97706;box-shadow:0 0 0 3px rgba(217,119,6,.18);}
-        .pay-card{background:linear-gradient(135deg,#fff,#f9fafb);border:1px solid #e5e7eb;border-radius:14px;padding:18px 20px;margin-bottom:8px;position:relative;}
-        .pay-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:#ef4444;border-radius:14px 0 0 14px;}
-        .payment-account-detail[id="paymentAccountOpay"] .pay-card::before{background:#10b981;}
-        .pay-card-eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#b91c1c;}
-        .payment-account-detail[id="paymentAccountOpay"] .pay-card-eyebrow{color:#047857;}
-        .pay-card-name{font-size:1.05rem;font-weight:700;margin:2px 0 8px;}
-        .pay-card-row{display:flex;align-items:center;justify-content:space-between;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;margin-top:6px;}
-        .pay-card-row code{font-family:'JetBrains Mono','SF Mono',Consolas,monospace;font-size:1.25rem;font-weight:700;letter-spacing:.06em;}
-        .copy-btn{background:#1f2937;color:#fff !important;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.85rem;transition:.2s;}
-        .copy-btn:hover{background:#000;}
-        .payment-modal-foot{margin:6px 0 18px;padding:12px 14px;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.18);border-radius:10px;color:#92400e;font-size:.88rem;line-height:1.55;}
-        .payment-modal-foot a{color:#b45309;font-weight:700;}
-        .receipt-upload-card{margin-bottom:18px;}
-        .receipt-upload-card h3{font-size:1.1rem;margin:0 0 4px;}
-        .receipt-upload-card .hint{font-size:.85rem;color:#6b7280;margin:0 0 12px;}
-        .page-dropzone{border:2px dashed #cbd5e1;border-radius:14px;padding:24px;text-align:center;cursor:pointer;background:#f9fafb;transition:.2s;}
-        .page-dropzone:hover,.page-dropzone.dragging{border-color:#d97706;background:rgba(217,119,6,.05);}
-        .page-dropzone-content .icon-cell{display:block;font-size:2.2rem;color:#9ca3af;margin-bottom:8px;}
-        .page-dropzone-content .text-cell .bold{font-weight:700;color:#1f2937;}
-        .page-dropzone-content .text-cell .sub{font-size:.8rem;color:#6b7280;margin-top:4px;}
-        .page-dropzone-preview{display:none;align-items:center;gap:12px;background:#ffffff;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin-top:14px;}
-        .page-dropzone-preview.active{display:flex;}
-        .page-dropzone-preview img{width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;}
-        .page-dropzone-preview .preview-info{flex:1;}
-        .page-dropzone-preview .filename{font-weight:700;color:#1f2937;font-size:.92rem;}
-        .page-dropzone-preview .filesize{color:#6b7280;font-size:.78rem;}
-        .page-dropzone-preview .remove{background:#fee2e2;border:none;color:#b91c1c;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:700;}
-        #pageReceiptError{display:none;margin-top:10px;padding:10px 12px;color:#b91c1c;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:.88rem;}
-        #pageReceiptError.active{display:block;}
-        .place-order-btn{margin-top:8px;width:100%;background:#1f2937;color:#fff;border:none;padding:16px;border-radius:100px;font-weight:700;font-size:1.05rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:.2s;}
-        .place-order-btn:hover:not([disabled]){background:#000;transform:translateY(-2px);}
-        .place-order-btn[disabled]{background:#e5e7eb;color:#9ca3af;cursor:not-allowed;}
-        .place-order-btn .loader{width:16px;height:16px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:jmp-spin .8s linear infinite;display:none;}
-        .place-order-btn.loading .loader{display:inline-block;}
-        .continue-shopping{display:block;text-align:center;margin-top:14px;color:#6b7280;text-decoration:none;font-size:.92rem;}
-        .continue-shopping:hover{color:#1f2937;}
-        @keyframes jmp-spin{to{transform:rotate(360deg)}}
-        </style>`;
-        document.head.appendChild(s);
-    }
-    window.__CSS_PLACEHOLDER__ = _ensureModalStyles;
-    
+};
+// v16: toggle which bank-account card is visible based on the <select> choice.
+window.JMPOTTERS_toggleBankCard = function (selectEl) {
+    var which = selectEl && selectEl.value;
+    var uba  = document.getElementById('v16UbaCard');
+    var opay = document.getElementById('v16OpayCard');
+    if (uba)  uba.style.display  = (which === 'uba')  ? 'block' : 'none';
+    if (opay) opay.style.display = (which === 'opay') ? 'block' : 'none';
+};
+/* v16:end helpers */
+/* v16:end enrich-old-checkout-modal */
+})();
