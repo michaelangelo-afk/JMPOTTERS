@@ -578,7 +578,18 @@
             main { padding: 100px 16px 40px; }
             .account-card { padding: 20px; }
         }
-    </style>
+    </style><!-- JMPOTTERS_THEME_CSS -->
+<link rel="stylesheet" href="theme.css">
+
+<!-- JMPOTTERS_THEME_FOUC -->
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('jmpTheme');
+    if (t === 'dark') document.documentElement.classList.add('dark-mode');
+  } catch(e){}
+})();
+</script>
 </head>
 <body>
 
@@ -1140,5 +1151,7 @@
             });
         })();
     </script>
+<!-- JMPOTTERS_THEME_JS -->
+<script src="theme.js" defer></script>
 </body>
 </html>

@@ -381,6 +381,102 @@
             .toast { right: 12px; left: 12px; min-width: auto; }
         }
 
+        /* ===== Bank Transfer Card (Step 3) ===== */
+        .bank-transfer-card {
+            margin-top: var(--space-3);
+            padding: var(--space-3);
+            background: linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(212,175,55,0.06) 100%);
+            border: 1px solid rgba(99,102,241,0.18);
+            border-radius: var(--radius);
+        }
+        .bank-transfer-header {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.78rem; color: var(--primary-700);
+            margin-bottom: var(--space-2);
+            letter-spacing: 0.02em; text-transform: uppercase; font-weight: 700;
+        }
+        .bank-transfer-header i { color: var(--gold); }
+        .bank-transfer-tag {
+            margin-left: auto;
+            font-size: 0.6rem; font-weight: 700;
+            background: rgba(212,175,55,0.18); color: var(--gold);
+            padding: 2px 8px; border-radius: 999px;
+            text-transform: uppercase; letter-spacing: 0.04em;
+        }
+        .bank-transfer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 480px) {
+            .bank-transfer-grid { grid-template-columns: 1fr; }
+        }
+        .bank-transfer-row {
+            display: flex; align-items: stretch;
+            gap: 10px;
+            background: rgba(255,255,255,0.65);
+            border: 1px solid rgba(99,102,241,0.12);
+            border-radius: 10px;
+            padding: 10px 12px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .bank-transfer-row:hover { transform: translateY(-2px); border-color: rgba(99,102,241,0.32); box-shadow: 0 6px 18px rgba(99,102,241,0.10); }
+        .bank-label {
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.78rem;
+            color: #ffffff; background: var(--primary-600);
+            border-radius: 8px;
+            padding: 0 10px;
+            min-width: 50px; letter-spacing: 0.04em;
+        }
+        .bank-detail { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .bank-account-name {
+            font-size: 0.68rem; font-weight: 600;
+            color: var(--gray-600);
+            text-transform: uppercase; letter-spacing: 0.04em;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .bank-account-number {
+            display: flex; align-items: center; gap: 8px; justify-content: space-between;
+        }
+        .bank-account-number code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 1.05rem; font-weight: 700;
+            color: var(--gray-900); letter-spacing: 0.08em;
+        }
+        .copy-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 5px 9px;
+            border: 1px solid rgba(99,102,241,0.32);
+            background: var(--primary-600); color: #ffffff;
+            border-radius: 7px;
+            font-size: 0.65rem; font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .copy-btn:hover { background: var(--primary-700); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(99,102,241,0.3); }
+        .copy-btn:active { transform: translateY(0); }
+        .copy-btn i { font-size: 0.7rem; }
+        .bank-transfer-foot {
+            margin-top: 10px; font-size: 0.7rem;
+            color: var(--gray-600); line-height: 1.5;
+        }
+
+        /* ===== Dark-mode variants of the bank transfer card ===== */
+        .dark-mode .bank-transfer-card {
+            background: linear-gradient(135deg, rgba(129,140,248,0.10) 0%, rgba(212,175,55,0.10) 100%);
+            border-color: rgba(129,140,248,0.25);
+        }
+        .dark-mode .bank-transfer-header { color: #c7d2fe; }
+        .dark-mode .bank-transfer-row { background: rgba(15,23,42,0.55); border-color: rgba(129,140,248,0.22); }
+        .dark-mode .bank-transfer-row:hover { border-color: rgba(129,140,248,0.45); box-shadow: 0 6px 18px rgba(0,0,0,0.4); }
+        .dark-mode .bank-label { background: linear-gradient(135deg, #818cf8, #6366f1); }
+        .dark-mode .bank-account-name { color: var(--gray-500); }
+        .dark-mode .bank-account-number code { color: var(--gray-900, #f1f5f9); }
+        .dark-mode .copy-btn { background: linear-gradient(135deg, #818cf8, #6366f1); border-color: rgba(129,140,248,0.4); }
+        .dark-mode .copy-btn:hover { background: linear-gradient(135deg, #a5b4fc, #818cf8); }
+        .dark-mode .bank-transfer-foot { color: var(--gray-500); }
+
         /* ===== INVOICE PAGE SPECIFIC ===== */
         .invoice-wrapper {
             max-width: 1000px;
@@ -892,7 +988,18 @@
             transform: scale(1.05);
             border-color: var(--gold);
         }
-    </style>
+    </style><!-- JMPOTTERS_THEME_CSS -->
+<link rel="stylesheet" href="theme.css">
+
+<!-- JMPOTTERS_THEME_FOUC -->
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('jmpTheme');
+    if (t === 'dark') document.documentElement.classList.add('dark-mode');
+  } catch(e){}
+})();
+</script>
 </head>
 <body>
 
@@ -975,6 +1082,47 @@
             </div>
 
             <!-- Action Buttons -->
+            <!-- ===== STATIC BANK TRANSFER INFO (Step 3) ===== -->
+            <section class="bank-transfer-card-section" aria-label="How to pay">
+                <div class="bank-transfer-section-header">
+                    <i class="icon-banknote"></i>
+                    <div>
+                        <strong>How to Pay — Bank Transfer</strong>
+                        <p>Transfer the order total into one of the accounts below, then upload your payment receipt to confirm your order.</p>
+                    </div>
+                </div>
+                <div class="bank-transfer-grid">
+                    <div class="bank-transfer-row">
+                        <div class="bank-label">UBA</div>
+                        <div class="bank-detail">
+                            <div class="bank-account-name">JMPOTTERS STORE</div>
+                            <div class="bank-account-number">
+                                <code>1026078101</code>
+                                <button type="button" class="copy-btn" onclick="copyBankNumber('1026078101', this)" aria-label="Copy UBA account number">
+                                    <i class="icon-copy"></i><span>Copy</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bank-transfer-row">
+                        <div class="bank-label">OPAY</div>
+                        <div class="bank-detail">
+                            <div class="bank-account-name">IMHONTU JULIANA</div>
+                            <div class="bank-account-number">
+                                <code>8139583320</code>
+                                <button type="button" class="copy-btn" onclick="copyBankNumber('8139583320', this)" aria-label="Copy Opay account number">
+                                    <i class="icon-copy"></i><span>Copy</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bank-transfer-foot">
+                    <i class="icon-info"></i>
+                    After paying, scroll up and use <strong>Upload Receipt</strong> so we can confirm your order quickly.
+                </div>
+            </section>
+
             <div id="actionButtons" class="action-buttons" style="display:none;">
                 <button class="btn btn-primary" onclick="window.print()">
                     <i class="icon-printer"></i> Print Invoice
@@ -1091,10 +1239,7 @@
         </div>
     </div>
 
-    <!-- Theme Toggle -->
-    <button class="theme-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">
-        <i class="icon-moon"></i>
-    </button>
+    <!-- (Theme toggle moved to global theme.js; see bottom of file) -->
 
     <script src="app.js" defer></script>
     <script src="account-auth.js" defer></script>
@@ -1120,21 +1265,8 @@
             }
 
             // ===== DARK MODE =====
-            function initDarkMode() {
-                var darkMode = localStorage.getItem('invoiceDarkMode') === 'true';
-                if (darkMode) {
-                    document.body.classList.add('dark-mode');
-                    var icon = document.querySelector('.theme-toggle i');
-                    if (icon) icon.className = 'icon-sun';
-                }
-            }
-
-            window.toggleDarkMode = function() {
-                var isDark = document.body.classList.toggle('dark-mode');
-                localStorage.setItem('invoiceDarkMode', isDark);
-                var icon = document.querySelector('.theme-toggle i');
-                if (icon) icon.className = isDark ? 'icon-sun' : 'icon-moon';
-            };
+            // (Removed: legacy .theme-toggle/initDarkMode/toggleDarkMode.
+            // The global theme.js + theme.css now own the toggle across the site.)
 
             // ===== WHATSAPP SHARE =====
             window.shareViaWhatsApp = function() {
@@ -1175,6 +1307,47 @@
                     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
                 }).save();
             };
+
+            // ===== Copy-to-clipboard for bank account numbers =====
+            // Uses the shared jmpAnnounce live-region helper from theme.js for screen-reader feedback.
+            function copyBankNumber(num, btn) {
+                var announce = (window.jmpAnnounce) ? window.jmpAnnounce : function(){};
+                var showOk = function(t) { announce('Account number copied: ' + t); try { showToast && showToast('Account number copied: ' + t, 'success'); } catch(e){} };
+                var showErr = function() { announce('Copy failed. Please select the number and copy manually.'); try { showToast && showToast('Could not copy. Select the number and copy manually.', 'error'); } catch(e){} };
+                var markCopied = function(btn) {
+                    if (!btn) return;
+                    var original = btn.dataset.original || btn.innerHTML;
+                    btn.dataset.original = original;
+                    btn.innerHTML = '<i class="icon-check"></i><span>Copied</span>';
+                    btn.classList.add('copied');
+                    setTimeout(function(){ btn.innerHTML = original; btn.classList.remove('copied'); }, 1600);
+                };
+                var tryClipboard = function(t) {
+                    try {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(String(t)).then(function(){ showOk(t); markCopied(btn); }).catch(function(){ fallbackCopy(t, showOk, showErr, btn); });
+                            return;
+                        }
+                    } catch(e) { /* fall through */ }
+                    fallbackCopy(t, showOk, showErr, btn);
+                };
+                tryClipboard(num);
+            }
+            function fallbackCopy(text, onOk, onErr, btn) {
+                try {
+                    var ta = document.createElement('textarea');
+                    ta.value = String(text);
+                    ta.setAttribute('readonly', '');
+                    ta.style.position = 'fixed';
+                    ta.style.top = '-9999px';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    var ok = document.execCommand && document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    if (ok) { onOk(text); if (btn) { /* handled by markCopied via tryClipboard path on success */ } } else { onErr(); }
+                } catch(e) { onErr(); }
+            }
 
             // ===== LOAD INVOICE =====
             async function loadInvoice() {
@@ -1372,7 +1545,6 @@
 
             // ===== BOOT =====
             function boot() {
-                initDarkMode();
                 loadInvoice();
             }
 
@@ -1384,5 +1556,7 @@
         })();
     </script>
 
+<!-- JMPOTTERS_THEME_JS -->
+<script src="theme.js" defer></script>
 </body>
 </html>

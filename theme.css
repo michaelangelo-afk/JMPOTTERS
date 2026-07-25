@@ -1,0 +1,193 @@
+/* =========================================================
+   JMPOTTERS — shared dark-mode + theme toggle stylesheet
+   Loaded AFTER each page's inline <style> block so .dark-mode
+   overrides win the cascade. Provides:
+     1) dark-mode rewires of the existing --gray-* CSS vars
+     2) common-component dark-mode overrides (headers/cards)
+     3) the .theme-toggle-btn floating circular button
+   ========================================================= */
+
+/* ===== Dark-mode rewires — auto-cascade to existing var(--gray-*) users ===== */
+.dark-mode {
+  --gray-50:  #0F172A;
+  --gray-100: #1E293B;
+  --gray-200: #334155;
+  --gray-300: #475569;
+  --gray-400: #64748B;
+  --gray-500: #94A3B8;
+  --gray-600: #CBD5E1;
+  --gray-700: #E2E8F0;
+  --gray-800: #F1F5F9;
+  --gray-900: #F8FAFC;
+  color-scheme: dark;
+}
+
+/* ===== Global element cascades ===== */
+.dark-mode body,
+.dark-mode main,
+.dark-mode .page-wrap,
+.dark-mode .container,
+.dark-mode .wrapper {
+  color: var(--gray-800);
+}
+
+.dark-mode body { background: #0f172a; }
+
+.dark-mode h1, .dark-mode h2, .dark-mode h3, .dark-mode h4, .dark-mode h5, .dark-mode h6 {
+  color: var(--gray-900);
+}
+
+.dark-mode p, .dark-mode li, .dark-mode span, .dark-mode label, .dark-mode dt, .dark-mode dd {
+  color: var(--gray-700);
+}
+
+.dark-mode a { color: #a5b4fc; }
+.dark-mode a:hover { color: #c7d2fe; }
+
+.dark-mode hr { border-color: rgba(255,255,255,0.08); }
+
+/* ===== Common component overrides (header / cards / forms / buttons) ===== */
+.dark-mode header,
+.dark-mode .header,
+.dark-mode .mobile-header,
+.dark-mode .site-header,
+.dark-mode nav,
+.dark-mode .navbar,
+.dark-mode [class*="header"]:not(.theme-toggle-btn) {
+  background: rgba(15,23,42,0.92) !important;
+  backdrop-filter: blur(10px);
+  border-bottom-color: rgba(255,255,255,0.06) !important;
+}
+
+.dark-mode footer,
+.dark-mode .footer,
+.dark-mode [class*="footer"] {
+  background: #0a0f1a !important;
+  color: var(--gray-700) !important;
+  border-top-color: rgba(255,255,255,0.06);
+}
+
+.dark-mode .product-card,
+.dark-mode .card,
+.dark-mode .cart-card,
+.dark-mode [class*="-card"]:not(.theme-toggle-btn):not(.product-badge) {
+  background: #1e293b !important;
+  color: var(--gray-800) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
+}
+
+.dark-mode .product-card:hover,
+.dark-mode .card:hover {
+  border-color: rgba(129,140,248,0.45) !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 0 1px rgba(129,140,248,0.18) !important;
+}
+
+.dark-mode input,
+.dark-mode textarea,
+.dark-mode select,
+.dark-mode .form-control,
+.dark-mode [class*="input"],
+.dark-mode [class*="form-control"] {
+  background: #1e293b !important;
+  color: var(--gray-800) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
+  color: var(--gray-500) !important;
+}
+
+.dark-mode .btn-secondary,
+.dark-mode [class*="btn-secondary"],
+.dark-mode [class*="header-action"] {
+  background: #1e293b !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: var(--gray-800) !important;
+}
+
+.dark-mode .btn-primary {
+  background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%) !important;
+  color: #ffffff !important;
+}
+
+.dark-mode .modal-content,
+.dark-mode .modal,
+.dark-mode [class*="modal-"] {
+  background: #1e293b !important;
+  color: var(--gray-800) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+.dark-mode .text-gray-500, .dark-mode .text-muted { color: var(--gray-500) !important; }
+.dark-mode .text-gray-700, .dark-mode .text-dark { color: var(--gray-700) !important; }
+.dark-mode .text-gray-900 { color: var(--gray-900) !important; }
+.dark-mode .bg-white { background: #1e293b !important; }
+.dark-mode .bg-gray-50 { background: #0f172a !important; }
+.dark-mode .bg-gray-100 { background: #1e293b !important; }
+
+/* Subtle accent glow on hover for interactive elements */
+.dark-mode a:hover, .dark-mode button:hover, .dark-mode .clickable:hover {
+  text-shadow: 0 0 8px rgba(129,140,248,0.18);
+}
+
+/* ===== Floating circular theme toggle (bottom-LEFT, away from .back-to-top bottom-right) ===== */
+.theme-toggle-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 9980;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(15,23,42,0.18), 0 2px 6px rgba(15,23,42,0.08);
+  transition: transform 0.45s cubic-bezier(0.68, -0.55, 0.27, 1.55), background 0.35s ease, color 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+  font-size: 0.95rem;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-toggle-btn:hover {
+  transform: scale(1.12) rotate(18deg);
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  color: #ffffff;
+  border-color: rgba(255,255,255,0.4);
+  box-shadow: 0 10px 28px rgba(99,102,241,0.45), 0 0 0 1px rgba(129,140,248,0.3);
+}
+.theme-toggle-btn:active { transform: scale(0.95); }
+.theme-toggle-btn svg { transition: transform 0.5s ease, opacity 0.3s ease; }
+.theme-toggle-btn .sun-icon { display: inline-block; }
+.theme-toggle-btn .moon-icon { display: none; }
+.dark-mode .theme-toggle-btn { background: #1e293b; color: #a5b4fc; border-color: rgba(255,255,255,0.08); }
+.dark-mode .theme-toggle-btn .sun-icon { display: none; }
+.dark-mode .theme-toggle-btn .moon-icon { display: inline-block; }
+.dark-mode .theme-toggle-btn:hover { box-shadow: 0 10px 28px rgba(129,140,248,0.55), 0 0 0 1px rgba(165,180,252,0.5); }
+.dark-mode .theme-toggle-btn:hover svg { transform: rotate(-18deg); }
+
+/* On mobile, push up so it doesn't collide with .back-to-top (bottom-right) or chat-fab */
+@media (max-width: 640px) {
+  .theme-toggle-btn { left: 16px; bottom: 92px; width: 2.4rem; height: 2.4rem; font-size: 0.85rem; }
+}
+
+/* Smooth theme swap transition for the whole document */
+html { transition: background-color 0.35s ease, color 0.35s ease; }
+body, header, footer, .card, .product-card, [class*="-card"], input, textarea, select, button { transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+}
+
+/* ===== Visually hidden helper for screen-reader announcements =====
+   Kept in the DOM tree but invisible to sighted users. WCAG-friendly. */
+.sr-only{
+  position:absolute !important;
+  width:1px !important; height:1px !important;
+  padding:0 !important; margin:-1px !important;
+  overflow:hidden !important; clip:rect(0,0,0,0) !important;
+  white-space:nowrap !important; border:0 !important;
+}

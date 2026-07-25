@@ -1059,7 +1059,18 @@
             .testimonial-card { flex: 0 0 280px; padding: 1.5rem; }
             .arrivals-scroll .product-card { flex: 0 0 200px; }
         }
-    </style>
+    </style><!-- JMPOTTERS_THEME_CSS -->
+<link rel="stylesheet" href="theme.css">
+
+<!-- JMPOTTERS_THEME_FOUC -->
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('jmpTheme');
+    if (t === 'dark') document.documentElement.classList.add('dark-mode');
+  } catch(e){}
+})();
+</script>
 </head>
 <body>
 
@@ -2294,6 +2305,8 @@
 
     <script src="app.js"></script>
     <script src="account-auth.js" defer></script>
+<!-- JMPOTTERS_THEME_JS -->
+<script src="theme.js" defer></script>
 </body>
 </html>
 

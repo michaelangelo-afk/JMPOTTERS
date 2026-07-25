@@ -716,7 +716,9 @@
             .product-container { padding: 1rem; }
             .price-section .current-price { font-size: 1.2rem; }
         }
-    </style>
+    </style><!-- JMPOTTERS_THEME_CSS -->
+<link rel="stylesheet" href="theme.css">
+
     <style>
         /* ===== Storefront product gallery ===== */
         .product-gallery{display:flex;flex-direction:column;gap:0.6rem;width:100%}
@@ -749,6 +751,15 @@
         @media(max-width:640px){.product-gallery-thumb{flex:0 0 64px;height:64px}.gallery-nav{opacity:1;width:32px;height:32px;font-size:0.75rem}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     </style>
+<!-- JMPOTTERS_THEME_FOUC -->
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('jmpTheme');
+    if (t === 'dark') document.documentElement.classList.add('dark-mode');
+  } catch(e){}
+})();
+</script>
 </head>
 <body>
 
@@ -1795,5 +1806,7 @@
         })();
         // ===== End product gallery =====
     </script>
+<!-- JMPOTTERS_THEME_JS -->
+<script src="theme.js" defer></script>
 </body>
 </html>
