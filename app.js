@@ -731,6 +731,10 @@
     // RENDER PRODUCT PAGE
     // ====================
     function renderProductPage(product) {
+            // v16: belt-and-suspenders guard. Whoever renders first sets the flag; the other bails.
+            // This handles BOTH orderings: app.js faster (sets flag, product.html bails) AND product.html faster (sets flag, app.js bails).
+            if (window.__jmpottersProductRendered) { console.log("[JMPOTTERS v16] app.js renderProductPage skipped -- the other path already rendered."); return; }
+
         const productViewer = document.getElementById('productViewer');
         if (!productViewer) return;
         

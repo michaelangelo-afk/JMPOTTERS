@@ -1193,14 +1193,6 @@
         }
 
         // ===== LOAD PRODUCT =====
-        // v14: single-source-of-truth guard. app.js (defer) owns the render.
-        // If app.js has already populated #productViewer, skip the local render
-        // so we don't overwrite app.js's render with our own (which was causing
-        // the image to shift downward + badge + Save X% to disappear ~1 sec later).
-        var __jmpottersProductRendered = window.__jmpottersProductRendered || false;
-        function __jmpottersMaybeSkipLocalRender() {
-            return __jmpottersProductRendered || (window.__jmpottersProductRendered === true);
-        }
         var currentProduct = null;
         var currentSelectedQuantity = 1;
         var currentSelectedColor = null;
@@ -1238,6 +1230,10 @@
         }
 
         function renderProductPage(product) {
+            // v16: belt-and-suspenders guard. Whoever renders first sets the flag; the other bails.
+            // Handles BOTH orderings: product.html async faster OR app.js async faster.
+            if (window.__jmpottersProductRendered) { console.log("[JMPOTTERS v16] product.html renderProductPage skipped -- the other path already rendered."); return; }
+
             var productViewer = document.getElementById('productViewer');
             if (!productViewer) return;
 
@@ -1659,7 +1655,7 @@
         // ===== INIT =====
         var slug = getSlugFromURL();
         if (slug) {
-            if (!__jmpottersMaybeSkipLocalRender()) { loadSingleProductBySlug(slug); } else { console.log("[JMPOTTERS v14] product.html render skipped -- app.js already rendered."); }
+            loadSingleProductBySlug(slug);
         } else {
             document.getElementById('productViewer').innerHTML = '<div class="error-state"><i class="icon-alert-circle"></i><p>No product specified</p><a href="index.html" style="display:inline-block;margin-top:1rem;padding:10px 24px;background:var(--gold);color:#0c0f15;border-radius:50px;text-decoration:none;font-weight:600;">Return to Home</a></div>';
         }
