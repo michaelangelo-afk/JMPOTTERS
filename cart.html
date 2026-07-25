@@ -836,8 +836,11 @@ function getImageUrl(cat, f) {
             container.innerHTML = rows;
             try { localStorage.setItem('jmpotters_cart_total', String(total)); } catch(e){}
         }
-        // v9 FIX: non-blocking async stock refresh — heals stale item.stock so + can be properly
-        // capped to per-variant stock from product_variants (or products for variant-less items).
+        // v11 FIX: switch variant-stock query from `product_variants` (empty / wrong schema)
+        // to `product_sizes` (the actual table app.js uses for footwear color+size stock).
+        // Defense-in-depth: for footwear items where no matching size row is found in
+        // product_sizes, we cap `item.stock` to `item.quantity` so the +/- buttons cannot
+        // increment above the snapshot they currently hold until the next refresh.
         function refreshCartStock() {
             if (typeof cartSb === "undefined" || !cartSb) return;
             var cart = [];
@@ -857,79 +860,91 @@ function getImageUrl(cat, f) {
             if (!productIds.length) return;
             Promise.all([
                 cartSb.from("products").select("id, stock").in("id", productIds),
-                cartSb.from("product_variants").select("product_id, color_id, size_id, stock").in("product_id", productIds)
+                // v11: query product_sizes (where app.js stores per-color+size stock_quantity),
+                // NOT product_variants (which was returning empty results and causing the
+                // silent fallback to products.stock that over-allowed footwear).
+                cartSb.from("product_sizes").select("id, product_id, color_id, size_value, stock_quantity").in("product_id", productIds)
             ]).then(function(results) {
-                var prods = (results && results[0] && results[0].data) || [];
-                var variants = (results && results[1] && results[1].data) || [];
+                var prods  = (results && results[0] && results[0].data) || [];
+                var sizes  = (results && results[1] && results[1].data) || [];
                 var changed = false;
-                for (var k = 0; k < cart.length; k++) {
-                    var item = cart[k];
-                    var freshStock = null;
-                    // v10: variant-aware match for footwear etc. with size_value fallback.
-                    // Stage 1: strict match by (product_id, color_id, size_id).
-                    // Stage 2: if Stage 1 missed AND item.size_value exists,
-                    //           match by (product_id, color_id) where row.size_id coerces to item.size_value.
-                    var sizeValStr = item.size_value == null ? null : String(item.size_value).trim();
-                    if ((item.color_id != null || item.color_name != null) && variants.length > 0) {
-                        for (var v = 0; v < variants.length; v++) {
-                            var row = variants[v];
-                            var rowColorId = row.color_id == null ? null : String(row.color_id);
-                            var rowSizeId = row.size_id == null ? null : String(row.size_id);
-                            var itemColorId = item.color_id == null ? null : String(item.color_id);
-                            // Stage 1: exact match on size_id AND color_id
-                            var stage1 =
-                                String(row.product_id) === String(item.product_id) &&
-                                rowColorId === itemColorId &&
-                                item.size_id != null && rowSizeId === String(item.size_id);
-                            // Stage 2: size_value fallback (footwear "42" string vs numeric size_id FK)
-                            var stage2 =
-                                sizeValStr != null && sizeValStr !== "" &&
-                                String(row.product_id) === String(item.product_id) &&
-                                rowColorId === itemColorId &&
-                                rowSizeId === sizeValStr;
-                            if (stage1 || stage2) {
-                                freshStock = row.stock;
+
+                for (var i = 0; i < cart.length; i++) {
+                    var item = cart[i];
+                    if (!item) continue;
+
+                    var isFootwear = (item.category_slug === 'mensfootwear' || item.category_slug === 'womensfootwear');
+                    var newStock = null;
+
+                    if (isFootwear) {
+                        // Stage 1: strict FK match on size_id (the numeric row id from product_sizes.id)
+                        var matchedSize = null;
+                        if (item.size_id != null) {
+                            for (var s = 0; s < sizes.length; s++) {
+                                if (String(sizes[s].id) === String(item.size_id)) {
+                                    matchedSize = sizes[s];
+                                    break;
+                                }
+                            }
+                        }
+                        // Stage 2: legacy fallback (item missing size_id) - match on (product_id, color_id, size_value)
+                        if (!matchedSize && item.size_value) {
+                            for (var s2 = 0; s2 < sizes.length; s2++) {
+                                var row = sizes[s2];
+                                if (String(row.product_id) === String(item.product_id)
+                                    && String(row.size_value) === String(item.size_value)
+                                    && (item.color_id == null || String(row.color_id) === String(item.color_id))) {
+                                    matchedSize = row;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (matchedSize && matchedSize.stock_quantity != null) {
+                            var parsed = parseInt(matchedSize.stock_quantity, 10);
+                            newStock = (!isNaN(parsed) && parsed >= 0) ? Math.max(0, parsed) : 0;
+                        } else {
+                            // DEFENSIVE CAP: variant row missing -> freeze the cart line at its
+                            // current quantity so the +/- buttons cannot push it higher.
+                            newStock = parseInt(item.quantity, 10) || 0;
+                        }
+                    }
+
+                    // Fallback to product-level stock for non-footwear items (or whenever
+                    // newStock still hasn't been resolved).
+                    if (newStock === null) {
+                        for (var p = 0; p < prods.length; p++) {
+                            if (String(prods[p].id) === String(item.product_id)) {
+                                var ps = parseInt(prods[p].stock, 10);
+                                newStock = (!isNaN(ps) && ps >= 0) ? Math.max(0, ps) : 0;
                                 break;
                             }
                         }
                     }
-                    // (b) fallback: product-level stock
-                    if (freshStock == null && prods.length > 0) {
-                        for (var p = 0; p < prods.length; p++) {
-                            if (String(prods[p].id) === String(item.product_id)) { freshStock = prods[p].stock; break; }
-                        }
+                    if (newStock === null) continue;
+
+                    if (item.stock !== newStock) {
+                        item.stock = newStock;
+                        changed = true;
                     }
-                    if (freshStock == null) continue;
-                    var parsedFresh = parseInt(freshStock, 10);
-                    if (isNaN(parsedFresh)) continue;
-                    freshStock = parsedFresh;
-                    var parsedItemStock = parseInt(item.stock, 10);
-                    var stockChanged = isNaN(parsedItemStock) || parsedItemStock !== freshStock;
-                    if (stockChanged) { item.stock = freshStock; changed = true; }
-                    if (freshStock === 0) {
-                        // out of stock — remove + notify
-                        cart.splice(k, 1);
-                        k--;
+                    if (item.quantity > newStock) {
+                        item.quantity = newStock;
                         changed = true;
-                        if (typeof showNotification === "function") {
-                            try { showNotification("An item was removed (out of stock)", "warning"); } catch (_) {}
-                        }
-                    } else if ((parseInt(item.quantity, 10) || 0) > freshStock) {
-                        // cap to available
-                        item.quantity = freshStock;
+                        showNotification('Quantity adjusted to available stock (' + newStock + ')', 'warning');
+                    }
+                    if (item.quantity <= 0) {
+                        cart.splice(i, 1);
+                        i--;
                         changed = true;
-                        if (typeof showNotification === "function") {
-                            try { showNotification("Quantity capped to available stock: " + freshStock, "info"); } catch (_) {}
-                        }
+                        showNotification('Item removed (out of stock)', 'info');
                     }
                 }
+
                 if (changed) {
-                    try { localStorage.setItem("jmpotters_cart", JSON.stringify(cart)); } catch (_) {}
-                    if (typeof updateCartCountShared === "function") { try { updateCartCountShared(); } catch (_) {} }
-                    try { renderCart(); } catch (_) {}
+                    saveCart(cart);
                 }
-            }).catch(function(err) {
-                console.warn("refreshCartStock bypass (offline or schema mismatch):", err && err.message ? err.message : err);
+            }).catch(function(e) {
+                console.error('refreshCartStock error:', e);
             });
         }
         try { refreshCartStock(); } catch (e) { console.warn("refreshCartStock bypass (sync):", e); }
