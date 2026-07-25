@@ -1704,14 +1704,11 @@
         if (cartIconEl) {
             cartIconEl.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); openCartPanel(); });
         }
-        if (closeCartBtn) { /* v19: app.js handles */ }if (cartOverlayEl) { /* v19: app.js handles */ }if (cartCheckoutBtn) {
-            /* v19: page-local checkout wiring stripped (no-op; app.js handles) */ 0
-                if (typeof window.JMPOTTERS !== 'undefined' && window.JMPOTTERS.proceedToCheckout) {
-                    window.JMPOTTERS.proceedToCheckout();
-                } else {
-                    window.location.href = 'cart.html';
-                }
-        }
+        if (closeCartBtn) { /* v19: app.js handles */ }if (cartOverlayEl) { /* v19: app.js handles */ }// v8 FIX: removed leaky `if (cartCheckoutBtn) { ... proceedToCheckout() ... }` block.
+// Previously this ran at DOMContentLoaded and auto-opened the bank-account
+// modal whenever the page loaded with items already in the cart. app.js
+// (lines ~1930-1933) already wires cartCheckoutBtn.click -> JMPOTTERS.proceedToCheckout()
+// with a _checkoutListener guard, so this page-level block was redundant AND harmful.
 
         // ===== SCROLL REVEAL =====
         var reveals = document.querySelectorAll('.reveal');
