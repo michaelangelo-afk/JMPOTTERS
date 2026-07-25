@@ -2606,4 +2606,3 @@ window.JMPOTTERS_toggleBankCard = function (selectEl) {
 };
 /* v16:end helpers */
 /* v16:end enrich-old-checkout-modal */
-})();
