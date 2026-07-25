@@ -668,8 +668,9 @@
                 // Cap at product stock (fallback 99 for legacy items without stock field)
                 // v9 FIX: 0 must NOT snap to 99. item.stock may be 0 (legitimate out-of-stock).
                 const _parsedStock = parseInt(item.stock, 10);
+                // v10: clamp negatives to 0 (Supabase never returns <0; if it ever does, treat as 0)
                 const maxStock = (item.stock != null && !isNaN(_parsedStock) && _parsedStock >= 0)
-                    ? _parsedStock
+                    ? Math.max(0, _parsedStock)
                     : 99;
                 // FIX v7: force integer math. If item.quantity was ever stored as "1" (string) and change
                 // was ever passed as a string (e.g. "1"), `1 + "1"` produced the "11" / "01" string concat
@@ -864,17 +865,29 @@ function getImageUrl(cat, f) {
                 for (var k = 0; k < cart.length; k++) {
                     var item = cart[k];
                     var freshStock = null;
-                    // (a) variant-aware: footwear etc. with color_id AND/OR size_id
-                    if ((item.color_id != null || item.color_name) && variants.length > 0) {
+                    // v10: variant-aware match for footwear etc. with size_value fallback.
+                    // Stage 1: strict match by (product_id, color_id, size_id).
+                    // Stage 2: if Stage 1 missed AND item.size_value exists,
+                    //           match by (product_id, color_id) where row.size_id coerces to item.size_value.
+                    var sizeValStr = item.size_value == null ? null : String(item.size_value).trim();
+                    if ((item.color_id != null || item.color_name != null) && variants.length > 0) {
                         for (var v = 0; v < variants.length; v++) {
                             var row = variants[v];
                             var rowColorId = row.color_id == null ? null : String(row.color_id);
-                            var rowSizeVal = row.size_id == null ? null : String(row.size_id);
+                            var rowSizeId = row.size_id == null ? null : String(row.size_id);
                             var itemColorId = item.color_id == null ? null : String(item.color_id);
-                            var itemSizeVal = (item.size_value == null ? null : String(item.size_value));
-                            if (String(row.product_id) === String(item.product_id) &&
+                            // Stage 1: exact match on size_id AND color_id
+                            var stage1 =
+                                String(row.product_id) === String(item.product_id) &&
                                 rowColorId === itemColorId &&
-                                (rowSizeVal === itemSizeVal || (rowSizeVal == null && itemSizeVal == null))) {
+                                item.size_id != null && rowSizeId === String(item.size_id);
+                            // Stage 2: size_value fallback (footwear "42" string vs numeric size_id FK)
+                            var stage2 =
+                                sizeValStr != null && sizeValStr !== "" &&
+                                String(row.product_id) === String(item.product_id) &&
+                                rowColorId === itemColorId &&
+                                rowSizeId === sizeValStr;
+                            if (stage1 || stage2) {
                                 freshStock = row.stock;
                                 break;
                             }
