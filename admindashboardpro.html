@@ -367,6 +367,13 @@
         .status-option:hover{background:var(--gray-50)}
         .dark-mode .status-option:hover{background:var(--dark-surface-2)}
         ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--gray-100);border-radius:3px}.dark-mode ::-webkit-scrollbar-track{background:var(--dark-surface-2)}::-webkit-scrollbar-thumb{background:var(--gray-400);border-radius:3px}.dark-mode ::-webkit-scrollbar-thumb{background:var(--gray-600)}
+        .add-color-save-status{display:flex;align-items:center;padding:0.55rem 0.85rem;border-radius:var(--radius);font-size:0.875rem;font-weight:600;margin-bottom:var(--space-2);border:1px solid transparent;transition:all var(--transition-fast);opacity:0;animation:fadeIn 0.18s ease forwards}
+        .add-color-save-status.saving{background:var(--primary-50);color:var(--primary-700);border-color:rgba(99,102,241,0.22)}
+        .dark-mode .add-color-save-status.saving{background:rgba(99,102,241,0.15);color:var(--primary-400);border-color:rgba(129,140,248,0.3)}
+        .add-color-save-status.success{background:var(--success-50);color:var(--success-700);border-color:rgba(34,197,94,0.25)}
+        .dark-mode .add-color-save-status.success{background:rgba(34,197,94,0.18);color:#4ADE80;border-color:rgba(74,222,128,0.3)}
+        .add-color-save-status.error{background:var(--danger-50);color:var(--danger-700);border-color:rgba(239,68,68,0.25)}
+        .dark-mode .add-color-save-status.error{background:rgba(239,68,68,0.18);color:#F87171;border-color:rgba(248,113,113,0.3)}
     </style>
     <style>
         /* ===== Multi-media gallery (admin) ===== */
@@ -647,7 +654,7 @@
     <!-- PRODUCT MODAL (unchanged) -->
     <div class="modal-overlay" id="productModal"><div class="modal-content"><div class="modal-header"><h2 class="modal-title" id="modalTitle">Add Product</h2><button class="modal-close" onclick="AdminDashboard.closeModal()"><i class="fas fa-times"></i></button></div><div class="modal-body"><form id="productForm" onsubmit="return AdminDashboard.saveProduct(event)"><input type="hidden" id="productId"><input type="hidden" id="isFootwear"><div class="mb-4"><h3 class="section-title-sm mb-3">Basic Info</h3><div class="form-row"><div class="form-group"><label class="form-label required">Name</label><input type="text" id="productName" class="form-control" required oninput="AdminDashboard.generateSlug()"></div><div class="form-group"><label class="form-label">Slug</label><div class="flex gap-2"><input type="text" id="productSlug" class="form-control" readonly><button type="button" class="btn btn-sm btn-secondary" onclick="AdminDashboard.toggleSlugEdit()" id="editSlugBtn"><i class="fas fa-lock"></i></button></div></div></div><div class="form-row"><div class="form-group"><label class="form-label required">Price (₦)</label><input type="number" id="productPrice" class="form-control" required min="0" step="100"></div><div class="form-group"><label class="form-label">Compare Price (₦)</label><input type="number" id="productComparePrice" class="form-control" min="0" step="100"></div></div><div class="form-row"><div class="form-group"><label class="form-label required">Category</label><select id="productCategory" class="form-control" required onchange="AdminDashboard.onCategoryChange()"><option value="">Select</option></select></div><div class="form-group"><label class="form-label">Stock Quantity</label><input type="number" id="productStock" class="form-control" min="0" value="0" readonly><div class="form-help" id="stockHelpText">Auto-calculated for footwear.</div></div></div><div class="form-group"><label class="form-label required">Product Image</label><div class="upload-zone" id="imageUploadZone"><div class="upload-zone-icon" id="uploadIcon"><i class="fas fa-cloud-upload-alt"></i></div><div class="upload-zone-text">Drop image or click</div><input type="file" class="upload-zone-input" id="imageFileInput" accept="image/*"><div id="uploadPreviewContainer" style="display:none"><div style="position:relative;display:inline-block"><img id="uploadPreview" class="upload-preview"><button type="button" class="upload-preview-remove" id="removePreviewBtn"><i class="fas fa-times"></i></button></div></div></div><input type="hidden" id="productImageUrl"><div id="uploadStatusContainer"></div></div><div class="form-group"><label class="form-label"><i class="fas fa-images" style="color:var(--primary-500);margin-right:0.3rem"></i>Sub-images &amp; video <span class="form-help" style="display:inline;margin-left:0.4rem">(optional)</span></label><div class="form-help" style="margin-bottom:var(--space-2)">Add up to <strong>8 sub-images</strong> (other angles, colors, details) and <strong>1 short product video</strong>. Click <i class="fas fa-star" style="color:var(--warning-500)"></i> on any sub-image to promote it to the cover. Drag arrows to reorder. Saved with the product.</div><div class="media-gallery-section"><div id="mediaGallery"></div></div></div><div class="form-group"><label class="form-label">Description</label><textarea id="productDescription" class="form-control" rows="3"></textarea></div></div><div class="color-management" id="colorManagementSection" style="display:none"><h3 class="section-title-sm mb-3"><i class="fas fa-palette"></i> Color Variants <span id="colorCount">(0)</span></h3><button type="button" class="btn btn-primary mb-3" onclick="AdminDashboard.openAddColorModal()"><i class="fas fa-plus"></i> Add Color</button><div class="colors-grid" id="colorsContainer"></div></div><div class="sizes-management" id="sizeManagementSection" style="display:none"><h3 class="section-title-sm mb-3"><i class="fas fa-ruler"></i> Size Management <span id="sizeCount">(Select color)</span></h3><div class="flex gap-2 mb-3 flex-wrap"><select id="colorSelector" class="form-control" style="width:auto" onchange="AdminDashboard.loadSizesForColor()"><option value="">Select color</option></select><button type="button" class="btn btn-secondary" onclick="AdminDashboard.openAddSizeModal()"><i class="fas fa-plus"></i> Add Size</button></div><div class="sizes-grid" id="sizesContainer"></div></div><div class="modal-footer"><button type="button" class="btn btn-danger" id="deleteProductBtn" style="display:none;margin-right:auto" onclick="AdminDashboard.showDeleteConfirmation()"><i class="fas fa-trash"></i> Delete</button><button type="button" class="btn btn-secondary" onclick="AdminDashboard.closeModal()">Cancel</button><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button></div></form></div></div></div>
 
-    <div class="modal-overlay" id="addColorModal" style="display:none"><div class="modal-content" style="max-width:450px"><div class="modal-header"><h2 class="modal-title">Add Color</h2><button class="modal-close" onclick="AdminDashboard.closeAddColorModal()"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="form-group"><label class="form-label required">Color Name</label><div class="color-autocomplete"><input type="text" id="newColorName" class="form-control" oninput="AdminDashboard.searchColors(this.value)"><div class="color-options" id="colorOptions"></div></div></div><div class="form-group"><label class="form-label">Combination</label><div class="flex flex-wrap gap-2 mb-2" id="selectedColors"></div><div class="color-picker-grid" id="colorPickerGrid"></div></div><div class="form-group"><label class="form-label">Color Code</label><input type="text" id="newColorCode" class="form-control" readonly></div><div class="flex gap-3 pt-3"><button class="btn btn-secondary flex-1" onclick="AdminDashboard.closeAddColorModal()">Cancel</button><button class="btn btn-primary flex-1" onclick="AdminDashboard.saveNewColor()">Save</button></div></div></div></div>
+    <div class="modal-overlay" id="addColorModal" style="display:none"><div class="modal-content" style="max-width:450px"><div class="modal-header"><h2 class="modal-title">Add Color</h2><button class="modal-close" onclick="AdminDashboard.closeAddColorModal()"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="form-group"><label class="form-label required">Color Name</label><div class="color-autocomplete"><input type="text" id="newColorName" class="form-control" oninput="AdminDashboard.searchColors(this.value)" onkeydown="AdminDashboard.colorInputKeydown(event)" placeholder="Type a color, then '+' to combine (e.g. Red + Navy)" autocomplete="off"><div class="color-options" id="colorOptions"></div></div></div><div class="form-group"><label class="form-label">Combination</label><div class="flex flex-wrap gap-2 mb-2" id="selectedColors"></div><div class="color-picker-grid" id="colorPickerGrid"></div></div><div class="form-group"><label class="form-label">Color Code</label><input type="text" id="newColorCode" class="form-control" readonly></div><div id="addColorSaveStatus" class="add-color-save-status" style="display:none"></div><div class="flex gap-3 pt-3"><button class="btn btn-secondary flex-1" onclick="AdminDashboard.closeAddColorModal()">Cancel</button><button class="btn btn-primary flex-1" onclick="AdminDashboard.saveNewColor()">Save</button></div></div></div></div>
 
     <div class="modal-overlay" id="addSizeModal" style="display:none"><div class="modal-content" style="max-width:380px"><div class="modal-header"><h2 class="modal-title">Add Size</h2><button class="modal-close" onclick="AdminDashboard.closeAddSizeModal()"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="form-group"><label class="form-label">Color</label><select id="sizeColorSelector" class="form-control"><option value="">Select</option></select></div><div class="form-group"><label class="form-label required">Size</label><input type="text" id="newSizeValue" class="form-control" placeholder="e.g., 38"></div><div class="form-group"><label class="form-label">Stock</label><input type="number" id="newSizeStock" class="form-control" value="0"></div><div class="flex gap-3 pt-3"><button class="btn btn-secondary flex-1" onclick="AdminDashboard.closeAddSizeModal()">Cancel</button><button class="btn btn-primary flex-1" onclick="AdminDashboard.saveNewSize()">Save</button></div></div></div></div>
 
@@ -663,7 +670,30 @@
     const AdminDashboard=(function(){
         let supabase,categories=[],allProducts=[],allProductsData=[],filteredProducts=[],currentPage=1,productsPerPage=20,currentFilter='all',productColors={},productSizes={},currentProductId=null,currentEditingColors=[],currentEditingSizes={},selectedColorIds=[],selectedProductIds=new Set(),slugManuallyEdited=false,productToDelete=null,uploadedImageUrl=null,isUploading=false,allOrders=[],filteredOrders=[],ordersCurrentPage=1,ordersPerPage=15,currentOrderStatusFilter='all',currentOrderSearch='',currentOrderDateStart='',currentOrderDateEnd='',allUsers=[],filteredUsers=[],currentSort='newest',categoryToDelete=null;
         const commonSizes=['36','37','38','39','40','41','42','43','44','45'];
-        const colorDB={};[{name:"Black",codes:["#000000"]},{name:"White",codes:["#FFFFFF"]},{name:"Red",codes:["#FF0000"]},{name:"Blue",codes:["#0000FF"]},{name:"Green",codes:["#008000"]},{name:"Yellow",codes:["#FFFF00"]},{name:"Orange",codes:["#FFA500"]},{name:"Purple",codes:["#800080"]},{name:"Pink",codes:["#FFC0CB"]},{name:"Brown",codes:["#8B4513"]},{name:"Gray",codes:["#808080"]},{name:"Black + White",codes:["#000000","#FFFFFF"]},{name:"Red + Black",codes:["#FF0000","#000000"]},{name:"Blue + White",codes:["#0000FF","#FFFFFF"]},{name:"Navy Blue",codes:["#000080"]},{name:"Royal Blue",codes:["#4169E1"]},{name:"Sky Blue",codes:["#87CEEB"]},{name:"Teal",codes:["#008080"]},{name:"Emerald",codes:["#50C878"]},{name:"Maroon",codes:["#800000"]},{name:"Burgundy",codes:["#800020"]},{name:"Coral",codes:["#FF7F50"]},{name:"Gold",codes:["#FFD700"]},{name:"Silver",codes:["#C0C0C0"]},{name:"Rose Gold",codes:["#B76E79"]},{name:"Lavender",codes:["#E6E6FA"]},{name:"Violet",codes:["#EE82EE"]},{name:"Indigo",codes:["#4B0082"]},{name:"Beige",codes:["#F5F5DC"]},{name:"Charcoal",codes:["#36454F"]}].forEach(c=>colorDB[c.name.toLowerCase()]=c);
+        const colorDB={};const _colorPalette=[
+            // ===== NEUTRALS =====
+            {name:"Black",codes:["#000000"]},{name:"White",codes:["#FFFFFF"]},{name:"Off-White",codes:["#FAF9F6"]},{name:"Cream",codes:["#FFFDD0"]},{name:"Ivory",codes:["#FFFFF0"]},{name:"Pearl",codes:["#F8F6F0"]},{name:"Gray",codes:["#808080"]},{name:"Light Gray",codes:["#D3D3D3"]},{name:"Dark Gray",codes:["#A9A9A9"]},{name:"Charcoal",codes:["#36454F"]},{name:"Slate",codes:["#708090"]},{name:"Ash",codes:["#B2BEB5"]},{name:"Smoke",codes:["#738276"]},{name:"Stone",codes:["#928E85"]},{name:"Taupe",codes:["#483C32"]},{name:"Pewter",codes:["#8E8E8E"]},{name:"Coal",codes:["#1C1C1C"]},{name:"Mist",codes:["#C7C7C7"]},
+            // ===== BROWNS =====
+            {name:"Brown",codes:["#8B4513"]},{name:"Chocolate",codes:["#7B3F00"]},{name:"Coffee",codes:["#6F4E37"]},{name:"Mocha",codes:["#A0522D"]},{name:"Chestnut",codes:["#954535"]},{name:"Walnut",codes:["#773F1F"]},{name:"Saddle",codes:["#8B4513"]},{name:"Sandalwood",codes:["#D2B48C"]},{name:"Tan",codes:["#D2B48C"]},{name:"Camel",codes:["#C19A6B"]},{name:"Khaki",codes:["#C3B091"]},{name:"Khaki Brown",codes:["#89764D"]},{name:"Beige",codes:["#F5F5DC"]},{name:"Caramel",codes:["#AF6E2F"]},{name:"Rust",codes:["#B7410E"]},{name:"Clay",codes:["#B66A50"]},{name:"Clay Brown",codes:["#A0826D"]},{name:"Mahogany",codes:["#C04000"]},
+            // ===== REDS =====
+            {name:"Red",codes:["#FF0000"]},{name:"Crimson",codes:["#DC143C"]},{name:"Scarlet",codes:["#FF2400"]},{name:"Cherry",codes:["#DE3163"]},{name:"Ruby",codes:["#9B111E"]},{name:"Wine",codes:["#722F37"]},{name:"Maroon",codes:["#800000"]},{name:"Burgundy",codes:["#800020"]},{name:"Garnet",codes:["#733635"]},{name:"Brick Red",codes:["#CB4154"]},{name:"Brick",codes:["#8E3A2F"]},{name:"Firebrick",codes:["#B22222"]},{name:"Rouge",codes:["#A94064"]},{name:"Tomato",codes:["#FF6347"]},{name:"Vermilion",codes:["#E34234"]},{name:"Strawberry",codes:["#FC5A8D"]},
+            // ===== PINKS =====
+            {name:"Pink",codes:["#FFC0CB"]},{name:"Light Pink",codes:["#FFB6C1"]},{name:"Baby Pink",codes:["#F4C2C2"]},{name:"Hot Pink",codes:["#FF69B4"]},{name:"Deep Pink",codes:["#FF1493"]},{name:"Rose",codes:["#FF66CC"]},{name:"Rose Pink",codes:["#FF66AA"]},{name:"Blush",codes:["#DE6FA1"]},{name:"Salmon",codes:["#FA8072"]},{name:"Dusty Rose",codes:["#DCAE96"]},{name:"Mauve",codes:["#E0B0FF"]},{name:"Pastel Pink",codes:["#FFD1DC"]},{name:"Magenta",codes:["#FF00FF"]},{name:"Fuchsia",codes:["#FF00FF"]},{name:"Carnation",codes:["#FFA6C9"]},{name:"Coral Pink",codes:["#F88379"]},
+            // ===== ORANGES =====
+            {name:"Orange",codes:["#FFA500"]},{name:"Tangerine",codes:["#FF8C00"]},{name:"Pumpkin",codes:["#FF7518"]},{name:"Persimmon",codes:["#EC5800"]},{name:"Burnt Orange",codes:["#CC5500"]},{name:"Coral",codes:["#FF7F50"]},{name:"Sunset",codes:["#FA8072"]},{name:"Apricot",codes:["#FBCEB1"]},{name:"Peach",codes:["#FFE5B4"]},{name:"Amber",codes:["#FFBF00"]},{name:"Carrot",codes:["#ED9114"]},{name:"Mango",codes:["#F4BB44"]},
+            // ===== YELLOWS =====
+            {name:"Yellow",codes:["#FFFF00"]},{name:"Mustard",codes:["#FFDB58"]},{name:"Lemon",codes:["#FFF44F"]},{name:"Canary Yellow",codes:["#FFEF00"]},{name:"Honey",codes:["#FFC30B"]},{name:"Saffron",codes:["#F4C430"]},{name:"Wheat",codes:["#F5DEB3"]},{name:"Banana",codes:["#FFE135"]},{name:"Pale Yellow",codes:["#FFFFE0"]},{name:"Goldenrod",codes:["#DAA520"]},
+            // ===== GREENS =====
+            {name:"Green",codes:["#008000"]},{name:"Forest Green",codes:["#228B22"]},{name:"Olive",codes:["#808000"]},{name:"Olive Green",codes:["#556B2F"]},{name:"Sage",codes:["#9CAF88"]},{name:"Sage Green",codes:["#8A9A5B"]},{name:"Mint",codes:["#98FF98"]},{name:"Mint Green",codes:["#AAF0D1"]},{name:"Pistachio",codes:["#93C572"]},{name:"Teal",codes:["#008080"]},{name:"Emerald",codes:["#50C878"]},{name:"Lime",codes:["#BFFF00"]},{name:"Sea Green",codes:["#2E8B57"]},{name:"Moss",codes:["#8A9A5B"]},{name:"Hunter Green",codes:["#355E3B"]},{name:"Pine",codes:["#01796F"]},{name:"Avocado",codes:["#568203"]},{name:"Kelly Green",codes:["#4CBB17"]},{name:"Spring Green",codes:["#00FF7F"]},{name:"Jade",codes:["#00A86B"]},
+            // ===== BLUES =====
+            {name:"Blue",codes:["#0000FF"]},{name:"Navy Blue",codes:["#000080"]},{name:"Royal Blue",codes:["#4169E1"]},{name:"Sky Blue",codes:["#87CEEB"]},{name:"Baby Blue",codes:["#89CFF0"]},{name:"Cobalt",codes:["#0047AB"]},{name:"Turquoise",codes:["#40E0D0"]},{name:"Cyan",codes:["#00FFFF"]},{name:"Aqua",codes:["#00FFFF"]},{name:"Steel Blue",codes:["#4682B4"]},{name:"Powder Blue",codes:["#B0E0E6"]},{name:"Midnight Blue",codes:["#191970"]},{name:"Ice Blue",codes:["#D6ECEF"]},{name:"Slate Blue",codes:["#6A5ACD"]},{name:"Periwinkle",codes:["#CCCCFF"]},{name:"Denim",codes:["#1560BD"]},{name:"Cerulean",codes:["#007BA7"]},{name:"Azure",codes:["#007FFF"]},{name:"Electric Blue",codes:["#7DF9FF"]},{name:"Cornflower",codes:["#6495ED"]},{name:"Indigo Blue",codes:["#3F00FF"]},
+            // ===== PURPLES =====
+            {name:"Purple",codes:["#800080"]},{name:"Violet",codes:["#EE82EE"]},{name:"Lavender",codes:["#E6E6FA"]},{name:"Indigo",codes:["#4B0082"]},{name:"Plum",codes:["#8E4585"]},{name:"Lilac",codes:["#C8A2C8"]},{name:"Orchid",codes:["#DA70D6"]},{name:"Grape",codes:["#6F2DA8"]},{name:"Wisteria",codes:["#C9A0DC"]},{name:"Byzantium",codes:["#702963"]},{name:"Mulberry",codes:["#660066"]},
+            // ===== METALLICS / SPECIAL =====
+            {name:"Gold",codes:["#FFD700"]},{name:"Silver",codes:["#C0C0C0"]},{name:"Rose Gold",codes:["#B76E79"]},{name:"Copper",codes:["#B87333"]},{name:"Bronze",codes:["#CD7F32"]},{name:"Gunmetal",codes:["#2A3439"]},{name:"Antique Gold",codes:["#CFB53B"]},{name:"Brass",codes:["#B5A642"]},{name:"Champagne",codes:["#F7E7CE"]},{name:"Pearl White",codes:["#F8F6F0"]},
+            // ===== CLASSIC COMBINATIONS =====
+            {name:"Black + White",codes:["#000000","#FFFFFF"]},{name:"Red + Black",codes:["#FF0000","#000000"]},{name:"Blue + White",codes:["#0000FF","#FFFFFF"]},{name:"Navy + Red",codes:["#000080","#FF0000"]},{name:"Black + Gold",codes:["#000000","#FFD700"]},{name:"White + Gold",codes:["#FFFFFF","#FFD700"]},{name:"Pink + White",codes:["#FFC0CB","#FFFFFF"]},{name:"Brown + Tan",codes:["#8B4513","#D2B48C"]},{name:"Red + Gold",codes:["#FF0000","#FFD700"]},{name:"Black + Silver",codes:["#000000","#C0C0C0"]},{name:"Forest + Cream",codes:["#228B22","#FFFDD0"]},{name:"Navy + White",codes:["#000080","#FFFFFF"]},{name:"Gray + Pink",codes:["#808080","#FFC0CB"]}
+        ];_colorPalette.forEach(c=>colorDB[c.name.toLowerCase()]=c);
         const pageLabels={index:'Homepage',mensfootwear:"Men's Footwear",womensfootwear:"Women's Footwear",bags:'Bags',accessories:'Accessories',household:'Household',kids:'Kids',healthcare:'Healthcare'};
 
         function getImgUrl(p){const u=p.image_url||'';if(u.startsWith('https://tmpggeeuwdvlngvfncaa.supabase.co')||u.startsWith('http'))return u;return''}
@@ -742,7 +772,10 @@
         // ================================================================
         // PRODUCT CARD RENDERING (unchanged)
         // ================================================================
-        function renderProductCard(product){const s=product.total_stock!==undefined?product.total_stock:(product.stock||0),sc=s>10?'stock-high':s>0?'stock-medium':'stock-low',stext=s>10?`${s} in stock`:s>0?`${s} left`:'Out of stock',cols=productColors[product.id]||[],sizes=productSizes[product.id]||{},ia=product.is_active!==false,iu=getImgUrl(product),is=selectedProductIds.has(product.id);return`<div class="product-card${is?' selected':''}" data-product-id="${product.id}"><div class="select-overlay" onclick="event.stopPropagation();AdminDashboard.toggleProductSelect(${product.id})">${is?'<i class="fas fa-check" style="font-size:.65rem"></i>':''}</div><div class="product-image-container">${iu?`<img src="${iu}" alt="${escapeHtml(product.name)}" class="product-image" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:''}<div class="no-image-placeholder" style="${iu?'display:none':'display:flex'}"><i class="fas fa-image"></i></div>${!ia?'<div class="product-badge" style="background:var(--danger-500)">Inactive</div>':''}${s===0?'<div class="product-badge" style="background:var(--danger-600)">Out of Stock</div>':''}</div><div class="product-content"><div class="product-header"><h3 class="product-name">${escapeHtml(product.name)}</h3><span class="product-category">${escapeHtml(product.category?.name||'Uncategorized')}</span></div><div class="product-price">₦${(product.price||0).toLocaleString()}</div><div class="product-meta"><div class="product-stock ${sc}">${stext}</div><div class="text-xs ${ia?'text-green-600':'text-red-600'}">${ia?'Active':'Inactive'}</div></div>${cols.length>0?`<div class="product-variants">${cols.slice(0,3).map(co=>{const css=sizes[co.id]||[];const cc=co.color_code?co.color_code.split('+'):['#ccc'];return`<span class="variant-tag">${cc.map(c=>`<span class="color-dot" style="background:${c.trim()}"></span>`).join('')} ${escapeHtml(co.color_name)} (${css.length})</span>`}).join('')}${cols.length>3?`<span class="variant-tag">+${cols.length-3}</span>`:''}</div>`:''}<div class="product-actions"><button class="btn btn-sm btn-primary" style="flex:1" onclick="AdminDashboard.editProduct(${product.id})">Edit</button><button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();AdminDashboard.duplicateProduct(${product.id})"><i class="fas fa-copy"></i></button><button class="btn btn-sm btn-danger" onclick="event.stopPropagation();AdminDashboard.showDeleteConfirmation(${product.id})"><i class="fas fa-trash"></i></button></div></div></div>`}
+        function renderProductCard(product){const s=product.total_stock!==undefined?product.total_stock:(product.stock||0),sc=s>10?'stock-high':s>0?'stock-medium':'stock-low',stext=s>10?`${s} in stock`:s>0?`${s} left`:'Out of stock',cols=productColors[product.id]||[],sizes=productSizes[product.id]||{},        ia=product.is_active!==false,
+        iu=getImgUrl(product),
+        is=selectedProductIds.has(product.id),
+        isDraft=!ia&&/draft/i.test(product.name||'');return`<div class="product-card${is?' selected':''}" data-product-id="${product.id}"><div class="select-overlay" onclick="event.stopPropagation();AdminDashboard.toggleProductSelect(${product.id})">${is?'<i class="fas fa-check" style="font-size:.65rem"></i>':''}</div><div class="product-image-container">${iu?`<img src="${iu}" alt="${escapeHtml(product.name)}" class="product-image" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:''}<div class="no-image-placeholder" style="${iu?'display:none':'display:flex'}"><i class="fas fa-image"></i></div>${isDraft?'<div class="product-badge" style="background:var(--primary-500)">Draft</div>':(!ia?'<div class="product-badge" style="background:var(--danger-500)">Inactive</div>':'')}${s===0?'<div class="product-badge" style="background:var(--danger-600)">Out of Stock</div>':''}</div><div class="product-content"><div class="product-header"><h3 class="product-name">${escapeHtml(product.name)}</h3><span class="product-category">${escapeHtml(product.category?.name||'Uncategorized')}</span></div><div class="product-price">₦${(product.price||0).toLocaleString()}</div><div class="product-meta"><div class="product-stock ${sc}">${stext}</div><div class="text-xs ${ia?'text-green-600':(isDraft?'text-blue-600':'text-red-600')}">${ia?'Active':(isDraft?'Draft':'Inactive')}</div></div>${cols.length>0?`<div class="product-variants">${cols.slice(0,3).map(co=>{const css=sizes[co.id]||[];const cc=co.color_code?co.color_code.split('+'):['#ccc'];return`<span class="variant-tag">${cc.map(c=>`<span class="color-dot" style="background:${c.trim()}"></span>`).join('')} ${escapeHtml(co.color_name)} (${css.length})</span>`}).join('')}${cols.length>3?`<span class="variant-tag">+${cols.length-3}</span>`:''}</div>`:''}<div class="product-actions"><button class="btn btn-sm btn-primary" style="flex:1" onclick="AdminDashboard.editProduct(${product.id})">Edit</button><button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();AdminDashboard.duplicateProduct(${product.id})"><i class="fas fa-copy"></i></button><button class="btn btn-sm btn-danger" onclick="event.stopPropagation();AdminDashboard.showDeleteConfirmation(${product.id})"><i class="fas fa-trash"></i></button></div></div></div>`}
         function renderRecentProducts(){const c=document.getElementById('recentProducts');if(!c)return;const rp=allProducts.slice(0,8);if(rp.length===0){c.innerHTML='<div class="empty-state"><h3>No Products</h3></div>';return}c.innerHTML=rp.map(p=>renderProductCard(p)).join('')}
         function renderProductsPage(){const c=document.getElementById('allProducts');if(!c)return;const s=(currentPage-1)*productsPerPage,e=s+productsPerPage,pp=filteredProducts.slice(s,e);if(pp.length===0){c.innerHTML='<div class="empty-state"><h3>No Products</h3></div>';document.getElementById('paginationContainer').style.display='none';return}c.innerHTML=pp.map(p=>renderProductCard(p)).join('');const t=filteredProducts.length,tp=Math.ceil(t/productsPerPage);document.getElementById('startRow').textContent=s+1;document.getElementById('endRow').textContent=Math.min(e,t);document.getElementById('totalRows').textContent=t;document.getElementById('prevBtn').disabled=currentPage===1;document.getElementById('nextBtn').disabled=currentPage===tp;document.getElementById('paginationContainer').style.display='flex'}
         function filterProducts(ft){currentFilter=ft;currentPage=1;switch(ft){case'low_stock':filteredProducts=allProducts.filter(p=>(p.total_stock!==undefined?p.total_stock:(p.stock||0))<10&&(p.total_stock!==undefined?p.total_stock:(p.stock||0))>0);break;case'inactive':filteredProducts=allProducts.filter(p=>!p.is_active);break;default:filteredProducts=[...allProducts]}const cf=document.getElementById('categoryFilter');if(cf&&cf.value)filteredProducts=filteredProducts.filter(p=>p.category_id==cf.value);const si=document.getElementById('productSearch');if(si&&si.value)filteredProducts=filteredProducts.filter(p=>p.name.toLowerCase().includes(si.value.toLowerCase()));renderProductsPage();updateBulkBar()}
@@ -756,14 +789,174 @@
         async function loadSizesForProduct(id){currentEditingSizes=productSizes[id]||{}}
         function loadSizesForColor(){const cid=document.getElementById('colorSelector').value;const szs=currentEditingSizes[cid]||[];const c=document.getElementById('sizesContainer');if(!c)return;if(!cid){c.innerHTML='<div class="text-center py-8 text-gray-500"><i class="fas fa-shoe-prints mb-2" style="font-size:2rem"></i><p>Select a color</p></div>';return}const sm={};szs.forEach(s=>{if(s&&s.size_value)sm[s.size_value]=s});c.innerHTML=commonSizes.map(sz=>{const sd=sm[sz];const stk=sd?sd.stock_quantity||0:0;const ia=sd?sd.is_available!==false:true;return`<div class="size-item"><div class="size-label">Size</div><div class="size-value">${sz}</div><input type="number" class="size-stock-input" value="${stk}" data-color-id="${cid}" data-size="${sz}" min="0" onchange="AdminDashboard.updateSizeStock(this,${cid},'${sz}')"><div class="text-xs ${stk>0?'text-green-600':'text-gray-600'} mt-1">Stock: ${stk}</div><div class="flex items-center justify-center mt-1"><input type="checkbox" ${ia?'checked':''} onchange="AdminDashboard.toggleSizeAvailability(this,${cid},'${sz}')"><span class="text-xs">Available</span></div></div>`}).join('')}
         function populateColorPickerGrid(){const c=document.getElementById('colorPickerGrid');if(!c)return;c.innerHTML=Object.values(colorDB).map(co=>{const isC=co.codes.length>1;return`<button type="button" class="color-option-btn" style="background:${isC?`linear-gradient(135deg,${co.codes.join(',')})`:co.codes[0]}" data-name="${escapeHtml(co.name)}" data-codes="${co.codes.join('+')}" onclick="AdminDashboard.selectColor('${escapeHtml(co.name)}','${co.codes.join('+')}')"></button>`}).join('')}
-        function searchColors(q){const c=document.getElementById('colorOptions');if(!c)return;if(!q.trim()){c.style.display='none';return}const r=Object.values(colorDB).filter(x=>x.name.toLowerCase().includes(q.toLowerCase())).slice(0,10);if(r.length===0){c.style.display='none';return}c.innerHTML=r.map(x=>{const isC=x.codes.length>1;return`<div class="color-option" onclick="AdminDashboard.selectColorFromSearch('${escapeHtml(x.name)}','${x.codes.join('+')}')">${isC?`<div class="color-combination">${x.codes.map(cd=>`<div class="color-swatch" style="background:${cd}"></div>`).join('')}</div>`:`<div class="color-swatch" style="background:${x.codes[0]}"></div>`}<span>${escapeHtml(x.name)}</span></div>`}).join('');c.style.display='block'}
-        function selectColorFromSearch(n,cc){document.getElementById('newColorName').value=n;document.getElementById('newColorCode').value=cc;selectedColorIds=[n];updateSelectedColors();document.getElementById('colorOptions').style.display='none'}
+        function searchColors(q){
+            const c=document.getElementById('colorOptions');
+            if(!c)return;
+            const raw=(q||'').trim();
+            if(!raw){c.style.display='none';return}
+            // ===== Tokenize by '+' : last chunk = the one being typed, prior chunks = committed =====
+            const chunks=raw.split('+').map(s=>s.trim()).filter(Boolean);
+            const current=chunks.length?chunks[chunks.length-1]:'';
+            if(!current){c.style.display='none';return}
+            const qLower=current.toLowerCase();
+            const matches=Object.values(colorDB).filter(x=>x.name.toLowerCase().includes(qLower)).slice(0,10);
+            if(matches.length===0){c.style.display='none';return}
+            // ===== Render dropdown — clicking a row APPENDS via appendColorFromAutocomplete =====
+            c.innerHTML=matches.map(x=>{
+                const isC=x.codes.length>1;
+                const codesEsc=x.codes.join('+').replace(/'/g,"\\'");
+                const nameEsc=x.name.replace(/'/g,"\\'");
+                return`<div class="color-option" data-name="${escapeHtml(x.name)}" data-codes="${x.codes.join('+')}" onclick="AdminDashboard.appendColorFromAutocomplete('${nameEsc}','${codesEsc}')">${isC?`<div class="color-combination">${x.codes.map(cd=>`<div class="color-swatch" style="background:${cd}"></div>`).join('')}</div>`:`<div class="color-swatch" style="background:${x.codes[0]}"></div>`}<span>${escapeHtml(x.name)}</span></div>`;
+            }).join('');
+            c.style.display='block';
+        }
+
+        // ===== Append a color from autocomplete: replaces the in-progress chunk with the canonical name =====
+        function appendColorFromAutocomplete(n,cc){
+            if(typeof n!=='string'||typeof cc!=='string')return;
+            // selectedColorIds stores canonical names (matches selectColor's semantics) so the X-button on
+            // a chip removes the right entry, and colorDB lookup via toLowerCase() still resolves.
+            if(!selectedColorIds.includes(n))selectedColorIds.push(n);
+            updateSelectedColors();
+            const cur=(document.getElementById('newColorCode').value||'').split('+').map(s=>s.trim()).filter(Boolean);
+            const nc=cc.split('+').map(s=>s.trim()).filter(Boolean);
+            document.getElementById('newColorCode').value=[...new Set([...cur,...nc])].join(' + ');
+            // Replace the trailing uncommitted chunk with the canonical name; preserve prior committed chunks
+            const input=document.getElementById('newColorName');
+            const parts=(input.value||'').split('+').map(s=>s.trim()).filter(Boolean);
+            parts.pop();
+            parts.push(n);
+            input.value=parts.join(' + ').trim();
+            document.getElementById('colorOptions').style.display='none';
+        }
+
+        // ===== Enter key in #newColorName: commit first suggestion OR trigger save =====
+        function colorInputKeydown(e){
+            if(e.key!=='Enter')return;
+            e.preventDefault();
+            const opts=document.getElementById('colorOptions');
+            if(opts&&opts.style.display==='block'){
+                const firstSel=opts.querySelector('.color-option');
+                if(firstSel){
+                    firstSel.click();
+                    return;
+                }
+            }
+            // No active dropdown — jump straight into save flow
+            saveNewColor();
+        }
         function selectColor(n,cc){if(!selectedColorIds.includes(n))selectedColorIds.push(n);updateSelectedColors();const cur=document.getElementById('newColorCode').value.split('+').filter(c=>c.trim());const nc=cc.split('+');document.getElementById('newColorCode').value=[...new Set([...cur,...nc])].join(' + ');const cn=document.getElementById('newColorName').value;if(!cn.includes(n))document.getElementById('newColorName').value=cn?cn+' + '+n:n}
         function updateSelectedColors(){const c=document.getElementById('selectedColors');if(!c)return;c.innerHTML=selectedColorIds.map(n=>{const co=colorDB[n.toLowerCase()];if(!co)return'';const isC=co.codes.length>1;return`<div class="flex items-center gap-1 px-2 py-1 rounded bg-gray-100 dark:bg-dark-surface-2"><div class="w-3 h-3 rounded" style="background:${isC?`linear-gradient(135deg,${co.codes.join(',')})`:co.codes[0]}"></div><span class="text-xs">${escapeHtml(co.name)}</span><button type="button" onclick="AdminDashboard.removeSelectedColor('${escapeHtml(n)}')" class="text-gray-500"><i class="fas fa-times text-xs"></i></button></div>`}).join('')}
         function removeSelectedColor(n){selectedColorIds=selectedColorIds.filter(x=>x!==n);updateSelectedColors();const co=colorDB[n.toLowerCase()];if(co){const cur=document.getElementById('newColorCode').value.split('+').filter(c=>c.trim());document.getElementById('newColorCode').value=cur.filter(c=>!co.codes.includes(c)).join(' + ')}const cn=document.getElementById('newColorName').value;document.getElementById('newColorName').value=cn.split(' + ').filter(x=>x!==n).join(' + ')}
         function openAddColorModal(){document.getElementById('addColorModal').style.display='flex';document.getElementById('newColorName').value='';document.getElementById('newColorCode').value='';selectedColorIds=[];updateSelectedColors()}
         function closeAddColorModal(){document.getElementById('addColorModal').style.display='none'}
-        async function saveNewColor(){const pid=document.getElementById('productId').value;if(!pid){showToast('Save product first','warning');return}const n=document.getElementById('newColorName').value.trim(),cc=document.getElementById('newColorCode').value.trim();if(!n||!cc){showToast('Fill fields','warning');return}try{const{data,error}=await supabase.from('product_colors').insert([{product_id:parseInt(pid),color_name:n,color_code:cc,is_default:true,sort_order:0,created_at:new Date().toISOString(),updated_at:new Date().toISOString()}]).select();if(error)throw error;if(!productColors[pid])productColors[pid]=[];productColors[pid].push(data[0]);await loadColorsForProduct(pid);closeAddColorModal();showToast('Color added','success')}catch(e){showToast('Failed: '+e.message,'error')}}
+        // ===== 1x1 transparent SVG placeholder for auto-created product rows =====
+        const COLOR_PLACEHOLDER_IMG='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#cccccc"/><text x="50" y="55" font-size="14" text-anchor="middle" fill="#666" font-family="sans-serif">Draft</text></svg>');
+
+        function setAddColorStatus(msg,type){
+            const el=document.getElementById('addColorSaveStatus');
+            if(!el)return;
+            const icon=type==='saving'?'fa-spinner fa-spin':type==='success'?'fa-check-circle':type==='error'?'fa-exclamation-circle':'fa-info-circle';
+            el.innerHTML='<i class="fas '+icon+'" style="margin-right:0.4rem"></i>'+escapeHtml(msg);
+            el.className='add-color-save-status '+type;
+            el.style.display='flex';
+        }
+
+        // ===== Per-color save: optionally auto-creates a placeholder parent product when productId is missing =====
+        async function saveNewColor(){
+            const saveBtn=document.querySelector('#addColorModal .btn-primary[onclick*="saveNewColor"]');
+            if(saveBtn&&saveBtn.disabled)return;
+            const n=(document.getElementById('newColorName').value||'').trim();
+            const cc=(document.getElementById('newColorCode').value||'').trim();
+            if(!n){showToast('Enter a color name','warning');return}
+            if(!cc){showToast('Pick at least one color','warning');return}
+            // ===== Guard against unfinished trailing chunk =====
+            const nameChunks=n.split('+').map(s=>s.trim()).filter(Boolean);
+            const codeChunks=cc.split('+').map(s=>s.trim()).filter(Boolean);
+            if(nameChunks.length>codeChunks.length){
+                setAddColorStatus('Finish the last color (press Enter or click a suggestion)','error');
+                showToast('Press Enter or click a suggestion for the last chunk','warning');
+                return;
+            }
+            if(saveBtn){saveBtn.disabled=true;saveBtn.style.opacity='.55';}
+            setAddColorStatus('Saving color...','saving');
+            try{
+                let pid=parseInt(document.getElementById('productId').value)||0;
+                let autoCreated=false;
+                if(!pid){
+                    // ===== Footwear category check (color section only shows for footwear anyway, but defense-in-depth) =====
+                    if(document.getElementById('isFootwear').value!=='true'){
+                        throw new Error('Pick a footwear category before adding colors');
+                    }
+                    const catId=parseInt(document.getElementById('productCategory').value);
+                    const cat=categories.find(c=>c.id==catId);
+                    if(!cat)throw new Error('Choose a category first');
+                    setAddColorStatus('Creating product & color...','saving');
+                    const suffix=Math.random().toString(36).slice(2,8);
+                    // Derive an informative name from the first color so the admin can find the draft
+                    // (e.g. "Red draft" or "Navy draft 3k4j2h") instead of mystery text in the grid.
+                    const cleanColorName=(n||'').replace(/^\s+|\s+$/g,'').slice(0,60)||'New color';
+                    const placeholderName=cleanColorName+' draft '+suffix;
+                    const placeholderSlug='untitled-product-'+suffix;
+                    const pd={
+                        name:placeholderName,
+                        price:1,
+                        compare_price:0,
+                        category_id:cat.id,
+                        description:'(Auto-created placeholder so a color could be saved. Please fill in product name, price, and image, then Save again.)',
+                        image_url:COLOR_PLACEHOLDER_IMG,
+                        slug:placeholderSlug,
+                        stock:0,
+                        is_active:false,
+                        created_at:new Date().toISOString(),
+                        updated_at:new Date().toISOString()
+                    };
+                    const{data:prodRows,error:prodErr}=await supabase.from('products').insert([pd]).select();
+                    if(prodErr)throw prodErr;
+                    pid=prodRows[0].id;
+                    // Populate parent-modal form fields so the form is internally consistent
+                    // and any subsequent Save isn't a partial-state overwrite.
+                    document.getElementById('productId').value=pid;
+                    document.getElementById('productName').value=placeholderName;
+                    document.getElementById('productPrice').value=1;
+                    document.getElementById('productSlug').value=placeholderSlug;
+                    document.getElementById('productDescription').value=pd.description;
+                    document.getElementById('productStock').value=0;
+                    document.getElementById('productCategory').value=cat.id;
+                    document.getElementById('productImageUrl').value=COLOR_PLACEHOLDER_IMG;
+                    currentProductId=pid;
+                    document.getElementById('modalTitle').textContent='Edit: '+placeholderName+' (auto-created draft — fill me in)';
+                    autoCreated=true;
+                }
+                const{data:colorRows,error:colorErr}=await supabase.from('product_colors').insert([{
+                    product_id:pid,
+                    color_name:n,
+                    color_code:cc,
+                    is_default:true,
+                    sort_order:0,
+                    created_at:new Date().toISOString(),
+                    updated_at:new Date().toISOString()
+                }]).select();
+                if(colorErr)throw colorErr;
+                if(!productColors[pid])productColors[pid]=[];
+                productColors[pid].push(colorRows[0]);
+                if(!currentEditingSizes)currentEditingSizes={};
+                await loadColorsForProduct(pid);
+                setAddColorStatus('Saved!','success');
+                showToast(autoCreated?'Color added to draft product — fill in details & Save':'Color added','success');
+                setTimeout(()=>{
+                    closeAddColorModal();
+                    const statusEl=document.getElementById('addColorSaveStatus');
+                    if(statusEl){statusEl.style.display='none';statusEl.innerHTML='';}
+                    if(saveBtn){saveBtn.disabled=false;saveBtn.style.opacity='';}
+                },900);
+            }catch(err){
+                const msg=(err&&err.message)||'Unknown error';
+                setAddColorStatus('Failed: '+msg,'error');
+                showToast('Failed: '+msg,'error');
+                if(saveBtn){saveBtn.disabled=false;saveBtn.style.opacity='';}
+            }
+        }
         async function deleteColor(cid){if(!confirm('Delete this color and its sizes?'))return;try{await supabase.from('product_sizes').delete().eq('color_id',cid);await supabase.from('product_colors').delete().eq('id',cid);const pid=document.getElementById('productId').value;productColors[pid]=productColors[pid].filter(c=>c.id!=cid);if(productSizes[pid])delete productSizes[pid][cid];if(currentEditingSizes[cid])delete currentEditingSizes[cid];await loadColorsForProduct(pid);loadSizesForColor();calcFootwearStock();showToast('Deleted','success')}catch(e){showToast('Failed: '+e.message,'error')}}
         function openAddSizeModal(){const cid=document.getElementById('colorSelector').value;if(!cid){showToast('Select color','warning');return}document.getElementById('addSizeModal').style.display='flex';document.getElementById('sizeColorSelector').value=cid;document.getElementById('newSizeValue').value='';document.getElementById('newSizeStock').value=0}
         function closeAddSizeModal(){document.getElementById('addSizeModal').style.display='none'}
@@ -1591,7 +1784,8 @@
             openAddColorModal, closeAddColorModal, saveNewColor, deleteColor,
             openAddSizeModal, closeAddSizeModal, saveNewSize, loadSizesForColor,
             updateSizeStock, toggleSizeAvailability, searchColors, selectColor,
-            selectColorFromSearch, removeSelectedColor, filterProducts, nextPage, prevPage,
+            appendColorFromAutocomplete, colorInputKeydown, removeSelectedColor,
+            filterProducts, nextPage, prevPage,
             loadProducts: loadInitialData, toggleDarkMode, changeFontSize, changePrimaryColor,
             backupDatabase, importData, clearCache, resetSettings, saveStoreSettings,
             saveShippingSettings, saveTaxSettings, saveCurrencySettings, toggleNotifications,
