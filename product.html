@@ -1253,7 +1253,7 @@
                 <div class="product-container">
         <div class="product-image-section" id="productImageSection">
             ${hasComparePrice ? `<div class="product-badges" style="position:absolute;top:12px;left:12px;z-index:2;display:inline-flex;flex-direction:column;width:auto;">
-                <span class="badge-sale" style="background:#dc2626;color:white;padding:4px 8px;border-radius:6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;font-family:'Inter',sans-serif;">-${discountPercent}%</span>
+                <span class="badge-sale" style="background:#dc2626;color:white;padding:4px 10px;border-radius:6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;font-family:'Inter',sans-serif;">-${discountPercent}%</span>
             </div>` : ''}
             ${buildGalleryMarkup(product, imageUrl, __productMediaList || [])}
         </div>
@@ -1731,7 +1731,7 @@
                     strip.innerHTML = state.items.map(function (it, idx) {
                         var thumbCls = 'product-gallery-thumb' + (idx === state.activeIdx ? ' active' : '');
                         var innerSrc = it.type === 'video'
-                            ? '<video controls src="' + escapeHtmlAttr(it.url) + '" preload="metadata"></video><div class="thumb-video-badge">&#9654;</div>'
+                            ? '<video muted controls playsinline webkit-playsinline src="' + escapeHtmlAttr(it.url) + '" preload="metadata"></video><div class="thumb-video-badge">&#9654;</div>'
                             : '<img src="' + escapeHtmlAttr(it.url) + '" alt="' + escapeHtmlAttr(it.alt || '') + '" loading="lazy">';
                         var extra = '';
                         if (it.isCover) extra = '<span class="thumb-badge">Cover</span>';
