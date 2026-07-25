@@ -470,6 +470,61 @@ cd /root/JMPOTTERS && ./scripts/check_appjs.sh app.js
 
 ---
 
+
+---
+
+## SECRETS REFERENCE (READ-ONLY — no secret values are stored here)
+
+This section documents **where** every credential used by JMPOTTERS lives. No
+secret value is included in this file. NEVER paste any credential value into
+problems.txt or any other git-tracked file; git history is permanent and a
+single accidental push would leak it.
+
+| Credential | Where it lives (NEVER in this repo) | Where it MUST NOT go |
+|---|---|---|
+| GitHub SSH key | `/root/.ssh/` on your local machine; used by `git push` to github.com | Any file under `/root/JMPOTTERS/` |
+| Vercel PAT (deploy) | Your local shell environment (`$VERCEL_TOKEN`) OR your password manager. Used by `vercel` CLI for non-git deploys. With git-push deploys (your current flow), Vercel reads the deploy hook from GitHub and **does not need this token on disk.** | Any file under `/root/JMPOTTERS/` |
+| Supabase PAT (admin) | Your local shell environment (`$SUPABASE_ACCESS_TOKEN`) OR your password manager. Used by `supabase` CLI for migrations. The deployed frontend never uses this — it gets anon RLS-only access. | Any file under `/root/JMPOTTERS/` |
+| Supabase ANON JWT (public) | Already in `app.js` line ~23: `JMPOTTERS_CONFIG.supabase.key`. Safe to ship in client code — Supabase RLS enforces authorization. | Anywhere it isn't already (it's already public) |
+| Supabase project URL | Already in `app.js` line ~22: `https://tmpggeeuwdvlngvfncaa.supabase.co`. Not a secret. | Anywhere it isn't already |
+
+### Quick test: do my secrets accidentally leak to git?
+
+```bash
+cd /root/JMPOTTERS
+
+# Look for known credential prefixes inside the tracked tree
+git ls-files | xargs -I{} sh -c 'grep -lE "sbp_|vcp_|ghp_|sk_live_|BEGIN OPENSSH PRIVATE KEY" "{}" 2>/dev/null' | head
+# Expected: empty output. If anything prints, that file contains a secret and you need to purge it from history (e.g. `git filter-repo`).
+
+# Look for high-entropy long strings that look like tokens
+git ls-files | xargs -I{} sh -c 'strings "{}" 2>/dev/null | grep -E "^[A-Za-z0-9]{40,}$" | head -3' | head
+# Expected: empty or only public anon JWT excerpts.
+```
+
+### If you ever DID leak a credential
+
+1. **Rotate (revoke + replace)** the credential immediately at the issuer
+   (GitHub Settings > SSH, Vercel Account Settings > Tokens, Supabase
+   Dashboard > Access Tokens).
+2. **Purge from git history** with `git filter-repo --path <leaked_file>
+   --invert-paths` or BFG Repo-Cleaner.
+3. **Force-push** the cleaned history. Anyone with the old commit will need to
+   re-clone.
+4. **Audit downstream mirrors** (GitHub forks, Vercel deploy cache, any
+   backups) for the leaked value. Revoke any rotated credentials that match.
+
+### Trust model recap
+
+- The browser downloads `app.js` containing the Supabase **ANON** JWT — that's
+  by design and is safe because Supabase row-level security policies
+  gate every table the anon key can read or write.
+- Your **PAT keys** unlock admin operations: Vercel deploys out-of-band,
+  Supabase migrations, GitHub pushing from new machines. A leaked PAT is a
+  compromised admin account.
+
+---
+
 **End of problems.txt.** All file paths in this document are relative to
 `/root/JMPOTTERS/` unless stated otherwise. All commit SHAs are
 short-form 7-character `git log` summaries.
