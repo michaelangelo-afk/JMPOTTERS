@@ -750,7 +750,30 @@
         .gallery-lightbox-close:hover{background:rgba(255,255,255,0.3)}
         @media(max-width:640px){.product-gallery-thumb{flex:0 0 64px;height:64px}.gallery-nav{opacity:1;width:32px;height:32px;font-size:0.75rem}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    </style>
+    
+        /* ===== Mobile overflow guards for sub-image gallery ===== */
+        html, body { overflow-x: hidden; }
+        .product-container, .product-image-section, .product-gallery { min-width: 0; max-width: 100%; }
+        #jmpottersGalleryMain img,
+        #jmpottersGalleryMain video { max-width: 100%; height: auto; display: block; }
+        .product-gallery-thumb-strip {
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            padding: 4px 2px 8px;
+            overscroll-behavior-x: contain;
+        }
+        .product-gallery-thumb { cursor: pointer; border-radius: 8px; overflow: hidden; }
+        @media (max-width: 768px) {
+            .product-image-section { padding: 8px 4px; }
+            .product-gallery { padding: 6px 4px; gap: 10px; }
+        }
+        @media (max-width: 480px) {
+            .product-image-section { padding: 4px 2px; }
+            .product-gallery { padding: 4px 2px; gap: 8px; }
+            .product-gallery-thumb { flex: 0 0 56px; height: 56px; }
+        }
+</style>
 <!-- JMPOTTERS_THEME_FOUC -->
 <script>
 (function(){

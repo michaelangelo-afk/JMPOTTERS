@@ -1516,7 +1516,93 @@
     </script>
 
 <!-- JMPOTTERS_THEME_JS -->
-<script src="theme.js" defer></script>
+<script src="theme.js" defer>
+        // ===== Header wiring (page-local; app.js does not handle mobile nav/search) =====
+        (function() {
+            function openNav() {
+                var m = document.getElementById('mobileNav');
+                var o = document.getElementById('navOverlay');
+                if (m) m.classList.add('active');
+                if (o) o.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            function closeNav() {
+                var m = document.getElementById('mobileNav');
+                var o = document.getElementById('navOverlay');
+                if (m) m.classList.remove('active');
+                if (o) o.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            function openSearch() {
+                var s = document.getElementById('searchOverlay');
+                var i = document.getElementById('searchInput');
+                if (s) s.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                setTimeout(function(){ if (i) i.focus(); }, 100);
+            }
+            function closeSearch() {
+                var s = document.getElementById('searchOverlay');
+                var i = document.getElementById('searchInput');
+                var c = document.getElementById('searchResultsContainer');
+                if (s) s.classList.remove('active');
+                document.body.style.overflow = '';
+                if (i) i.value = '';
+                if (c) c.innerHTML = '';
+            }
+            var b = function(id, fn){ var el = document.getElementById(id); if (el) el.addEventListener('click', function(e){ e.preventDefault && e.preventDefault(); fn(); }); };
+            b('mobileToggle', openNav);
+            b('closeNavBtn', closeNav);
+            b('navOverlay', closeNav);
+            b('searchToggle', openSearch);
+            b('searchClose', closeSearch);
+        })();
+
+        // ===== Header wiring (page-local; app.js does not handle mobile nav/search) =====
+        (function() {
+            function openNav() {
+                var m = document.getElementById('mobileNav');
+                var o = document.getElementById('navOverlay');
+                if (m) m.classList.add('active');
+                if (o) o.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            function closeNav() {
+                var m = document.getElementById('mobileNav');
+                var o = document.getElementById('navOverlay');
+                if (m) m.classList.remove('active');
+                if (o) o.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            function openSearch() {
+                var s = document.getElementById('searchOverlay');
+                var i = document.getElementById('searchInput');
+                if (s) s.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                setTimeout(function(){ if (i) i.focus(); }, 100);
+            }
+            function closeSearch() {
+                var s = document.getElementById('searchOverlay');
+                var i = document.getElementById('searchInput');
+                var c = document.getElementById('searchResultsContainer');
+                if (s) s.classList.remove('active');
+                document.body.style.overflow = '';
+                if (i) i.value = '';
+                if (c) c.innerHTML = '';
+            }
+            var b = function(id, fn){
+                var el = document.getElementById(id);
+                if (el) el.addEventListener('click', function(e){
+                    if (e && e.preventDefault) e.preventDefault();
+                    fn();
+                });
+            };
+            b('mobileToggle', openNav);
+            b('closeNavBtn', closeNav);
+            b('navOverlay', closeNav);
+            b('searchToggle', openSearch);
+            b('searchClose', closeSearch);
+        })();
+</script>
 <!-- v7: invoice.html shipping_fee row removed -->
 </body>
 </html>
