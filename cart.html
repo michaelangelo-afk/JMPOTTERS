@@ -666,7 +666,11 @@
             if (index !== -1) {
                 const item = cart[index];
                 // Cap at product stock (fallback 99 for legacy items without stock field)
-                const maxStock = parseInt(item.stock, 10) || 99;
+                // v9 FIX: 0 must NOT snap to 99. item.stock may be 0 (legitimate out-of-stock).
+                const _parsedStock = parseInt(item.stock, 10);
+                const maxStock = (item.stock != null && !isNaN(_parsedStock) && _parsedStock >= 0)
+                    ? _parsedStock
+                    : 99;
                 // FIX v7: force integer math. If item.quantity was ever stored as "1" (string) and change
                 // was ever passed as a string (e.g. "1"), `1 + "1"` produced the "11" / "01" string concat
                 // the user saw instead of a numeric increment.
@@ -831,6 +835,92 @@ function getImageUrl(cat, f) {
             container.innerHTML = rows;
             try { localStorage.setItem('jmpotters_cart_total', String(total)); } catch(e){}
         }
+        // v9 FIX: non-blocking async stock refresh — heals stale item.stock so + can be properly
+        // capped to per-variant stock from product_variants (or products for variant-less items).
+        function refreshCartStock() {
+            if (typeof cartSb === "undefined" || !cartSb) return;
+            var cart = [];
+            try { cart = JSON.parse(localStorage.getItem("jmpotters_cart")) || []; } catch (e) { return; }
+            if (!cart.length) return;
+            var productIds = [];
+            var seen = {};
+            for (var i = 0; i < cart.length; i++) {
+                if (cart[i] && cart[i].product_id != null) {
+                    var pid = String(cart[i].product_id);
+                    if (!seen[pid] && (pid === String(parseInt(pid, 10)))) {
+                        productIds.push(parseInt(pid, 10));
+                        seen[pid] = true;
+                    }
+                }
+            }
+            if (!productIds.length) return;
+            Promise.all([
+                cartSb.from("products").select("id, stock").in("id", productIds),
+                cartSb.from("product_variants").select("product_id, color_id, size_id, stock").in("product_id", productIds)
+            ]).then(function(results) {
+                var prods = (results && results[0] && results[0].data) || [];
+                var variants = (results && results[1] && results[1].data) || [];
+                var changed = false;
+                for (var k = 0; k < cart.length; k++) {
+                    var item = cart[k];
+                    var freshStock = null;
+                    // (a) variant-aware: footwear etc. with color_id AND/OR size_id
+                    if ((item.color_id != null || item.color_name) && variants.length > 0) {
+                        for (var v = 0; v < variants.length; v++) {
+                            var row = variants[v];
+                            var rowColorId = row.color_id == null ? null : String(row.color_id);
+                            var rowSizeVal = row.size_id == null ? null : String(row.size_id);
+                            var itemColorId = item.color_id == null ? null : String(item.color_id);
+                            var itemSizeVal = (item.size_value == null ? null : String(item.size_value));
+                            if (String(row.product_id) === String(item.product_id) &&
+                                rowColorId === itemColorId &&
+                                (rowSizeVal === itemSizeVal || (rowSizeVal == null && itemSizeVal == null))) {
+                                freshStock = row.stock;
+                                break;
+                            }
+                        }
+                    }
+                    // (b) fallback: product-level stock
+                    if (freshStock == null && prods.length > 0) {
+                        for (var p = 0; p < prods.length; p++) {
+                            if (String(prods[p].id) === String(item.product_id)) { freshStock = prods[p].stock; break; }
+                        }
+                    }
+                    if (freshStock == null) continue;
+                    var parsedFresh = parseInt(freshStock, 10);
+                    if (isNaN(parsedFresh)) continue;
+                    freshStock = parsedFresh;
+                    var parsedItemStock = parseInt(item.stock, 10);
+                    var stockChanged = isNaN(parsedItemStock) || parsedItemStock !== freshStock;
+                    if (stockChanged) { item.stock = freshStock; changed = true; }
+                    if (freshStock === 0) {
+                        // out of stock — remove + notify
+                        cart.splice(k, 1);
+                        k--;
+                        changed = true;
+                        if (typeof showNotification === "function") {
+                            try { showNotification("An item was removed (out of stock)", "warning"); } catch (_) {}
+                        }
+                    } else if ((parseInt(item.quantity, 10) || 0) > freshStock) {
+                        // cap to available
+                        item.quantity = freshStock;
+                        changed = true;
+                        if (typeof showNotification === "function") {
+                            try { showNotification("Quantity capped to available stock: " + freshStock, "info"); } catch (_) {}
+                        }
+                    }
+                }
+                if (changed) {
+                    try { localStorage.setItem("jmpotters_cart", JSON.stringify(cart)); } catch (_) {}
+                    if (typeof updateCartCountShared === "function") { try { updateCartCountShared(); } catch (_) {} }
+                    try { renderCart(); } catch (_) {}
+                }
+            }).catch(function(err) {
+                console.warn("refreshCartStock bypass (offline or schema mismatch):", err && err.message ? err.message : err);
+            });
+        }
+        try { refreshCartStock(); } catch (e) { console.warn("refreshCartStock bypass (sync):", e); }
+
         renderCart();
 </script>
 
