@@ -184,44 +184,46 @@
     // swap-specific reverting (animation timeline, focus, etc) can be done
     // atomically with the class removal. No more decoupled innerHTML-revert
     // timer that races rapid double-clicks.
-    // Per-button state-revert scheduler (v5). Tokens are keyed per STATE
-    // (separate fields for .copied vs .copy-failed) so an interleave
-    // (e.g. copy succeeded then copy failed within the previous state's
-    // revert window) cleanly cancels only the peer timer. No orphan
-    // setTimeout closures pile up across rapid alternation.
+    // Per-button state-revert scheduler (v6). Uses a single per-button
+    // _revertTimers = {} map keyed by class name so any future state
+    // (e.g. .copy-pending) just works without adding another hardcoded
+    // ternary. clearTimeout(undefined) is a silent no-op per spec, so
+    // no inner `if (t[cls])` guard is needed — the outer try/catch
+    // covers the only realistic failure (non-Element btnRef).
+    function getRevertTimers(btnRef){
+      return btnRef._revertTimers || (btnRef._revertTimers = {});
+    }
     function scheduleRevert(cls, btnRef, ms){
       if (!btnRef) return;
-      var tokenKey = (cls === 'copied') ? '_revertTimerCopied' : '_revertTimerFailed';
-      try {
-        if (btnRef[tokenKey]) clearTimeout(btnRef[tokenKey]);
-      } catch(_e){}
-      btnRef[tokenKey] = setTimeout(function(){
+      var t = getRevertTimers(btnRef);
+      try { clearTimeout(t[cls]); } catch(_e){}
+      t[cls] = setTimeout(function(){
         try {
           if (btnRef && btnRef.classList) btnRef.classList.remove(cls);
         } catch(_e){}
-        btnRef[tokenKey] = null;
+        t[cls] = null;
       }, ms);
     }
-    // Optional utility: cancel any leftover peer-state revert timer so a
-    // copy->fail interleave cannot leave a dangling timer pointing at an
+    // Cancel the revert timer for a specific class. Called when the peer
+    // state takes over so the old timer can't run classList.remove on an
     // already-stripped class.
-    function cancelPeerRevert(btnRef, peerKey){
-      if (!btnRef || !peerKey) return;
-      try {
-        if (btnRef[peerKey]) { clearTimeout(btnRef[peerKey]); btnRef[peerKey] = null; }
-      } catch(_e){}
+    function cancelRevert(btnRef, cls){
+      if (!btnRef || !cls) return;
+      var t = btnRef._revertTimers;
+      if (!t) return;
+      try { if (t[cls]) { clearTimeout(t[cls]); t[cls] = null; } } catch(_e){}
     }
     // Pure class toggle — UI swap is handled entirely by CSS via sibling
     // .copy-state / .copied-state / .copy-failed-state spans. Strip the
     // opposite state class first so a copy->fail interleave cannot render
-    // both spans simultaneously on the same button, AND clear the peer's
+    // both spans simultaneously on the same button, AND cancel the peer's
     // revert timer so an orphan setTimeout can't run classList.remove on
     // a class we already stripped.
     function markCopied(){
       if (!btn || !btn.classList) return;
       if (btn.classList.contains('copy-failed')) {
         btn.classList.remove('copy-failed');
-        cancelPeerRevert(btn, '_revertTimerFailed');
+        cancelRevert(btn, 'copy-failed');
       }
       btn.classList.add('copied');
       scheduleRevert('copied', btn, 1800);
@@ -231,7 +233,7 @@
       if (!btn || !btn.classList) return;
       if (btn.classList.contains('copied')) {
         btn.classList.remove('copied');
-        cancelPeerRevert(btn, '_revertTimerCopied');
+        cancelRevert(btn, 'copied');
       }
       btn.classList.add('copy-failed');
       scheduleRevert('copy-failed', btn, 1800);
