@@ -965,11 +965,7 @@
         var closeNavBtn = document.getElementById('closeNavBtn');
         function openNav() { mobileNav.classList.add('active'); navOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
         function closeNav() { mobileNav.classList.remove('active'); navOverlay.classList.remove('active'); document.body.style.overflow = ''; }
-        if (mobileToggle) mobileToggle.addEventListener('click', openNav);
-        if (closeNavBtn) closeNavBtn.addEventListener('click', closeNav);
-        if (navOverlay) navOverlay.addEventListener('click', closeNav);
-
-        var searchToggle = document.getElementById('searchToggle');
+        if (mobileToggle) mobileToggle.addEventListener('click', openNav);if (closeNavBtn) closeNavBtn.addEventListener('click', closeNav);if (navOverlay) navOverlay.addEventListener('click', closeNav);var searchToggle = document.getElementById('searchToggle');
         var searchOverlay = document.getElementById('searchOverlay');
         var searchClose = document.getElementById('searchClose');
         var searchInput = document.getElementById('searchInput');
@@ -979,9 +975,7 @@
 
         function openSearch() { searchOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; setTimeout(function() { searchInput.focus(); }, 100); }
         function closeSearch() { searchOverlay.classList.remove('active'); document.body.style.overflow = ''; searchInput.value = ''; if (searchResultsContainer) searchResultsContainer.innerHTML = ''; }
-        if (searchToggle) searchToggle.addEventListener('click', openSearch);
-        if (searchClose) searchClose.addEventListener('click', closeSearch);
-        if (searchOverlay) searchOverlay.addEventListener('click', function(e) { if (e.target === searchOverlay) closeSearch(); });
+        if (searchToggle) searchToggle.addEventListener('click', openSearch);if (searchClose) searchClose.addEventListener('click', closeSearch);if (searchOverlay) searchOverlay.addEventListener('click', function(e) { if (e.target === searchOverlay) closeSearch(); });
 
         function highlightMatch(text, query) {
             if (!query) return escapeHtml(text);

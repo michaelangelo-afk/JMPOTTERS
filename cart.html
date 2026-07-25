@@ -701,39 +701,7 @@
             }
         }
         
-        /* v19: page-local checkout wiring stripped */ (local /* v19: page-local checkout wiring stripped */ (local function proceedToCheckout() stripped; app.js's proceedToCheckout in IIFE handles it)
-        
-        // Mobile navigation
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileToggle = document.getElementById('mobileToggle');
-            const mobileNav = document.getElementById('mobileNav');
-            const navOverlay = document.getElementById('navOverlay');
-            const closeNav = document.querySelector('.close-nav');
-            function openNav() { mobileNav.classList.add('active'); navOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
-            function closeNavFunc() { mobileNav.classList.remove('active'); navOverlay.classList.remove('active'); document.body.style.overflow = ''; }
-            if (mobileToggle) mobileToggle.addEventListener('click', openNav);
-            if (closeNav) closeNav.addEventListener('click', closeNavFunc);
-            if (navOverlay) navOverlay.addEventListener('click', closeNavFunc);
-            
-            // Cart icon redirects to cart page
-            const cartIcon = document.getElementById('cartIcon');
-            if (cartIcon) {
-                cartIcon.addEventListener('click', function() {
-                    window.location.href = 'cart.html';
-                });
-            }
-            
-            // Wishlist icon
-            const wishlistIcon = document.getElementById('wishlistIcon');
-            if (wishlistIcon) {
-                wishlistIcon.addEventListener('click', function() {
-                    showNotification('Wishlist feature coming soon!', 'info');
-                });
-            }
-            
-            updateCartCount();
-            renderCart();
-        });
+        /* v19: page-local proceedToCheckout() definition stripped; app.js IIFE handles it */
         
         window.updateQuantity = updateQuantity;
         window.removeItem = removeItem;
@@ -756,11 +724,7 @@
         var closeNavBtn = document.getElementById('closeNavBtn');
         function openNav() { mobileNav.classList.add('active'); navOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
         function closeNav() { mobileNav.classList.remove('active'); navOverlay.classList.remove('active'); document.body.style.overflow = ''; }
-        if (mobileToggle) mobileToggle.addEventListener('click', openNav);
-        if (closeNavBtn) closeNavBtn.addEventListener('click', closeNav);
-        if (navOverlay) navOverlay.addEventListener('click', closeNav);
-
-        // Search
+        if (mobileToggle) mobileToggle.addEventListener('click', openNav);if (closeNavBtn) closeNavBtn.addEventListener('click', closeNav);if (navOverlay) navOverlay.addEventListener('click', closeNav);// Search
         var searchToggle = document.getElementById('searchToggle');
         var searchOverlay = document.getElementById('searchOverlay');
         var searchClose = document.getElementById('searchClose');
@@ -769,9 +733,7 @@
         var searchDebounceTimer = null, searchCache = {};
         function openSearch() { searchOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; setTimeout(function() { searchInput.focus(); }, 100); }
         function closeSearch() { searchOverlay.classList.remove('active'); document.body.style.overflow = ''; searchInput.value = ''; if (searchResultsContainer) searchResultsContainer.innerHTML = ''; }
-        if (searchToggle) searchToggle.addEventListener('click', openSearch);
-        if (searchClose) searchClose.addEventListener('click', closeSearch);
-        if (searchOverlay) searchOverlay.addEventListener('click', function(e) { if (e.target === searchOverlay) closeSearch(); });
+        if (searchToggle) searchToggle.addEventListener('click', openSearch);if (searchClose) searchClose.addEventListener('click', closeSearch);if (searchOverlay) searchOverlay.addEventListener('click', function(e) { if (e.target === searchOverlay) closeSearch(); });
 
         function highlightMatch(text, query) { if (!query) return escapeHtml(text); var escaped = escapeHtml(text); var regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'); return escaped.replace(regex, '<mark>$1</mark>'); }
         async function performSearch(query) {
