@@ -724,10 +724,11 @@
             try { cartData = JSON.parse(localStorage.getItem('jmpotters_cart')) || []; }
             catch (e) { cartData = []; }
             if (!cartData.length) {
-                container.innerHTML = '<div class="empty-cart" style="padding:3rem;text-align:center;color:#64748b;">' +
-                    '<div class="empty-cart-icon" style="font-size:2.5rem;opacity:0.4;margin-bottom:12px;"><i class="icon-shopping-cart"></i></div>' +
-                    '<p style="margin:0;font-size:0.95rem;">Your cart is empty</p>' +
-                    '<a href="index.html" style="display:inline-block;margin-top:16px;color:#d4af37;text-decoration:none;font-weight:600;font-size:0.9rem;">Continue shopping &rarr;</a></div>';
+                container.innerHTML = `<div class="empty-cart" style="padding:3rem;text-align:center;color:#64748b;">
+                    <div class="empty-cart-icon" style="font-size:2.5rem;opacity:0.4;margin-bottom:12px;"><i class="icon-shopping-cart"></i></div>
+                    <p style="margin:0;font-size:0.95rem;">Your cart is empty</p>
+                    <a href="index.html" style="display:inline-block;margin-top:16px;color:#d4af37;text-decoration:none;font-weight:600;font-size:0.9rem;">Continue shopping &rarr;</a>
+                </div>`;
                 return;
             }
             var total = 0;
@@ -739,32 +740,37 @@
                 if (item.color_name) desc += ' (' + item.color_name + ')';
                 if (item.size_value) desc += ' - ' + item.size_value;
                 var img = getImageUrl(item.category_slug, item.image_url);
-                var colorEsc = (item.color_name || '').replace(/'/g, "\'");
-                var sizeEsc = (item.size_value || '').replace(/'/g, "\'");
-                var nameEsc = (item.name || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-                html += '<div class="cart-row" style="display:grid;grid-template-columns:84px 1fr auto;gap:14px;padding:14px;border-bottom:1px solid #e5e7eb;align-items:center;">' +
-                    '<div style="width:84px;height:84px;border-radius:10px;overflow:hidden;background:#f3f4f6;flex-shrink:0;">' +
-                    '<img src="' + img + '" alt="' + nameEsc + '" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src=\'https://ebuzome.github.io/JMPOTTERS/assets/images/placeholder.jpg\'' +
-                    '"></div>' +
-                    '<div style="min-width:0;">' +
-                    '<div style="font-weight:600;color:#1f2937;font-size:0.95rem;margin-bottom:4px;">' + desc.replace(/</g, '&lt;') + '</div>' +
-                    '<div style="color:#6b7280;font-size:0.85rem;">' + formatPrice(item.price) + ' each</div>' +
-                    '<div style="display:flex;align-items:center;gap:8px;margin-top:8px;">' +
-                    '<button onclick="window.updateQuantity(' + item.product_id + ',' + i + ',\'' + colorEsc + '\',\'' + sizeEsc + '\',' + (item.quantity - 1) + ')" ' +
-                    'style="width:30px;height:30px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1;">-</button>' +
-                    '<span style="min-width:24px;text-align:center;font-weight:600;font-size:0.9rem;">' + item.quantity + '</span>' +
-                    '<button onclick="window.updateQuantity(' + item.product_id + ',' + i + ',\'' + colorEsc + '\',\'' + sizeEsc + '\',' + (item.quantity + 1) + ')" ' +
-                    'style="width:30px;height:30px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1;">+</button>' +
-                    '</div></div>' +
-                    '<div style="text-align:right;">' +
-                    '<div style="font-weight:700;color:#1f2937;font-size:1rem;">' + formatPrice(itemTotal) + '</div>' +
-                    '<button onclick="window.removeItem(' + item.product_id + ',\'' + colorEsc + '\',\'' + sizeEsc + '\')" ' +
-                    'style="margin-top:8px;background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.8rem;padding:4px 0;">Remove</button>' +
-                    '</div></div>';
+                // &#39; is the HTML entity for '. The HTML parser decodes it
+                // back to ' BEFORE the JS engine sees the attribute value.
+                var colorEsc = (item.color_name || '').replace(/'/g, '&#39;');
+                var sizeEsc  = (item.size_value  || '').replace(/'/g, '&#39;');
+                var nameEsc  = (item.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                var descEsc  = desc.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                html += `
+                <div class="cart-row" style="display:grid;grid-template-columns:84px 1fr auto;gap:14px;padding:14px;border-bottom:1px solid #e5e7eb;align-items:center;">
+                    <div style="width:84px;height:84px;border-radius:10px;overflow:hidden;background:#f3f4f6;flex-shrink:0;">
+                        <img src="${img}" alt="${nameEsc}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.onerror=null;this.src='https://ebuzome.github.io/JMPOTTERS/assets/images/placeholder.jpg'">
+                    </div>
+                    <div style="min-width:0;">
+                        <div style="font-weight:600;color:#1f2937;font-size:0.95rem;margin-bottom:4px;">${descEsc}</div>
+                        <div style="color:#6b7280;font-size:0.85rem;">${formatPrice(item.price)} each</div>
+                        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                            <button onclick="window.updateQuantity(${item.product_id}, ${i}, '${colorEsc}', '${sizeEsc}', ${item.quantity - 1})" style="width:30px;height:30px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1;">-</button>
+                            <span style="min-width:24px;text-align:center;font-weight:600;font-size:0.9rem;">${item.quantity}</span>
+                            <button onclick="window.updateQuantity(${item.product_id}, ${i}, '${colorEsc}', '${sizeEsc}', ${item.quantity + 1})" style="width:30px;height:30px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1;">+</button>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:700;color:#1f2937;font-size:1rem;">${formatPrice(itemTotal)}</div>
+                        <button onclick="window.removeItem(${item.product_id}, '${colorEsc}', '${sizeEsc}')" style="margin-top:8px;background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.8rem;padding:4px 0;">Remove</button>
+                    </div>
+                </div>`;
             });
-            html += '<div class="cart-summary" style="padding:20px 14px;display:flex;justify-content:space-between;align-items:center;background:#f9fafb;border-radius:0 0 12px 12px;">' +
-                '<div style="font-size:0.85rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">Total</div>' +
-                '<div style="font-size:1.4rem;font-weight:800;color:#1f2937;">' + formatPrice(total) + '</div></div>';
+            html += `
+                <div class="cart-summary" style="padding:20px 14px;display:flex;justify-content:space-between;align-items:center;background:#f9fafb;border-radius:0 0 12px 12px;">
+                    <div style="font-size:0.85rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">Total</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:#1f2937;">${formatPrice(total)}</div>
+                </div>`;
             container.innerHTML = html;
             try { localStorage.setItem('jmpotters_cart_total', String(total)); } catch(e){}
         }
