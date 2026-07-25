@@ -1713,8 +1713,7 @@
         if (closeCartBtn) closeCartBtn.addEventListener('click', closeCartPanel);
         if (cartOverlayEl) cartOverlayEl.addEventListener('click', closeCartPanel);
         if (cartCheckoutBtn) {
-            cartCheckoutBtn.addEventListener('click', function() {
-                closeCartPanel();
+            /* v19: page-local checkout wiring stripped */ (inline addEventListener on cartCheckoutBtn stripped; app.js's listener handles it)
                 if (typeof window.JMPOTTERS !== 'undefined' && window.JMPOTTERS.proceedToCheckout) {
                     window.JMPOTTERS.proceedToCheckout();
                 } else {
