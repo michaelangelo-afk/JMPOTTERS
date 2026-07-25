@@ -659,6 +659,112 @@
 /* v9:wire-up-mark-hook-globals */
 
     /* v13:footer-deduped-and-linked */
+    /* v14: payment-modal-and-cdn-overlay */
+
+        /* ===== v14: PAYMENT MODAL + CTA ===== */
+        .continue-to-payment-wrap {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 12px; padding: clamp(1.5rem, 3vw, 2.5rem) 0 clamp(1rem, 2vw, 1.5rem);
+        }
+        .continue-to-payment-btn {
+            width: 100%; max-width: 520px; padding: clamp(16px, 2vw, 20px) clamp(1.5rem, 4vw, 2.5rem);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #ffffff !important;
+            border: none; border-radius: 100px;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            font-weight: 700; font-size: clamp(1.05rem, 2vw, 1.15rem);
+            letter-spacing: 0.02em; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            box-shadow: 0 10px 25px rgba(217, 119, 6, 0.30);
+            transition: all var(--motion-med);
+        }
+        .continue-to-payment-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 40px rgba(217, 119, 6, 0.42);
+        }
+        .continue-to-payment-btn:active { transform: translateY(0); }
+        .continue-to-payment-btn i { font-size: 1.15em; }
+        .continue-to-payment-hint {
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin: 0;
+        }
+
+        .payment-modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15, 18, 25, 0.78);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            z-index: 1080;
+            display: flex; align-items: flex-start; justify-content: center;
+            padding: clamp(20px, 4vh, 60px) 16px;
+            overflow-y: auto;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 240ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .payment-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .payment-modal-overlay[hidden] { display: none; }
+        .payment-modal {
+            background: var(--premium-card-bg);
+            border-radius: clamp(1.2rem, 2vw, 2rem);
+            box-shadow: var(--premium-shadow-hover);
+            border: var(--premium-border);
+            padding: clamp(1.5rem, 4vw, 2.5rem);
+            width: 100%;
+            max-width: 720px;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .payment-modal-overlay.active .payment-modal {
+            transform: translateY(0);
+        }
+        .payment-modal-close {
+            position: absolute; top: 16px; right: 16px;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+        .payment-modal-close:hover {
+            background: var(--gray-200);
+            color: var(--gray-900);
+            transform: rotate(90deg);
+        }
+        .payment-modal h2 {
+            margin: 0 0 4px;
+            font-size: clamp(1.35rem, 2.4vw, 1.7rem);
+            color: var(--gray-900);
+            display: flex; align-items: center; gap: 0.6rem;
+        }
+        .payment-modal h2 i { color: var(--primary); font-size: 1.05em; }
+        .payment-modal-sub {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            color: var(--gray-500);
+            margin: 0 0 clamp(1rem, 2vw, 1.5rem);
+            line-height: 1.6;
+        }
+
+        .dark-mode .continue-to-payment-btn { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
+        .dark-mode .continue-to-payment-hint { color: #94a3b8; }
+        .dark-mode .payment-modal { background: #11151c; border-color: rgba(255,255,255,0.08); }
+        .dark-mode .payment-modal h2 { color: #f1f5f9; }
+        .dark-mode .payment-modal-sub { color: #94a3b8; }
+        .dark-mode .payment-modal-close { background: rgba(255,255,255,0.05); color: #cbd5e1; }
+        .dark-mode .payment-modal-close:hover { background: rgba(255,255,255,0.10); color: #fff; }
+        /* ===== /v14: PAYMENT MODAL + CTA ===== */
+
 </style>
     <!-- JMPOTTERS_THEME_CSS placeholder (replaced at deploy with the linker script) -->
 
@@ -754,104 +860,125 @@
                 </div>
             </section>
 
-            <section class="checkout-card" aria-label="Payment instructions">
-                <h2><i class="icon-banknote"></i> Pay via Bank Transfer</h2>
-                <div class="checkout-card-divider"></div>
-                <div class="ck-bank-stack">
-                    <article class="ck-bank-card is-uba" aria-label="UBA bank account">
-                        <div class="ck-bank-card-body">
-                            <div class="ck-bank-eyebrow">UBA · United Bank for Africa</div>
-                            <div class="ck-banktitle">JMPOTTERS STORE</div>
-                            <div class="ck-number-row">
-                                <code id="ubaNum">1026078101</code>
-                                <button type="button" class="copy-btn" onclick="copyBankNumber('1026078101', this)" aria-label="Copy UBA account number">
-                                    <span class="copy-state">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                        <span>Copy</span>
-                                    </span>
-                                    <span class="copied-state" aria-hidden="true">
-                                        <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                                        <span>Copied</span>
-                                    </span>
-                                    <span class="copy-failed-state" aria-hidden="true">
-                                        <svg class="fail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                        <span>Failed</span>
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="ck-bank-card is-opay" aria-label="OPay bank account">
-                        <div class="ck-bank-card-body">
-                            <div class="ck-bank-eyebrow">OPAY · Paypoint by OPay</div>
-                            <div class="ck-banktitle">IMHONTU JULIANA</div>
-                            <div class="ck-number-row">
-                                <code id="opayNum">8139583320</code>
-                                <button type="button" class="copy-btn" onclick="copyBankNumber('8139583320', this)" aria-label="Copy Opay account number">
-                                    <span class="copy-state">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                        <span>Copy</span>
-                                    </span>
-                                    <span class="copied-state" aria-hidden="true">
-                                        <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                                        <span>Copied</span>
-                                    </span>
-                                    <span class="copy-failed-state" aria-hidden="true">
-                                        <svg class="fail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                        <span>Failed</span>
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-
-                <div class="checkout-pay-foot">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                    <span>After paying, <strong>it is mandatory</strong> to upload your receipt below to continue and complete your order. Need help? Contact us via <a href="https://wa.me/2348139583320" target="_blank" rel="noopener">WhatsApp&nbsp;+234&nbsp;813&nbsp;958&nbsp;3320</a>.</span>
-                </div>
-
-                <div class="receipt-upload-card">
-                    <h3><i class="icon-upload"></i> Upload Payment Receipt <span class="required-mark" aria-label="required">*</span></h3>
-                    <p class="hint">Required &mdash; please provide your payment confirmation.</p>
-                    <div class="page-dropzone" id="pageDropzone">
-                        <input type="file" id="pageDropzoneInput" accept="image/jpeg,image/png,image/webp,application/pdf" />
-                        <div class="page-dropzone-content">
-                            <i class="icon-upload-cloud icon-cell" aria-hidden="true"></i>
-                            <div class="text-cell">
-                                <div class="bold">Drop receipt here or click to browse</div>
-                                <div class="sub">JPG, PNG, WebP or PDF · Max 5MB</div>
-                            </div>
-                        </div>
-                        <div class="page-dropzone-preview" id="pageDropzonePreview">
-                            <img id="pageDropzonePreviewImg" alt="Receipt preview">
-                            <div class="preview-info">
-                                <div class="filename" id="pageDropzonePreviewName">receipt.jpg</div>
-                                <div class="filesize" id="pageDropzonePreviewSize">0 KB</div>
-                            </div>
-                            <button type="button" class="remove" id="pageDropzoneRemove" aria-label="Remove receipt">
-                                <i class="icon-trash-2" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="pageReceiptError" role="alert"></div>
-                </div>
-
-                <button type="button" class="place-order-btn" id="placeOrderBtn">
-                    <span class="loader" aria-hidden="true"></span>
-                    <i class="icon-check-circle" aria-hidden="true"></i>
-                    <span id="placeOrderBtnLabel">Upload receipt to enable</span>
+            <!-- v14: CTA replaces inline payment; opens full-screen modal -->
+            <div class="continue-to-payment-wrap">
+                <button type="button" id="openPaymentModalBtn" class="continue-to-payment-btn" aria-haspopup="dialog" aria-controls="paymentModalOverlay">
+                    <i class="icon-shield-check"></i>
+                    <span>Continue to Payment</span>
+                    <i class="icon-arrow-right"></i>
                 </button>
-                <a href="cart.html" class="continue-shopping"><i class="icon-arrow-left"></i> Back to Cart</a>
-            </section>
+                <p class="continue-to-payment-hint">
+                    You'll pay via bank transfer and upload your receipt below.
+                </p>
+            </div>
         </div>
     </main>
 
     <div class="ad-zone" id="adZoneBeforeFooter"></div>
     
+<!-- ===== v14: PAYMENT MODAL OVERLAY (full-screen) ===== -->
+<div id="paymentModalOverlay" class="payment-modal-overlay" hidden aria-hidden="true">
+    <div id="paymentModal" class="payment-modal" role="dialog" aria-modal="true" aria-labelledby="paymentModalTitle">
+        <button type="button" id="closePaymentModalBtn" class="payment-modal-close" aria-label="Close payment dialog">
+            <i class="icon-x"></i>
+        </button>
+
+        <h2 id="paymentModalTitle"><i class="icon-banknote"></i> Pay via Bank Transfer</h2>
+        <p class="payment-modal-sub">Complete your purchase via bank transfer, then upload your receipt to confirm your order.</p>
+
+        <div class="ck-bank-stack">
+            <article class="ck-bank-card is-uba" aria-label="UBA bank account">
+                <div class="ck-bank-card-body">
+                    <div class="ck-bank-eyebrow">UBA · United Bank for Africa</div>
+                    <div class="ck-banktitle">JMPOTTERS STORE</div>
+                    <div class="ck-number-row">
+                        <code id="ubaNum">1026078101</code>
+                        <button type="button" class="copy-btn" onclick="copyBankNumber('1026078101', this)" aria-label="Copy UBA account number">
+                            <span class="copy-state">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                <span>Copy</span>
+                            </span>
+                            <span class="copied-state" aria-hidden="true">
+                                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                                <span>Copied</span>
+                            </span>
+                            <span class="copy-failed-state" aria-hidden="true">
+                                <svg class="fail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                <span>Failed</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <article class="ck-bank-card is-opay" aria-label="OPay bank account">
+                <div class="ck-bank-card-body">
+                    <div class="ck-bank-eyebrow">OPAY · Paypoint by OPay</div>
+                    <div class="ck-banktitle">IMHONTU JULIANA</div>
+                    <div class="ck-number-row">
+                        <code id="opayNum">8139583320</code>
+                        <button type="button" class="copy-btn" onclick="copyBankNumber('8139583320', this)" aria-label="Copy Opay account number">
+                            <span class="copy-state">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                <span>Copy</span>
+                            </span>
+                            <span class="copied-state" aria-hidden="true">
+                                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                                <span>Copied</span>
+                            </span>
+                            <span class="copy-failed-state" aria-hidden="true">
+                                <svg class="fail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                <span>Failed</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="checkout-pay-foot">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <span>After paying, <strong>it is mandatory</strong> to upload your receipt below to continue and complete your order. Need help? Contact us via <a href="https://wa.me/2348139583320" target="_blank" rel="noopener">WhatsApp&nbsp;+234&nbsp;813&nbsp;958&nbsp;3320</a>.</span>
+        </div>
+
+        <div class="receipt-upload-card">
+            <h3><i class="icon-upload"></i> Upload Payment Receipt <span class="required-mark" aria-label="required">*</span></h3>
+            <p class="hint">Required &mdash; please provide your payment confirmation.</p>
+            <div class="page-dropzone" id="pageDropzone">
+                <input type="file" id="pageDropzoneInput" accept="image/jpeg,image/png,image/webp,application/pdf" />
+                <div class="page-dropzone-content">
+                    <i class="icon-upload-cloud icon-cell" aria-hidden="true"></i>
+                    <div class="text-cell">
+                        <div class="bold">Drop receipt here or click to browse</div>
+                        <div class="sub">JPG, PNG, WebP or PDF · Max 5MB</div>
+                    </div>
+                </div>
+                <div class="page-dropzone-preview" id="pageDropzonePreview">
+                    <img id="pageDropzonePreviewImg" alt="Receipt preview">
+                    <div class="preview-info">
+                        <div class="filename" id="pageDropzonePreviewName">receipt.jpg</div>
+                        <div class="filesize" id="pageDropzonePreviewSize">0 KB</div>
+                    </div>
+                    <button type="button" class="remove" id="pageDropzoneRemove" aria-label="Remove receipt">
+                        <i class="icon-trash-2" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="pageReceiptError" role="alert"></div>
+        </div>
+
+        <button type="button" class="place-order-btn" id="placeOrderBtn">
+            <span class="loader" aria-hidden="true"></span>
+            <i class="icon-check-circle" aria-hidden="true"></i>
+            <span id="placeOrderBtnLabel">Upload receipt to enable</span>
+        </button>
+        <a href="cart.html" class="continue-shopping" id="modalBackToCart"><i class="icon-arrow-left"></i> Back to Cart</a>
+    </div>
+</div>
+<!-- ===== /v14: PAYMENT MODAL OVERLAY ===== -->
+
 <!-- ===== SILHOUETTE FOOTER (UNTOUCHED) ===== -->
     <footer class="silhouette-footer">
         <svg class="footer-skyline" viewBox="0 0 1440 120" preserveAspectRatio="none" fill="rgba(212,175,55,0.04)">
@@ -933,6 +1060,71 @@
         <a href="cart.html" class="toast-action">View Cart</a>
     </div>
 
+<script>
+
+        /* ===== v14: PAYMENT MODAL OPEN/CLOSE WIRING ===== */
+        (function () {
+            var overlay = null;
+            var prevFocus = null;
+
+            function openPaymentModal() {
+                overlay = overlay || document.getElementById('paymentModalOverlay');
+                if (!overlay) return;
+                prevFocus = document.activeElement;
+                if (overlay.hasAttribute('hidden')) overlay.removeAttribute('hidden');
+                overlay.setAttribute('aria-hidden', 'false');
+                // Force reflow so the opacity transition fires
+                void overlay.offsetWidth;
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                var firstCopy = overlay.querySelector('.copy-btn');
+                if (firstCopy && typeof firstCopy.focus === 'function') firstCopy.focus({ preventScroll: true });
+            }
+            function closePaymentModal() {
+                if (!overlay) return;
+                overlay.classList.remove('active');
+                overlay.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+                setTimeout(function () {
+                    overlay.setAttribute('hidden', '');
+                    try { if (prevFocus && typeof prevFocus.focus === 'function') prevFocus.focus({ preventScroll: true }); } catch (_e) {}
+                }, 280);
+            }
+
+            function bind() {
+                overlay = document.getElementById('paymentModalOverlay');
+                if (!overlay) return;
+                var opener  = document.getElementById('openPaymentModalBtn');
+                var closer  = document.getElementById('closePaymentModalBtn');
+                var back    = document.getElementById('modalBackToCart');
+                if (opener) opener.addEventListener('click', function (ev) {
+                    ev.preventDefault();
+                    openPaymentModal();
+                });
+                if (closer) closer.addEventListener('click', function (ev) {
+                    ev.preventDefault();
+                    closePaymentModal();
+                });
+                overlay.addEventListener('click', function (ev) {
+                    if (ev.target === overlay) closePaymentModal();
+                });
+                if (back) back.addEventListener('click', function () {
+                    // allow navigation to cart.html naturally
+                });
+                document.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Escape' && overlay.classList.contains('active')) closePaymentModal();
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', bind);
+            } else {
+                try { bind(); } catch (_e) { document.addEventListener('DOMContentLoaded', bind); }
+            }
+        })();
+        /* ===== /v14: PAYMENT MODAL OPEN/CLOSE WIRING ===== */
+
+</script>
 <script src="app.js" defer></script>
 <script src="account-auth.js" defer></script>
 
