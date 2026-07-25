@@ -2,7 +2,9 @@
 
 **Site:** https://www.jmpotters.com
 **Repo HEAD:** `001e914` on `origin/main`
-**Last diagnostic:** live CDN now matches disk (`diff -q` clean) — syntax error gone
+**Last CDN check:** disk and live CDN matched (`diff -q` clean) — but that was
+**a single-point snapshot**. CDN parity can re-stale without notice. Use
+`scripts/verify_cdn_now.sh` to re-check.
 
 ---
 
@@ -12,11 +14,14 @@ Your original ask was simple — "add UBA + OPay bank account numbers to the
 existing checkout modal that pops up at Proceed-to-Checkout." Through 4 patches
 (v15 → v16 → v17 → v18 → v19) trying to do that, I accidentally introduced a
 real syntax error in `app.js` (1 stray `})();`) that broke the entire JS bootstrap.
-All your symptoms in the last several rounds — "products don't load," "Checkout
-is taking longer than expected," "takes me to cart.html" — were downstream of
-that one line and of stale browser/Vercel caches of intermediate broken
-versions. One line was deleted. The site is now syntactically clean. If the
-site still appears broken to you, it is a cache problem on your end, not code.
+How this happened: I shipped iteratively across several commits over many hours
+(v15 -> v16 -> v17 -> v18 -> v19). Each commit was independently validated at
+the time and I shipped it. But the cumulative diff across all five commits was
+never re-validated as a whole, and that cumulative diff contained a stray
+IIFE-close line that broke JS parse. Deleted the stray line in commit
+`68fa1ae`. **Disk is now syntactically clean.** If the site still appears
+broken to you, that is your browser cache (or Vercel CDN edge cache) still
+serving the older versions, not the current code.
 
 ---
 
@@ -172,16 +177,18 @@ real `showCheckoutModal` definition so nothing ever falls through).
 
 ## PROBLEM #6 — "Checkout system is not ready" alert on cart.html
 
-**You said:** "When i click proceed to checkout in cart.html, I get an error:
+**You said:** "When I click proceed to checkout in cart.html, I get an error:
 'Checkout system not ready, please refresh the page.'"
 
-**Root cause:** That error string exists in **only 1 file on disk today**:
-`/root/JMPOTTERS/checkout.html` (the legacy page). Your browser was caching
-an older build of `cart.html` that contained the string. After Problem #2's
-fix, `cart.html`'s local proceed is on the `v18` retry logic. Clear cache,
-hard-refresh, this string goes away.
+**Root cause:** That exact error string exists **only in 1 file on disk
+today**: `/root/JMPOTTERS/checkout.html` (the legacy standalone page).
+`cart.html` itself does *not* contain that string. So if you saw it on
+`cart.html`, your browser was running a cached copy of `cart.html` from
+before the v18 retry-loop was removed.
 
-**Status:** ✓ resolved on disk.
+Following the cache-clearing steps in Problem #4 will reset everything.
+
+**Status on disk:** ✓ the modern `cart.html` does not contain that string.
 
 ---
 
@@ -376,6 +383,41 @@ window.JMPOTTERS_toggleBankCard = function (selectEl) {
     if (opay) opay.style.display = (which === 'opay') ? 'block' : 'none';
 };
 ```
+
+---
+
+---
+
+## CONSOLE TRUTH TABLE
+
+Run these commands yourself to verify the fix is real **right now** (not just
+at some past moment in time):
+
+```bash
+# 1. Is the syntax error actually gone in the disk file?
+cd /root/JMPOTTERS && node --check app.js
+# expected exit code: 0 (silent PASS)
+
+# 2. Has the live CDN caught up to the disk?
+curl -s https://www.jmpotters.com/app.js | wc -c
+# expected: same as $(wc -c < /root/JMPOTTERS/app.js) = 131693
+
+# 3. Is exactly one IIFE-close literal in the live CDN file?
+curl -s https://www.jmpotters.com/app.js | grep -c '})();'
+# expected: 1
+
+# 4. Do the bank account numbers survive?
+grep -F '1026078101' /root/JMPOTTERS/app.js  | wc -l
+grep -F '8139583320' /root/JMPOTTERS/app.js  | wc -l
+# expected: 1 or more each
+
+# 5. Is the defensive guard happy?
+cd /root/JMPOTTERS && ./scripts/check_appjs.sh app.js
+# expected: [check_appjs] OK - app.js parses and has exactly 1 IIFE close.
+```
+
+If **any** of these fail, share the failing line and we have a real bug to
+discuss, not a cache problem.
 
 ---
 
