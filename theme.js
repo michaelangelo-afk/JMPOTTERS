@@ -206,12 +206,17 @@
     }
     // Cancel the revert timer for a specific class. Called when the peer
     // state takes over so the old timer can't run classList.remove on an
-    // already-stripped class.
-    function cancelRevert(btnRef, cls){
-      if (!btnRef || !cls) return;
+    // already-stripped class. Signature matches scheduleRevert(cls, btnRef)
+    // so the discriminating argument (cls) leads in both helpers.
+    function cancelRevert(cls, btnRef){
+      if (!cls || !btnRef) return;
       var t = btnRef._revertTimers;
       if (!t) return;
-      try { if (t[cls]) { clearTimeout(t[cls]); t[cls] = null; } } catch(_e){}
+      // clearTimeout(undefined) is a silent no-op per spec, so no inner
+      // `if (t[cls])` guard is needed. t[cls] = null is harmless even when
+      // the slot was empty. Try/catch covers the only realistic failure
+      // (non-Element btnRef).
+      try { clearTimeout(t[cls]); t[cls] = null; } catch(_e){}
     }
     // Pure class toggle — UI swap is handled entirely by CSS via sibling
     // .copy-state / .copied-state / .copy-failed-state spans. Strip the
@@ -223,7 +228,7 @@
       if (!btn || !btn.classList) return;
       if (btn.classList.contains('copy-failed')) {
         btn.classList.remove('copy-failed');
-        cancelRevert(btn, 'copy-failed');
+        cancelRevert('copy-failed', btn);
       }
       btn.classList.add('copied');
       scheduleRevert('copied', btn, 1800);
@@ -233,7 +238,7 @@
       if (!btn || !btn.classList) return;
       if (btn.classList.contains('copied')) {
         btn.classList.remove('copied');
-        cancelRevert(btn, 'copied');
+        cancelRevert('copied', btn);
       }
       btn.classList.add('copy-failed');
       scheduleRevert('copy-failed', btn, 1800);
