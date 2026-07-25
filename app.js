@@ -1824,7 +1824,16 @@
         const user = safeParseJSON('jmpotters_user', null);
         
         if (user && user.address && user.city && user.state) {
-            showCheckoutModal();
+            // ===== Redirect to the FULL standalone checkout page =====
+            // checkout.html replaces the old modal that used to pop up over the cart.
+            // It shows: order summary, UBA + Opay bank transfer details (with
+            // animated checkmark copy buttons), receipt upload, terms, and the
+            // complete-order button.
+            try {
+                window.location.href = 'checkout.html?from=proceed';
+            } catch(_e) {
+                window.location.href = 'checkout.html';
+            }
             return;
         }
         
