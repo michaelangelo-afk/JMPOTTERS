@@ -1652,22 +1652,33 @@
     // and our extension script attaches at end-of-body -- so on the FIRST upload click, the
     // global `supabase` may still be the SDK class. This getter detects that race and self-heals.
     if (!window.JMPOTTERS_SUPABASE_URL || !window.JMPOTTERS_SUPABASE_ANON_KEY) {
+        // Self-bootstrap: same URL + anon key already exist inline at line 463 and several
+        // storefront pages. If you ever rotate the anon key, update everywhere it's inlined.
         window.JMPOTTERS_SUPABASE_URL = 'https://tmpggeeuwdvlngvfncaa.supabase.co';
         window.JMPOTTERS_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtcGdnZWV1d2R2bG5ndmZuY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTc0MDYsImV4cCI6MjA3Nzc3MzQwNn0.EKzkKWmzYMvQuN11vEjRTDHrUbh6dYXk7clxVsYQ0b4';
     }
     AdminDashboard.getSbClient = function() {
-        // 1) Reuse an existing live client (whatever the existing code set, if it has).
+        // 1) Use the existing live client if it's already a real instance.
+        //    (Skips the SDK class which has no .storage.)
+        const g = (typeof supabase !== 'undefined') ? supabase : null;
+        if (g && typeof g.storage?.from === 'function') return g;
+        // 2) Reuse a previously-lazily-built client.
+        if (AdminDashboard._sb && typeof AdminDashboard._sb.storage?.from === 'function') return AdminDashboard._sb;
+        // 3) Last resort: build one with the SDK class.
+        //    _sb is pinned for the tab's lifetime. If you swap auth contexts later in
+        //    the same session and need a fresh client, call AdminDashboard._sb = null
+        //    then re-invoke getSbClient().
+        if (!window.supabase?.createClient) return null;
         try {
-            var g = (typeof supabase !== 'undefined') ? supabase : null;
-            if (g && g.storage && typeof g.storage.from === 'function') return g;
-        } catch (e) { /* fall through */ }
-        // 2) Reuse the client we already cached on a previous call.
-        if (AdminDashboard._sb && AdminDashboard._sb.storage && typeof AdminDashboard._sb.storage.from === 'function') return AdminDashboard._sb;
-        // 3) Lazily construct one via the SDK class on window.supabase.
-        if (!window.supabase || typeof window.supabase.createClient !== 'function') return null;
-        try {
-            AdminDashboard._sb = window.supabase.createClient(window.JMPOTTERS_SUPABASE_URL, window.JMPOTTERS_SUPABASE_ANON_KEY, { auth: { persistSession: false } });
-        } catch (e) { console.warn('media extensions: failed to create supabase client', e); return null; }
+            AdminDashboard._sb = window.supabase.createClient(
+                window.JMPOTTERS_SUPABASE_URL,
+                window.JMPOTTERS_SUPABASE_ANON_KEY,
+                { auth: { persistSession: false } }
+            );
+        } catch (e) {
+            console.warn('media extensions: failed to create supabase client', e);
+            return null;
+        }
         return AdminDashboard._sb;
     };
 
