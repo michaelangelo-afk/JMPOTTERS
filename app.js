@@ -731,6 +731,9 @@
     // RENDER PRODUCT PAGE
     // ====================
     function renderProductPage(product) {
+            // v18: if product.html already set the flag, bail -- eliminates two-phase flash.
+            if (window.__jmpottersProductRendered) { return; }
+
 
         const productViewer = document.getElementById('productViewer');
         if (!productViewer) return;
