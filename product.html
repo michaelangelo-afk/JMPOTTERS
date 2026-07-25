@@ -1230,9 +1230,6 @@
         }
 
         function renderProductPage(product) {
-            // v16: belt-and-suspenders guard. Whoever renders first sets the flag; the other bails.
-            // Handles BOTH orderings: product.html async faster OR app.js async faster.
-            if (window.__jmpottersProductRendered) { return; }
 
             var productViewer = document.getElementById('productViewer');
             if (!productViewer) return;
