@@ -817,7 +817,9 @@
         `;
         
         setupProductPageInteractions();
-    }
+    
+        window.__jmpottersProductRendered = true;  // v14: signals product.html local render to skip
+}
     
     function buildColorSizeMappings(colors, sizes) {
         colorSizeMap = {};
