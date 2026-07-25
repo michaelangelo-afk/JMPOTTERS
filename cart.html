@@ -716,9 +716,43 @@ function getImageUrl(cat, f) {
             if (!p && p !== 0) return '\u20A60';
             return '\u20A6' + parseInt(p).toLocaleString();
         }
+        // Wire up delegating event listeners on the cartItemsContainer ONCE.
+        // This replaces the previous inline onclick= attribute approach which
+        // could be broken by apostrophes inside product color/size names.
+        function attachCartInteractions(container) {
+            if (container._jmpottersCartWired) return;
+            container._jmpottersCartWired = true;
+            container.addEventListener('click', function(e) {
+                var target = e.target;
+                var btn = target.closest && target.closest('[data-cart-action]');
+                if (!btn) return;
+                var action = btn.getAttribute('data-cart-action');
+                var pid = parseInt(btn.getAttribute('data-product-id'), 10);
+                var row = parseInt(btn.getAttribute('data-row'), 10);
+                var color = btn.getAttribute('data-color') || null;
+                var size = btn.getAttribute('data-size') || null;
+                var qty = parseInt(btn.getAttribute('data-qty'), 10);
+                if (action === 'remove') {
+                    if (typeof window.removeItem === 'function') {
+                        window.removeItem(pid, color, size);
+                    }
+                } else if (action === 'inc' || action === 'dec') {
+                    if (typeof window.updateQuantity === 'function') {
+                        window.updateQuantity(pid, row, color, size, qty);
+                    }
+                } else if (action === 'checkout') {
+                    if (window.JMPOTTERS && typeof window.JMPOTTERS.proceedToCheckout === 'function') {
+                        window.JMPOTTERS.proceedToCheckout();
+                    } else if (typeof window.proceedToCheckout === 'function') {
+                        window.proceedToCheckout();
+                    }
+                }
+            });
+        }
         function renderCart() {
             var container = document.getElementById('cartItemsContainer');
             if (!container) return;
+            attachCartInteractions(container);
             var cartData;
             try { cartData = JSON.parse(localStorage.getItem('jmpotters_cart')) || []; }
             catch (e) { cartData = []; }
@@ -731,7 +765,7 @@ function getImageUrl(cat, f) {
                 return;
             }
             var total = 0;
-            var html = '';
+            var rows = '';
             cartData.forEach(function(item, i) {
                 var itemTotal = (item.price || 0) * item.quantity;
                 total += itemTotal;
@@ -739,12 +773,11 @@ function getImageUrl(cat, f) {
                 if (item.color_name) desc += ' (' + item.color_name + ')';
                 if (item.size_value) desc += ' - ' + item.size_value;
                 var img = getImageUrl(item.category_slug, item.image_url);
-                // &#39; HTML entity decoded by HTML parser before JS sees attribute.
-                var colorEsc = (item.color_name || '').replace(/'/g, '&#39;');
-                var sizeEsc = (item.size_value || '').replace(/'/g, '&#39;');
+                var colorRaw = item.color_name || '';
+                var sizeRaw = item.size_value || '';
                 var nameEsc = (item.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 var descEsc = desc.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                html += `
+                rows += `
                 <div class="cart-row" style="display:grid;grid-template-columns:84px 1fr auto;gap:14px;padding:14px;border-bottom:1px solid #e5e7eb;align-items:center;">
                     <div style="width:84px;height:84px;border-radius:10px;overflow:hidden;background:#f3f4f6;flex-shrink:0;">
                         <img src="${img}" alt="${nameEsc}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.onerror=null;this.src='https://ebuzome.github.io/JMPOTTERS/assets/images/placeholder.jpg'">
@@ -753,23 +786,31 @@ function getImageUrl(cat, f) {
                         <div style="font-weight:600;color:#1f2937;font-size:0.95rem;margin-bottom:4px;">${descEsc}</div>
                         <div style="color:#6b7280;font-size:0.85rem;">${formatPrice(item.price)} each</div>
                         <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-                            <button onclick="window.updateQuantity(${item.product_id}, ${i}, '${colorEsc}', '${sizeEsc}', ${item.quantity - 1})" style="width:30px;height:30px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1;">-</button>
+                            <button type="button" data-cart-action="dec" data-product-id="${item.product_id}" data-row="${i}" data-color="${colorRaw}" data-size="${sizeRaw}" data-qty="${item.quantity - 1}" style="width:30px;height:30px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1;">-</button>
                             <span style="min-width:24px;text-align:center;font-weight:600;font-size:0.9rem;">${item.quantity}</span>
-                            <button onclick="window.updateQuantity(${item.product_id}, ${i}, '${colorEsc}', '${sizeEsc}', ${item.quantity + 1})" style="width:30px;height:30px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1;">+</button>
+                            <button type="button" data-cart-action="inc" data-product-id="${item.product_id}" data-row="${i}" data-color="${colorRaw}" data-size="${sizeRaw}" data-qty="${item.quantity + 1}" style="width:30px;height:30px;border:1px solid #d1d5db;background:#fff;border-radius:6px;cursor:pointer;font-size:1rem;line-height:1;">+</button>
                         </div>
                     </div>
                     <div style="text-align:right;">
                         <div style="font-weight:700;color:#1f2937;font-size:1rem;">${formatPrice(itemTotal)}</div>
-                        <button onclick="window.removeItem(${item.product_id}, '${colorEsc}', '${sizeEsc}')" style="margin-top:8px;background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.8rem;padding:4px 0;">Remove</button>
+                        <button type="button" data-cart-action="remove" data-product-id="${item.product_id}" data-color="${colorRaw}" data-size="${sizeRaw}" style="margin-top:8px;background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.8rem;padding:4px 0;">Remove</button>
                     </div>
                 </div>`;
             });
-            html += `
-                <div class="cart-summary" style="padding:20px 14px;display:flex;justify-content:space-between;align-items:center;background:#f9fafb;border-radius:0 0 12px 12px;">
-                    <div style="font-size:0.85rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">Total</div>
-                    <div style="font-size:1.4rem;font-weight:800;color:#1f2937;">${formatPrice(total)}</div>
+            rows += `
+                <div class="cart-summary" style="padding:20px 14px;display:flex;flex-direction:column;gap:14px;background:#f9fafb;border-radius:0 0 12px 12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div style="font-size:0.85rem;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;">Total</div>
+                        <div style="font-size:1.4rem;font-weight:800;color:#1f2937;">${formatPrice(total)}</div>
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <a href="index.html" style="flex:1;min-width:140px;display:inline-flex;align-items:center;justify-content:center;padding:14px 20px;border:1.5px solid #d1d5db;border-radius:10px;background:#fff;color:#374151;font-weight:600;font-size:0.92rem;text-decoration:none;cursor:pointer;transition:all 0.18s;">Continue Shopping</a>
+                        <button type="button" data-cart-action="checkout" style="flex:1;min-width:160px;padding:14px 20px;border:none;border-radius:10px;background:linear-gradient(135deg,#d4af37,#b8860b);color:#0c0f15;font-weight:700;font-size:0.95rem;cursor:pointer;transition:all 0.18s;box-shadow:0 4px 14px rgba(212,175,55,0.35);letter-spacing:0.02em;">
+                            Proceed to Checkout &rarr;
+                        </button>
+                    </div>
                 </div>`;
-            container.innerHTML = html;
+            container.innerHTML = rows;
             try { localStorage.setItem('jmpotters_cart_total', String(total)); } catch(e){}
         }
         renderCart();

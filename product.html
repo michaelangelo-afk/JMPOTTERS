@@ -1678,7 +1678,7 @@
                 var item = state.items[state.activeIdx] || state.items[0];
                 if (!item) return;
                 if (item.type === 'video') {
-                    main.innerHTML = '<video src="' + escapeHtmlAttr(item.url) + '" controls muted playsinline preload="metadata" style="cursor:zoom-in" onclick="jmpottersOpenLightbox(\'' + stateKey + '\')"></video>';
+                    main.innerHTML = '<video src="' + escapeHtmlAttr(item.url) + '" controls preload="metadata" style="cursor:zoom-in" onclick="jmpottersOpenLightbox(\'' + stateKey + '\')"></video>';
                 } else {
                     main.innerHTML = '<img src="' + escapeHtmlAttr(item.url) + '" alt="' + escapeHtmlAttr(item.alt || '') + '" loading="eager" style="cursor:zoom-in" onclick="jmpottersOpenLightbox(\'' + stateKey + '\')" onerror="this.onerror=null;this.src=\'https://via.placeholder.com/400x400?text=JMPOTTERS\';">';
                 }
@@ -1687,7 +1687,7 @@
                     strip.innerHTML = state.items.map(function (it, idx) {
                         var thumbCls = 'product-gallery-thumb' + (idx === state.activeIdx ? ' active' : '');
                         var innerSrc = it.type === 'video'
-                            ? '<video src="' + escapeHtmlAttr(it.url) + '" muted preload="metadata"></video><div class="thumb-video-badge">&#9654;</div>'
+                            ? '<video src="' + escapeHtmlAttr(it.url) + '" preload="metadata"></video><div class="thumb-video-badge">&#9654;</div>'
                             : '<img src="' + escapeHtmlAttr(it.url) + '" alt="' + escapeHtmlAttr(it.alt || '') + '" loading="lazy">';
                         var extra = '';
                         if (it.isCover) extra = '<span class="thumb-badge">Cover</span>';
@@ -1725,7 +1725,7 @@
                 var item = state.items[state.activeIdx]; if (!item) return;
                 var lb = document.getElementById('jmpottersLightbox'); var c = document.getElementById('jmpottersLightboxContent'); if (!lb || !c) return;
                 c.innerHTML = item.type === 'video'
-                    ? '<video src="' + escapeHtmlAttr(item.url) + '" controls autoplay playsinline></video>'
+                    ? '<video src="' + escapeHtmlAttr(item.url) + '" controls></video>'
                     : '<img src="' + escapeHtmlAttr(item.url) + '" alt="' + escapeHtmlAttr(item.alt || '') + '">';
                 lb.classList.add('show');
             };
