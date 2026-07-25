@@ -1,0 +1,2 @@
+JMPOTTERS latest deploy - v19 confirmed live
+app.js is IDENTICAL on CDN with disk (verified Sat Jul 25 10:30:52 UTC 2026)
