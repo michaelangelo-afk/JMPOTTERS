@@ -1168,8 +1168,9 @@
         if (existing) existing.remove();
         
         const subtotal = cart.reduce((sum, item) => sum + ((item.price || 0) * item.quantity), 0);
-        const shippingFee = subtotal >= 50000 ? 0 : 2000;
-        const grandTotal = subtotal + shippingFee;
+        // Shipping removed per user direction (no shipping fee anywhere) - see v4/v5.
+        const shippingFee = 0;
+        const grandTotal = subtotal;
         
         let itemsHtml = '';
         cart.forEach(item => {
@@ -1206,7 +1207,7 @@
                         <div>${itemsHtml}</div>
                         <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);">
                             <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#94a3b8;margin-bottom:4px;"><span>Subtotal</span><span>\u20A6${subtotal.toLocaleString()}</span></div>
-                            <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#94a3b8;margin-bottom:4px;"><span>Shipping</span><span>${shippingFee === 0 ? 'Free' : '\u20A6' + shippingFee.toLocaleString()}</span></div>
+                            <!-- Shipping row removed per user direction (v4/v5) -->
                             <div style="display:flex;justify-content:space-between;font-size:1.05rem;font-weight:700;color:#a5b4fc;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);"><span>Grand Total</span><span>\u20A6${grandTotal.toLocaleString()}</span></div>
                         </div>
                     </div>
@@ -1419,8 +1420,10 @@
         
         try {
             const subtotal = cart.reduce((sum, item) => sum + ((item.price || 0) * item.quantity), 0);
-            const shippingFee = subtotal >= 50000 ? 0 : 2000;
-            const grandTotal = subtotal + shippingFee;
+            // Shipping removed per user direction (no shipping fee added anywhere).
+            // grand_total == subtotal; shipping_fee == 0; invoice total stays consistent.
+            const shippingFee = 0;
+            const grandTotal = subtotal;
             
             const orderNumber = await getNextOrderNumber();
             
@@ -2469,3 +2472,5 @@
     
     console.log('✅ JMPOTTERS app loaded');
 })();
+
+// showCheckoutModal shipping removed per user direction (v4/v5)

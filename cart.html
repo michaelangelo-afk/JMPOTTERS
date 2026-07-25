@@ -827,8 +827,9 @@
                 `;
             }
             
-            const shippingFee = subtotal >= 50000 ? 0 : 2000;
-            const grandTotal = subtotal + shippingFee;
+            // Shipping removed per user direction (no shipping fee anywhere).
+            // grandTotal == subtotal so cart Total matches checkout Total matches orders.grand_total.
+            const grandTotal = subtotal;
             
             itemsHtml += `
                     </div>
@@ -839,10 +840,7 @@
                         <span>Subtotal</span>
                         <span>${formatPrice(subtotal)}</span>
                     </div>
-                    <div class="summary-row">
-                        <span>Shipping</span>
-                        <span>${shippingFee === 0 ? 'Free' : formatPrice(shippingFee)}</span>
-                    </div>
+                    <!-- Shipping row removed per user direction (v4) — only Subtotal + Total now -->
                     <div class="summary-row total">
                         <span>Total</span>
                         <span style="color: var(--gold-dark);">${formatPrice(grandTotal)}</span>
@@ -999,5 +997,6 @@
 
 <!-- JMPOTTERS_THEME_JS -->
 <script src="theme.js" defer></script>
+<!-- v4: cart.html shipping_fee removed per user direction -->
 </body>
 </html>

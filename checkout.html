@@ -1,678 +1,1346 @@
-<!-- =============================================================
-     JMPOTTERS — Checkout
-     Standalone page reached via "Proceed to Checkout".
-     Replaces the old modal that used to pop up over the cart slide.
-     ============================================================= -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>Checkout — JMPOTTERS</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="app.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <title>Checkout | JMPOTTERS</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://tmpggeeuwdvlngvfncaa.supabase.co" />
+
+    <link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
     <style>
         :root {
-            --ck-primary: #4F46E5;
-            --ck-primary-dark: #4338CA;
-            --ck-primary-light: #818CF8;
-            --ck-gold: #D4AF37;
-            --ck-success: #22C55E;
-            --ck-success-dark: #16A34A;
-            --ck-bg: #FAF8F5;
-            --ck-surface: #FFFFFF;
-            --ck-text: #1F2937;
-            --ck-text-muted: #6B7280;
-            --ck-border: #E5E7EB;
-            --ck-border-strong: #D1D5DB;
+            --gold: #d4af37;
+            --gold-dark: #b8860b;
+            --gold-light: rgba(212, 175, 55, 0.12);
+            --gold-glow: 0 0 30px rgba(212, 175, 55, 0.3);
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --transition: 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.10);
+            --glass-dark: rgba(12, 15, 21, 0.92);
+            --glass-blur: blur(16px);
+            --radius: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 1.5rem;
+            --nav-height: 76px;
+            --danger-500: #EF4444;
+            --success-500: #22C55E;
+            --success-600: #16A34A;
         }
-        *, *::before, *::after { box-sizing: border-box; }
-        html, body { margin: 0; padding: 0; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
-            background: var(--ck-bg);
-            color: var(--ck-text);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            line-height: 1.5;
-            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #faf8f5; color: var(--gray-800);
+            overflow-x: hidden; min-height: 100vh;
         }
-        a { color: var(--ck-primary); text-decoration: none; }
-        a:hover { color: var(--ck-primary-dark); }
-        button { font-family: inherit; }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; letter-spacing: -0.02em; }
+        h4, h5, h6 { font-family: 'Inter', sans-serif; }
+
+        .skip-link {
+            position: absolute; top: -100px; left: 16px; z-index: 9999;
+            background: var(--gold); color: #0c0f15; padding: 12px 24px;
+            border-radius: 0 0 var(--radius) var(--radius);
+            font-weight: 700; text-decoration: none; font-size: 0.9rem;
+            transition: top 0.2s ease;
+        }
+        .skip-link:focus { top: 0; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
 
         /* ===== HEADER ===== */
-        .ck-nav {
-            background: var(--ck-surface);
-            border-bottom: 1px solid var(--ck-border);
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(8px);
+        .nav-bar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1050;
+            background: var(--glass-dark); backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            transition: padding 0.3s ease, background 0.3s ease;
         }
-        .ck-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.05rem; color: var(--ck-text); }
-        .ck-brand-mark {
-            width: 32px; height: 32px;
-            background: linear-gradient(135deg, var(--ck-primary), var(--ck-gold));
-            border-radius: 9px;
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-family: 'Playfair Display', serif; font-weight: 800; font-size: 1.05rem;
-        }
-        .ck-secure {
-            display: flex; align-items: center; gap: 7px;
-            background: rgba(34,197,94,0.1);
-            color: var(--ck-success-dark);
-            padding: 7px 12px; border-radius: 999px;
-            font-size: 0.78rem; font-weight: 600;
-            border: 1px solid rgba(34,197,94,0.25);
-        }
-        .ck-secure svg { width: 14px; height: 14px; }
-
-        /* ===== PROGRESS STEPS ===== */
-        .ck-progress {
-            max-width: 1180px;
-            margin: 28px auto 0;
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .ck-step {
-            display: flex; align-items: center; gap: 10px;
-            color: var(--ck-text-muted); font-weight: 600; font-size: 0.85rem;
-            padding: 8px 14px; border-radius: 999px;
-            background: var(--ck-surface); border: 1px solid var(--ck-border);
-        }
-        .ck-step .ck-step-num {
-            width: 22px; height: 22px;
-            border-radius: 50%;
-            background: var(--ck-border);
-            color: var(--ck-text-muted);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 0.78rem;
-            flex-shrink: 0;
-        }
-        .ck-step.is-done { color: var(--ck-success-dark); border-color: rgba(34,197,94,0.32); background: rgba(34,197,94,0.05); }
-        .ck-step.is-done .ck-step-num { background: var(--ck-success); color: white; }
-        .ck-step.is-active { color: var(--ck-primary); border-color: var(--ck-primary); background: rgba(79,70,229,0.07); }
-        .ck-step.is-active .ck-step-num { background: var(--ck-primary); color: white; }
-        .ck-step-divider { flex: 1; height: 2px; background: var(--ck-border); border-radius: 1px; }
-        .ck-step.is-done + .ck-step-divider { background: linear-gradient(90deg, var(--ck-success), var(--ck-border)); }
-
-        /* ===== MAIN LAYOUT ===== */
-        .ck-main {
-            max-width: 1180px;
-            margin: 26px auto 60px;
-            padding: 0 24px;
-            display: grid;
-            grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.4fr);
-            gap: 28px;
-            align-items: start;
-        }
-        @media (max-width: 880px) {
-            .ck-main { grid-template-columns: 1fr; }
-        }
-        .ck-card {
-            background: var(--ck-surface);
-            border: 1px solid var(--ck-border);
-            border-radius: 18px;
-            padding: 28px 26px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 28px rgba(15,23,42,0.04);
-        }
-        .ck-card-eyebrow {
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--ck-primary);
-            margin-bottom: 8px;
-        }
-        .ck-card-title {
-            font-family: 'Playfair Display', serif;
-            font-weight: 700;
-            font-size: 1.65rem;
-            line-height: 1.15;
-            margin: 0 0 22px;
-            color: var(--ck-text);
-        }
-
-        /* ===== ORDER SUMMARY ===== */
-        .ck-order-lines { list-style: none; padding: 0; margin: 0 0 22px; }
-        .ck-order-line {
-            display: grid;
-            grid-template-columns: 64px 1fr auto;
-            gap: 14px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--ck-border);
-        }
-        .ck-order-line:last-child { border-bottom: 0; }
-        .ck-order-line img {
-            width: 64px; height: 64px;
-            border-radius: 12px; object-fit: cover;
-            background: var(--ck-border);
-        }
-        .ck-order-line .ck-line-img-placeholder {
-            width: 64px; height: 64px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
-            color: var(--ck-text-muted);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
-        }
-        .ck-line-info { min-width: 0; }
-        .ck-line-name {
-            font-weight: 600; color: var(--ck-text);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            margin-bottom: 2px;
-            font-size: 0.92rem;
-        }
-        .ck-line-meta {
-            font-size: 0.76rem;
-            color: var(--ck-text-muted);
-        }
-        .ck-line-meta span + span::before { content: ' · '; color: var(--ck-border-strong); }
-        .ck-line-total {
-            font-weight: 700; color: var(--ck-text); font-size: 0.95rem;
-            text-align: right; align-self: center;
-            white-space: nowrap;
-        }
-        .ck-empty {
-            padding: 32px 12px; text-align: center;
-            color: var(--ck-text-muted);
-        }
-        .ck-empty-cta {
-            display: inline-block;
-            margin-top: 14px;
-            padding: 10px 20px;
-            background: var(--ck-primary);
-            color: white !important;
-            border-radius: 999px;
-            font-weight: 600; font-size: 0.85rem;
-            letter-spacing: 0.02em;
-            transition: transform 0.18s ease, background 0.18s ease;
-        }
-        .ck-empty-cta:hover { background: var(--ck-primary-dark); transform: translateY(-1px); color: white; }
-
-        .ck-totals { border-top: 1px dashed var(--ck-border); padding-top: 16px; }
-        .ck-totals-row {
+        .nav-bar.shrunk { background: rgba(10, 13, 18, 0.97); border-bottom-color: rgba(212, 175, 55, 0.25); }
+        .nav-bar.shrunk .logo-img { height: 40px; }
+        .nav-bar.shrunk .header-container { padding-top: 6px; padding-bottom: 6px; }
+        .header-container {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 6px 0; font-size: 0.92rem;
+            padding: 10px 1.5rem; max-width: 1280px; margin: 0 auto;
+            transition: padding 0.3s ease;
         }
-        .ck-totals-row .ck-t-label { color: var(--ck-text-muted); }
-        .ck-totals-row.ck-grand-total {
-            margin-top: 8px; padding-top: 12px;
-            border-top: 1px solid var(--ck-border);
-            font-size: 1.05rem; font-weight: 800; color: var(--ck-text);
-        }
-        .ck-totals-row.ck-grand-total .ck-t-label { color: var(--ck-text); }
-        .ck-t-value { font-weight: 600; color: var(--ck-text); }
-
-        /* ===== PAYMENT INSTRUCTIONS ===== */
-        .ck-payment .ck-lead {
-            color: var(--ck-text-muted); font-size: 0.9rem; line-height: 1.55;
-            margin: -10px 0 22px;
-        }
-        .ck-bank-stack { display: flex; flex-direction: column; gap: 18px; }
-        .ck-bank-card {
-            background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
-            border: 1.5px solid var(--ck-border);
-            border-radius: 16px;
-            padding: 22px 22px 20px;
-            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .ck-bank-card::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: radial-gradient(circle at top right, rgba(79,70,229,0.05), transparent 60%);
-            pointer-events: none;
-        }
-        .ck-bank-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--ck-primary-light);
-            box-shadow: 0 14px 32px rgba(79,70,229,0.1), 0 0 0 1px rgba(129,140,248,0.18);
-        }
-        .ck-bank-card-head {
-            display: flex; align-items: center; gap: 14px;
-            margin-bottom: 14px;
-        }
-        .ck-bank-logo {
-            width: 64px; height: 48px;
-            border-radius: 10px;
+        .header-left { display: flex; align-items: center; gap: 8px; }
+        .mobile-toggle {
+            background: rgba(255,255,255,0.06); border: none; font-size: 1.4rem;
+            width: 44px; height: 44px; border-radius: 12px; color: var(--gold);
+            cursor: pointer; transition: var(--transition);
             display: flex; align-items: center; justify-content: center;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            padding: 4px 6px;
-            flex-shrink: 0;
         }
-        .ck-bank-logo svg { width: 100%; height: 100%; display: block; }
-        .ck-bank-info { min-width: 0; }
-        .ck-bank-info .ck-bankname {
-            font-family: 'Playfair Display', serif;
-            font-weight: 700; font-size: 1.2rem;
-            letter-spacing: 0.04em; color: var(--ck-text);
-            margin-bottom: 2px;
+        .mobile-toggle:hover { background: var(--gold); color: #0c0f15; }
+        .header-center { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; }
+        .logo-img {
+            height: 56px; width: auto; object-fit: contain; display: block;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); transition: height 0.3s ease;
         }
-        .ck-bank-info .ck-banknetwork {
-            font-size: 0.75rem;
-            color: var(--ck-text-muted);
+        .desktop-nav-links {
+            display: none; list-style: none; gap: 4px; align-items: center;
+        }
+        .desktop-nav-links a {
+            color: #c8cdd5; text-decoration: none; font-size: 0.82rem;
+            font-weight: 500; padding: 8px 14px; border-radius: 10px;
+            transition: var(--transition); font-family: 'Inter', sans-serif; white-space: nowrap;
+        }
+        .desktop-nav-links a:hover { color: white; background: rgba(255,255,255,0.06); }
+        .header-right { display: flex; align-items: center; gap: 8px; }
+        .search-toggle, .header-icon {
+            position: relative; font-size: 1.25rem; color: #eef2f5; cursor: pointer;
+            transition: var(--transition); background: rgba(255,255,255,0.06);
+            width: 44px; height: 44px; display: flex; align-items: center;
+            justify-content: center; border-radius: 12px; border: none; text-decoration: none;
+        }
+        .search-toggle:hover, .header-icon:hover { background: var(--gold); color: #0c0f15; }
+        .nav-badge {
+            position: absolute; top: -4px; right: -4px; background: var(--gold);
+            color: #0c0f15; font-size: 0.65rem; font-weight: 800;
+            min-width: 18px; height: 18px; border-radius: 30px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Search overlay */
+        .search-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(12,15,21,0.92); backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 1100; display: none; flex-direction: column; align-items: center;
+            padding-top: 100px; overflow-y: auto;
+        }
+        .search-overlay.active { display: flex; }
+        .search-box { width: 92%; max-width: 640px; position: relative; }
+        .search-box input {
+            width: 100%; padding: 18px 56px 18px 50px; font-size: 1.1rem;
+            border: 2px solid rgba(212,175,55,0.3); border-radius: 50px;
+            background: rgba(15,18,25,0.95); color: white; outline: none;
+            font-family: 'Inter', sans-serif; transition: border-color 0.3s ease;
+        }
+        .search-box input:focus { border-color: var(--gold); }
+        .search-box input::placeholder { color: #64748b; }
+        .search-box .search-icon-input { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 1.1rem; pointer-events: none; }
+        .search-box .search-close { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer; padding: 4px; transition: var(--transition); }
+        .search-box .search-close:hover { color: var(--gold); }
+        .search-results-container { width: 92%; max-width: 640px; margin-top: 16px; padding-bottom: 60px; }
+        .search-status { color: #94a3b8; font-size: 0.85rem; padding: 8px 4px; font-family: 'Inter', sans-serif; }
+        .search-results-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .search-result-item {
+            display: flex; gap: 14px; padding: 14px; background: rgba(30,35,48,0.9);
+            border-radius: 14px; cursor: pointer; transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.05); text-decoration: none; align-items: center;
+        }
+        .search-result-item:hover { background: rgba(45,50,65,0.95); border-color: rgba(212,175,55,0.3); }
+        .search-result-img { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+        .search-result-info { flex: 1; min-width: 0; }
+        .search-result-name { font-size: 0.9rem; font-weight: 600; color: #f1f5f9; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .search-result-name mark { background: rgba(212,175,55,0.3); color: var(--gold); border-radius: 2px; padding: 0 2px; }
+        .search-result-category { font-size: 0.72rem; color: var(--gold); background: rgba(212,175,55,0.12); padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .search-result-price { font-size: 0.85rem; font-weight: 700; color: var(--gold-dark); }
+        .search-empty { text-align: center; padding: 40px 20px; color: #64748b; }
+        .search-empty i { font-size: 2.5rem; display: block; margin-bottom: 12px; opacity: 0.4; }
+        .search-empty p { font-size: 0.9rem; margin-bottom: 4px; }
+        .search-empty .search-hint { font-size: 0.78rem; color: #475569; }
+        @media (min-width: 640px) { .search-results-grid { grid-template-columns: 1fr 1fr; } }
+
+        /* Mobile Nav */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 1060; display: none; cursor: pointer;
+        }
+        .overlay.active { display: block; }
+        .mobile-nav {
+            position: fixed; top: 0; left: -100%; width: 85%; max-width: 360px;
+            height: 100vh; height: 100dvh;
+            background: rgba(15, 18, 25, 0.97); backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            z-index: 1070; transition: left 0.4s ease;
+            padding: 28px 20px; border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+            overflow-y: auto;
+        }
+        .mobile-nav.active { left: 0; }
+        .mobile-nav-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 32px; padding-bottom: 16px;
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+        }
+        .mobile-nav-header .logo-img { height: 44px; }
+        .close-nav {
+            background: rgba(255,255,255,0.06); border: none; font-size: 1.4rem;
+            width: 44px; height: 44px; border-radius: 12px; color: var(--gold);
+            cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .close-nav:hover { background: var(--gold); color: #0c0f15; }
+        .mobile-nav-links { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .mobile-nav-links li a {
+            display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+            background: rgba(255,255,255,0.03); border-radius: 14px;
+            font-weight: 500; color: #f0f3f8; text-decoration: none;
+            transition: var(--transition); font-size: 0.95rem;
+        }
+        .mobile-nav-links li a i { font-size: 1.2rem; color: var(--gold); }
+        .mobile-nav-links li a:hover { background: var(--gold); color: #0c0f15; transform: translateX(6px); }
+        .mobile-nav-links li a:hover i { color: #0c0f15; }
+
+        /* Back to top */
+        .back-to-top {
+            position: fixed; bottom: 24px; right: 24px; z-index: 1030;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--gold); color: #0c0f15; border: none;
+            font-size: 1.3rem; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            box-shadow: 0 4px 16px rgba(212,175,55,0.3);
+            opacity: 0; transform: translateY(20px); pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .back-to-top:hover { transform: translateY(-3px); box-shadow: var(--gold-glow); }
+
+        /* ===== SILHOUETTE FOOTER ===== */
+        .silhouette-footer { position: relative; background: #05070a; color: #eef2f5; padding: 80px 0 0; overflow: hidden; }
+        .footer-skyline { position: absolute; bottom: 0; left: 0; right: 0; height: 120px; pointer-events: none; z-index: 0; }
+        .footer-grid { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1.2fr; gap: 2.5rem; max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 1; }
+        .footer-brand p { color: #94a3b8; font-size: 0.85rem; line-height: 1.7; margin-top: 12px; }
+        .footer-logo-img { height: 56px; width: auto; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.9; }
+        .social-links { display: flex; gap: 10px; margin-top: 20px; }
+        .social-links a { background: rgba(255,255,255,0.06); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 1.2rem; transition: var(--transition); text-decoration: none; }
+        .social-links a:hover { background: var(--gold); color: #0c0f15; transform: translateY(-2px); }
+        .footer-col h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 16px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { color: #94a3b8; text-decoration: none; font-size: 0.85rem; transition: var(--transition); }
+        .footer-links a:hover { color: white; padding-left: 4px; }
+        .footer-links li.contact-item { display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 0.85rem; }
+        .footer-links li.contact-item i { color: var(--gold); font-size: 1rem; }
+        .payment-methods { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+        .payment-icon { background: rgba(255,255,255,0.06); padding: 8px 14px; border-radius: 8px; font-size: 0.72rem; font-weight: 600; color: #94a3b8; border: 1px solid rgba(255,255,255,0.06); transition: var(--transition); }
+        .payment-icon:hover { border-color: rgba(212,175,55,0.3); }
+        .footer-bottom { margin-top: 48px; padding: 24px 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); position: relative; z-index: 1; }
+        .footer-bottom-inner { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .copyright { font-size: 0.75rem; color: #64748b; }
+        .footer-bottom-links { display: flex; gap: 20px; list-style: none; }
+        .footer-bottom-links a { color: #64748b; text-decoration: none; font-size: 0.75rem; transition: var(--transition); }
+        .footer-bottom-links a:hover { color: var(--gold); }
+
+        @media (min-width: 1025px) { .mobile-toggle { display: none; } .desktop-nav-links { display: flex; } }
+        @media (max-width: 768px) {
+            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .footer-bottom-inner { flex-direction: column; text-align: center; }
+        }
+
+        /* ===== CHECKOUT MAIN ===== */
+        .checkout-main {
+            max-width: 1280px; margin: 0 auto;
+            padding: calc(var(--nav-height) + 28px) 1.5rem 2.5rem;
+        }
+        .checkout-header-section { margin-bottom: 1.5rem; }
+        .checkout-header-section h1 {
+            font-size: 1.8rem; font-weight: 700; color: var(--gray-900);
+            display: flex; align-items: center; gap: 0.75rem; margin: 0;
+        }
+        .checkout-header-section .sub {
+            font-family: 'Inter', sans-serif; font-size: 0.95rem;
+            color: var(--gray-500); margin-top: 6px;
+        }
+        .checkout-grid {
+            display: grid; grid-template-columns: 1fr;
+            gap: 2rem; align-items: start;
+        }
+        @media (min-width: 1024px) {
+            .checkout-grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.4fr); }
+        }
+        .checkout-card {
+            background: white; border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            padding: 1.75rem 1.75rem 1.5rem;
+        }
+        .checkout-card h2 {
+            font-size: 1.4rem; font-weight: 700; color: var(--gray-900);
+            margin: 0 0 1rem; display: flex; align-items: center; gap: 0.6rem;
+        }
+        .checkout-card h2 i { color: var(--gold-dark); }
+        .checkout-card-divider { height: 1px; background: var(--gray-200); margin: 1rem 0 1.25rem; }
+
+        /* ORDER SUMMARY */
+        .checkout-order-lines { list-style: none; padding: 0; margin: 0; }
+        .checkout-order-line {
+            display: grid; grid-template-columns: 56px 1fr auto;
+            gap: 12px; padding: 12px 0;
+            border-bottom: 1px solid var(--gray-200);
+            align-items: center;
+        }
+        .checkout-order-line:last-child { border-bottom: 0; }
+        .checkout-order-line img {
+            width: 56px; height: 56px; border-radius: 10px; object-fit: cover;
+            background: var(--gray-100);
+        }
+        .checkout-order-line .checkout-line-img-fallback {
+            width: 56px; height: 56px; border-radius: 10px;
+            background: var(--gray-100); display: flex;
+            align-items: center; justify-content: center;
+            color: var(--gray-400); font-size: 1.2rem;
+        }
+        .checkout-order-line .line-name {
+            font-weight: 600; color: var(--gray-800); font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .checkout-order-line .line-meta { font-size: 0.78rem; color: var(--gray-500); margin-top: 2px; }
+        .checkout-order-line .line-total {
+            font-weight: 700; color: var(--gray-800); font-size: 0.95rem;
+            text-align: right; white-space: nowrap;
+        }
+        .checkout-empty { padding: 32px 12px; text-align: center; color: var(--gray-500); }
+
+        .checkout-totals { border-top: 1px dashed var(--gray-200); padding-top: 14px; margin-top: 14px; }
+        .checkout-totals-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 0; font-size: 0.95rem;
+        }
+        .checkout-totals-row.total {
+            border-top: 1px solid var(--gray-200); margin-top: 8px; padding-top: 12px;
+            font-weight: 800; font-size: 1.1rem; color: var(--gray-900);
+        }
+        .checkout-totals-row.total .t-value { color: var(--gold-dark); }
+
+        /* BANK CARDS — no fake SVG logos */
+        .ck-bank-stack { display: flex; flex-direction: column; gap: 14px; margin: 1rem 0 0; }
+        .ck-bank-card {
+            display: grid; grid-template-columns: 6px 1fr;
+            gap: 0; background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            overflow: hidden; margin: 0;
+        }
+        .ck-bank-stripe { background: var(--danger-500); }
+        .ck-bank-card.is-opay .ck-bank-stripe { background: var(--success-500); }
+        .ck-bank-card-body {
+            padding: 16px 18px;
+            display: grid; grid-template-columns: 1fr; gap: 8px;
+        }
+        .ck-bank-eyebrow {
+            font-size: 0.7rem; font-weight: 800; letter-spacing: 0.16em;
+            text-transform: uppercase; color: var(--gold-dark);
+        }
+        .ck-bank-card.is-uba .ck-bank-eyebrow { color: #B91C1C; }
+        .ck-bank-card.is-opay .ck-bank-eyebrow { color: #047857; }
+        .ck-banktitle {
+            font-family: 'Playfair Display', serif; font-weight: 700;
+            font-size: 1.05rem; color: var(--gray-900);
         }
         .ck-account-name {
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--ck-text-muted);
-            margin-bottom: 8px;
+            font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--gray-500);
         }
         .ck-number-row {
-            display: flex; align-items: center; gap: 14px;
-            background: var(--ck-bg);
-            border: 1px solid var(--ck-border);
-            border-radius: 12px;
-            padding: 14px 16px;
+            display: flex; align-items: center; gap: 12px;
+            background: white; border: 1px solid var(--gray-200);
+            border-radius: 12px; padding: 12px 14px;
+            margin-top: 4px;
         }
         .ck-number-row code {
-            flex: 1;
-            font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            color: var(--ck-text);
-            word-break: break-all;
-            line-height: 1.2;
+            flex: 1; font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+            font-size: 1.25rem; font-weight: 700; letter-spacing: 0.05em;
+            color: var(--gray-900); word-break: break-all; line-height: 1.2;
         }
         @media (max-width: 540px) {
             .ck-number-row { flex-direction: column; align-items: stretch; gap: 10px; }
             .ck-number-row .copy-btn { align-self: flex-end; }
         }
 
-        /* ===== COPY BUTTON ===== */
+        /* ===== COPY-BTN — all 3 states inlined, fixes CopyxFailed FOUC ===== */
         .copy-btn {
-            display: inline-flex; align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            background: var(--ck-primary);
-            color: white !important;
-            border: 1px solid rgba(255,255,255,0.18);
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 9px 14px;
+            background: var(--gold); color: #0c0f15 !important;
+            border: 1px solid rgba(0,0,0,0.06);
             border-radius: 10px;
             cursor: pointer;
-            font-weight: 700; font-size: 0.84rem;
+            font-weight: 800; font-size: 0.82rem;
             letter-spacing: 0.04em;
-            box-shadow: 0 4px 14px rgba(79,70,229,0.28);
-            transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
-            position: relative;
-            white-space: nowrap;
-            flex-shrink: 0;
+            box-shadow: 0 4px 14px rgba(212,175,55,0.32);
+            transition: background-color 0.25s ease, border-color 0.25s ease,
+                        transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+            position: relative; white-space: nowrap; flex-shrink: 0;
+            font-family: 'Inter', sans-serif;
         }
-        .copy-btn:hover {
-            background: var(--ck-primary-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 8px 22px rgba(79,70,229,0.4);
-        }
+        .copy-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(212,175,55,0.45); }
         .copy-btn:active { transform: translateY(0); }
         .copy-btn svg { width: 14px; height: 14px; display: inline-block; vertical-align: middle; }
-        .copy-btn.copied {
-            background: linear-gradient(135deg, var(--ck-success) 0%, var(--ck-success-dark) 100%) !important;
-            border-color: rgba(34,197,94,0.6) !important;
-            color: #ffffff !important;
-            animation: copy-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-        }
-        .copy-btn.copied:hover {
-            transform: scale(1.03);
-            box-shadow: 0 8px 22px rgba(34,197,94,0.4);
-        }
         .copy-btn .copy-state { display: inline-flex; align-items: center; gap: 6px; }
         .copy-btn .copied-state { display: none; align-items: center; gap: 6px; }
+        .copy-btn .copy-failed-state { display: none; align-items: center; gap: 6px; }
         .copy-btn.copied .copy-state { display: none; }
         .copy-btn.copied .copied-state { display: inline-flex; }
+        .copy-btn.copied {
+            background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
+            border-color: rgba(34,197,94,0.6) !important;
+            color: #ffffff !important;
+            animation: jmp-copy-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        .copy-btn.copied:hover { transform: scale(1.03); box-shadow: 0 8px 22px rgba(34,197,94,0.4); }
         .copy-btn .check-icon {
-            stroke-dasharray: 24;
-            stroke-dashoffset: 24;
-            transition: stroke-dashoffset 0.55s cubic-bezier(0.65, 0, 0.35, 1) 0.05s, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s;
-            transform: scale(0.6);
+            stroke-dasharray: 24; stroke-dashoffset: 24;
+            transition: stroke-dashoffset 0.55s cubic-bezier(0.65, 0, 0.35, 1) 0.05s,
+                        transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s;
+            transform: scale(0.6); stroke: #ffffff;
         }
-        .copy-btn.copied .check-icon {
-            stroke-dashoffset: 0;
-            transform: scale(1);
-        }
-        @keyframes copy-pop {
+        .copy-btn.copied .check-icon { stroke-dashoffset: 0; transform: scale(1); }
+        @keyframes jmp-copy-pop {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
+        .copy-btn.copy-failed .copy-state { display: none; }
+        .copy-btn.copy-failed .copy-failed-state { display: inline-flex; }
+        .copy-btn.copy-failed {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%) !important;
+            border-color: rgba(239,68,68,0.6) !important;
+            color: #ffffff !important;
+            animation: jmp-copy-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        .copy-btn.copy-failed:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(239,68,68,0.48); }
+        .copy-btn .fail-icon {
+            stroke-dasharray: 32; stroke-dashoffset: 32;
+            transition: stroke-dashoffset 0.5s cubic-bezier(0.65, 0, 0.35, 1) 0.05s,
+                        transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s;
+            transform: scale(0.6); stroke: #ffffff;
+        }
+        .copy-btn.copy-failed .fail-icon { stroke-dashoffset: 0; transform: scale(1); }
 
-        .ck-payment-foot {
-            margin-top: 22px;
-            padding: 18px 18px;
-            background: linear-gradient(135deg, rgba(34,197,94,0.07), rgba(79,70,229,0.05));
-            border-radius: 14px;
-            border: 1px solid rgba(34,197,94,0.18);
-            display: flex; align-items: center; gap: 14px;
-            font-size: 0.92rem; color: var(--ck-text);
-            line-height: 1.5;
+        /* RECEIPT UPLOAD */
+        .receipt-upload-card { margin-top: 1.5rem; }
+        .receipt-upload-card h3 {
+            font-family: 'Playfair Display', serif; font-size: 1.25rem;
+            color: var(--gray-900); margin: 0 0 6px;
+            display: flex; align-items: center; gap: 0.5rem;
         }
-        .ck-payment-foot svg { flex-shrink: 0; width: 22px; height: 22px; color: var(--ck-success-dark); }
-        .ck-payment-foot strong { color: var(--ck-primary); }
-        .ck-payment-foot a { font-weight: 700; }
-        @media (max-width: 540px) {
-            .ck-payment-foot { flex-direction: column; align-items: flex-start; }
+        .receipt-upload-card h3 i { color: var(--gold-dark); }
+        .receipt-upload-card .hint {
+            font-family: 'Inter', sans-serif; font-size: 0.82rem;
+            color: var(--gray-500); margin: 0 0 14px;
         }
+        .page-dropzone {
+            position: relative; border: 2px dashed var(--gray-300);
+            border-radius: var(--radius);
+            padding: 22px; text-align: center;
+            transition: var(--transition); background: var(--gray-50);
+            cursor: pointer;
+        }
+        .page-dropzone:hover, .page-dropzone.dragging {
+            border-color: var(--gold); background: var(--gold-light);
+            transform: translateY(-1px);
+        }
+        .page-dropzone input[type="file"] { display: none; }
+        .page-dropzone-content {
+            display: flex; align-items: center; justify-content: center;
+            gap: 18px; flex-wrap: wrap;
+        }
+        .page-dropzone-content .icon-cell { color: var(--gold-dark); font-size: 2.2rem; }
+        .page-dropzone-content .text-cell { text-align: left; }
+        .page-dropzone-content .text-cell .bold { font-weight: 600; color: var(--gray-800); }
+        .page-dropzone-content .text-cell .sub { font-size: 0.78rem; color: var(--gray-500); margin-top: 4px; }
+        .page-dropzone-preview {
+            display: none; margin-top: 14px;
+            background: white; border: 1px solid var(--gray-200);
+            border-radius: var(--radius); padding: 12px;
+            align-items: center; gap: 12px;
+        }
+        .page-dropzone-preview.active { display: flex; }
+        .page-dropzone-preview img {
+            max-height: 64px; max-width: 64px;
+            border-radius: 8px; object-fit: cover;
+        }
+        .page-dropzone-preview .filename {
+            flex: 1; font-family: 'Inter', sans-serif; font-size: 0.85rem;
+            color: var(--gray-700); font-weight: 600;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .page-dropzone-preview .filesize { font-family: 'Inter', sans-serif; font-size: 0.75rem; color: var(--gray-500); }
+        .page-dropzone-preview .remove {
+            background: none; border: none; color: var(--danger-500);
+            cursor: pointer; font-size: 0.82rem; font-weight: 600;
+            padding: 6px 10px; border-radius: 8px;
+            transition: var(--transition);
+        }
+        .page-dropzone-preview .remove:hover { background: #FEE2E2; }
+        #pageReceiptError { font-family: 'Inter', sans-serif; margin-top: 10px; padding: 0; transition: var(--transition); }
+        #pageReceiptError.active { display: block !important; }
 
-        /* ===== FOOTER ===== */
-        .ck-footer {
-            border-top: 1px solid var(--ck-border);
-            background: var(--ck-surface);
-            padding: 24px;
-            text-align: center;
-            color: var(--ck-text-muted);
-            font-size: 0.82rem;
+        /* PLACE-ORDER */
+        .place-order-btn {
+            margin-top: 1.5rem;
+            width: 100%; padding: 16px;
+            background: var(--gold); color: #0c0f15;
+            border: none; border-radius: 50px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 800; font-size: 1rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(212,175,55,0.32);
+            transition: var(--transition);
         }
-        .ck-footer a { color: var(--ck-text-muted); }
-        .ck-footer a:hover { color: var(--ck-primary); }
+        .place-order-btn:hover { transform: translateY(-2px); box-shadow: var(--gold-glow); }
+        .place-order-btn:active { transform: translateY(0); }
+        .place-order-btn[disabled] {
+            background: linear-gradient(135deg, #4b5563, #374151);
+            color: #94a3b8; cursor: not-allowed; transform: none;
+            box-shadow: none;
+        }
+        .place-order-btn .loader {
+            width: 14px; height: 14px;
+            border: 2px solid currentColor;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: jmp-spin 0.8s linear infinite;
+            display: none;
+        }
+        .place-order-btn.loading .loader { display: inline-block; }
+        @keyframes jmp-spin { to { transform: rotate(360deg); } }
+        .continue-shopping {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            color: var(--gold-dark); text-decoration: none;
+            margin-top: 0.9rem; font-size: 0.875rem; font-family: 'Inter', sans-serif;
+        }
+        .continue-shopping:hover { gap: 0.75rem; }
 
-        /* ===== DARK MODE OVERRIDES ===== */
-        .dark-mode {
-            --ck-bg: #0F172A;
-            --ck-surface: #1E293B;
-            --ck-text: #F1F5F9;
-            --ck-text-muted: #94A3B8;
-            --ck-border: rgba(255,255,255,0.08);
-            --ck-border-strong: rgba(255,255,255,0.18);
+        /* ===== DARK MODE scoped overrides ===== */
+        .dark-mode body { background: #0c0f15; color: #eef2f5; }
+        .dark-mode .checkout-main { color: #eef2f5; }
+        .dark-mode .checkout-header-section h1 { color: #f1f5f9; }
+        .dark-mode .checkout-header-section .sub { color: #94a3b8; }
+        .dark-mode .checkout-card { background: #1a1f2a; border: 1px solid rgba(255,255,255,0.06); }
+        .dark-mode .checkout-card h2 { color: #f1f5f9; }
+        .dark-mode .checkout-card-divider { background: rgba(255,255,255,0.08); }
+        .dark-mode .checkout-order-line { border-bottom-color: rgba(255,255,255,0.08); }
+        .dark-mode .checkout-order-line img { background: rgba(255,255,255,0.05); }
+        .dark-mode .checkout-order-line .line-name { color: #f1f5f9; }
+        .dark-mode .checkout-order-line .line-meta { color: #94a3b8; }
+        .dark-mode .checkout-order-line .line-total { color: #f1f5f9; }
+        .dark-mode .checkout-totals { border-top-color: rgba(255,255,255,0.08); }
+        .dark-mode .checkout-totals-row.total { border-top-color: rgba(255,255,255,0.08); color: #f1f5f9; }
+        .dark-mode .checkout-totals-row.total .t-value { color: var(--gold); }
+        .dark-mode .ck-bank-card { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); }
+        .dark-mode .ck-banktitle { color: #f1f5f9; }
+        .dark-mode .ck-account-name { color: #94a3b8; }
+        .dark-mode .ck-number-row { background: #0c0f15; border-color: rgba(255,255,255,0.08); }
+        .dark-mode .ck-number-row code { color: var(--gold); }
+        .dark-mode .receipt-upload-card h3 { color: #f1f5f9; }
+        .dark-mode .receipt-upload-card .hint { color: #94a3b8; }
+        .dark-mode .page-dropzone { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.12); }
+        .dark-mode .page-dropzone:hover, .dark-mode .page-dropzone.dragging { background: rgba(212,175,55,0.08); }
+        .dark-mode .page-dropzone-content .text-cell .bold { color: #eef2f5; }
+        .dark-mode .page-dropzone-content .text-cell .sub { color: #94a3b8; }
+        .dark-mode .page-dropzone-preview { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+        .dark-mode .page-dropzone-preview .filename { color: #eef2f5; }
+        .dark-mode .page-dropzone-preview .filesize { color: #94a3b8; }
+        .dark-mode .checkout-pay-foot { background: rgba(212,175,55,0.08); border-color: rgba(212,175,55,0.25); color: #eef2f5; }
+        .dark-mode .checkout-pay-foot strong { color: var(--gold); }
+        .dark-mode .continue-shopping { color: var(--gold); }
+    /* v4 image-fallback: sibling-element + adjacent-class-swap rule group */
+        .line-img { position: relative; display: flex; align-items: center; justify-content: center; }
+        .line-img > img {
+            width: 56px; height: 56px; border-radius: 10px;
+            object-fit: cover; background: var(--gray-100);
+            display: block;
         }
-        .dark-mode body { background: var(--ck-bg); color: var(--ck-text); }
-        .dark-mode .ck-nav { background: rgba(15,23,42,0.92); border-bottom-color: var(--ck-border); }
-        .dark-mode .ck-brand { color: var(--ck-text); }
-        .dark-mode .ck-card { background: var(--ck-surface); border-color: var(--ck-border); box-shadow: 0 1px 3px rgba(0,0,0,0.45), 0 8px 28px rgba(0,0,0,0.32); }
-        .dark-mode .ck-card-title { color: var(--ck-text); }
-        .dark-mode .ck-order-line { border-color: var(--ck-border); }
-        .dark-mode .ck-order-line .ck-line-name { color: var(--ck-text); }
-        .dark-mode .ck-line-meta { color: var(--ck-text-muted); }
-        .dark-mode .ck-order-line img { background: var(--ck-border); }
-        .dark-mode .ck-totals { border-top-color: var(--ck-border); }
-        .dark-mode .ck-totals-row.ck-grand-total { border-top-color: var(--ck-border); }
-        .dark-mode .ck-bank-card { background: linear-gradient(135deg, #1E293B 0%, #1A2233 100%); border-color: rgba(129,140,248,0.22); }
-        .dark-mode .ck-bank-card:hover { border-color: var(--ck-primary-light); box-shadow: 0 14px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(129,140,248,0.32); }
-        .dark-mode .ck-number-row { background: rgba(15,23,42,0.55); border-color: var(--ck-border); }
-        .dark-mode .ck-number-row code { color: var(--ck-text); font-weight: 700; }
-        .dark-mode .ck-bank-logo { background: #F8FAFC; }
-        .dark-mode .ck-payment-foot { background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(79,70,229,0.10)); border-color: rgba(34,197,94,0.25); }
-        .dark-mode .ck-footer { background: var(--ck-surface); color: var(--ck-text-muted); border-top-color: var(--ck-border); }
-        .dark-mode .ck-step { background: var(--ck-surface); border-color: var(--ck-border); }
-        .dark-mode .ck-step.is-done { color: #4ADE80; background: rgba(34,197,94,0.08); }
-        .dark-mode .ck-step.is-active { color: var(--ck-primary-light); background: rgba(129,140,248,0.1); }
-        .dark-mode .ck-empty-cta { background: var(--ck-primary); color: white !important; }
-        .dark-mode .copy-btn.copied { background: linear-gradient(135deg, #34D399 0%, #10B981 100%) !important; border-color: rgba(16,185,129,0.6) !important; }
-        .dark-mode .ck-card-eyebrow { color: var(--ck-primary-light); }
+        .line-img > .checkout-line-img-fallback {
+            display: none;
+            width: 56px; height: 56px; border-radius: 10px;
+            background: var(--gray-100);
+            align-items: center; justify-content: center;
+            color: var(--gray-400); font-size: 1.4rem;
+        }
+        /* Failed images: hide the img, reveal the adjacent .checkout-line-img-fallback */
+        .line-img > img.broke { display: none; }
+        .line-img > img.broke + .checkout-line-img-fallback { display: flex; }
+        /* Dark-mode polish for the placeholder icon */
+        .dark-mode .line-img > .checkout-line-img-fallback { background: rgba(255,255,255,0.05); color: #6b7280; }
+</style>
+    <!-- JMPOTTERS_THEME_CSS placeholder (replaced at deploy with the linker script) -->
 
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after { animation: none !important; transition: none !important; }
-        }
-    </style>
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
 <!-- ===== HEADER ===== -->
-<header class="ck-nav">
-    <a href="index.html" class="ck-brand">
-        <span class="ck-brand-mark">J</span>
-        <span>JMPOTTERS</span>
-    </a>
-    <div class="ck-secure" aria-label="Secure checkout">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Secure Checkout
+    <nav class="nav-bar" id="navBar">
+        <div class="header-container">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle" aria-label="Open navigation menu">
+                    <i class="icon-menu"></i>
+                </button>
+                <ul class="desktop-nav-links">
+                    <li><a href="mensfootwear.html">Men</a></li>
+                    <li><a href="womensfootwear.html">Women</a></li>
+                    <li><a href="bags.html">Bags</a></li>
+                    <li><a href="accessories.html">Accessories</a></li>
+                    <li><a href="household.html">Home</a></li>
+                    <li><a href="kids.html">Kids</a></li>
+                </ul>
+            </div>
+            <div class="header-center">
+                <a href="index.html" aria-label="JMPOTTERS Home">
+                    <img src="assets/logos/logo1.png" alt="JMPOTTERS" class="logo-img" width="56" height="56">
+                </a>
+            </div>
+            <div class="header-right">
+                <button class="search-toggle" id="searchToggle" aria-label="Search products">
+                    <i class="icon-search"></i>
+                </button>
+                <a href="cart.html" class="header-icon" id="cartIcon" aria-label="Shopping cart">
+                    <i class="icon-shopping-bag"></i>
+                    <span class="nav-badge" id="cartCount" style="display:none">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-box">
+            <i class="icon-search search-icon-input"></i>
+            <input type="text" id="searchInput" placeholder="Search products, categories..." autocomplete="off" aria-label="Search">
+            <button class="search-close" id="searchClose" aria-label="Close search"><i class="icon-x"></i></button>
+        </div>
+        <div class="search-results-container" id="searchResultsContainer"></div>
     </div>
-</header>
 
-<!-- ===== PROGRESS ===== -->
-<nav class="ck-progress" aria-label="Checkout progress">
-    <span class="ck-step is-done" aria-label="Step 1 complete">
-        <span class="ck-step-num">✓</span>
-        <span>Cart</span>
-    </span>
-    <span class="ck-step-divider" aria-hidden="true"></span>
-    <span class="ck-step is-active" aria-current="step">
-        <span class="ck-step-num">2</span>
-        <span>Checkout</span>
-    </span>
-    <span class="ck-step-divider" aria-hidden="true"></span>
-    <span class="ck-step" aria-label="Step 3">
-        <span class="ck-step-num">3</span>
-        <span>Confirmation</span>
-    </span>
-</nav>
-
-<!-- ===== MAIN GRID ===== -->
-<main class="ck-main">
-
-    <!-- ===== ORDER SUMMARY ===== -->
-    <section class="ck-card ck-order" aria-label="Order summary">
-        <div class="ck-card-eyebrow">Your Order</div>
-        <h1 class="ck-card-title">Order Summary</h1>
-        <ul class="ck-order-lines" id="orderLines" aria-live="polite"></ul>
-        <div class="ck-totals" id="orderTotals">
-            <div class="ck-totals-row">
-                <span class="ck-t-label">Subtotal</span>
-                <span class="ck-t-value" id="sumSubtotal">₦0</span>
-            </div>
-            <div class="ck-totals-row">
-                <span class="ck-t-label">Shipping</span>
-                <span class="ck-t-value">Calculated at delivery</span>
-            </div>
-            <div class="ck-totals-row ck-grand-total">
-                <span class="ck-t-label">Total to pay</span>
-                <span class="ck-t-value" id="sumTotal">₦0</span>
-            </div>
+    <!-- Mobile Navigation -->
+    <div class="overlay" id="navOverlay" role="presentation"></div>
+    <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+        <div class="mobile-nav-header">
+            <img src="assets/logos/logo1.png" alt="JMPOTTERS" class="logo-img" width="44" height="44">
+            <button class="close-nav" id="closeNavBtn" aria-label="Close navigation">
+                <i class="icon-x"></i>
+            </button>
         </div>
-    </section>
+        <ul class="mobile-nav-links">
+            <li><a href="index.html"><i class="icon-house"></i> Home</a></li>
+            <li><a href="mensfootwear.html"><i class="icon-footprints"></i> Men's Footwear</a></li>
+            <li><a href="womensfootwear.html"><i class="icon-sparkles"></i> Women's Footwear</a></li>
+            <li><a href="bags.html"><i class="icon-briefcase"></i> Bags</a></li>
+            <li><a href="accessories.html"><i class="icon-gem"></i> Accessories</a></li>
+            <li><a href="household.html"><i class="icon-lamp"></i> Household</a></li>
+            <li><a href="kids.html"><i class="icon-baby"></i> Kids & Babies</a></li>
+            <li><a href="healthcare.html"><i class="icon-heart-pulse"></i> Healthcare</a></li>
+            <li><a href="contact.html"><i class="icon-phone"></i> Contact</a></li>
+        </ul>
+    </nav>
 
-    <!-- ===== PAYMENT INSTRUCTIONS ===== -->
-    <section class="ck-card ck-payment" aria-label="Payment instructions">
-        <div class="ck-card-eyebrow">Step 2 · Payment</div>
-        <h1 class="ck-card-title">Pay via Bank Transfer</h1>
-        <p class="ck-lead">Transfer the exact total into one of the accounts below, then confirm by sending your payment receipt via WhatsApp or uploading it on the next page.</p>
 
-        <div class="ck-bank-stack">
-
-            <!-- ===== UBA ===== -->
-            <article class="ck-bank-card" aria-label="UBA bank account">
-                <div class="ck-bank-card-head">
-                    <div class="ck-bank-logo" aria-hidden="true">
-                        <!-- UBA inline SVG (red rounded square, white wordmark) -->
-                        <svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="UBA — United Bank for Africa">
-                            <defs>
-                                <linearGradient id="ubaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stop-color="#E63027"/>
-                                    <stop offset="100%" stop-color="#C4231A"/>
-                                </linearGradient>
-                            </defs>
-                            <rect x="2" y="4" width="196" height="52" rx="8" fill="url(#ubaGrad)"/>
-                            <text x="100" y="38" text-anchor="middle" fill="#ffffff" font-family="Helvetica, Arial, sans-serif" font-weight="900" font-size="28" letter-spacing="1">UBA</text>
-                        </svg>
-                    </div>
-                    <div class="ck-bank-info">
-                        <div class="ck-bankname">UBA</div>
-                        <div class="ck-banknetwork">United Bank for Africa</div>
-                    </div>
-                </div>
-                <div class="ck-account-name">Account Name · JMPOTTERS STORE</div>
-                <div class="ck-number-row">
-                    <code id="ubaNum">1026078101</code>
-                    <button type="button" class="copy-btn" onclick="copyBankNumber('1026078101', this)" aria-label="Copy UBA account number">
-                        <span class="copy-state">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                            <span>Copy</span>
-                        </span>
-                        <span class="copied-state" aria-hidden="true">
-                            <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                            <span>Copied</span>
-                        </span>
-                        <span class="copy-failed-state" aria-hidden="true">
-                            <svg class="fail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            <span>Failed</span>
-                        </span>
-                    </button>
-                </div>
-            </article>
-
-            <!-- ===== OPAY ===== -->
-            <article class="ck-bank-card" aria-label="OPay bank account">
-                <div class="ck-bank-card-head">
-                    <div class="ck-bank-logo" aria-hidden="true">
-                        <!-- OPay inline SVG (green circular mark with stylized "O") -->
-                        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OPay — Paypoint">
-                            <defs>
-                                <linearGradient id="opayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stop-color="#13C268"/>
-                                    <stop offset="100%" stop-color="#0A8F4D"/>
-                                </linearGradient>
-                            </defs>
-                            <circle cx="32" cy="32" r="30" fill="url(#opayGrad)"/>
-                            <circle cx="32" cy="32" r="22" fill="none" stroke="#ffffff" stroke-width="2.5"/>
-                            <!-- Diagonal "Ø" stroke to suggest the Opay wordmark -->
-                            <line x1="20" y1="44" x2="44" y2="20" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
-                            <circle cx="32" cy="32" r="6" fill="#ffffff"/>
-                        </svg>
-                    </div>
-                    <div class="ck-bank-info">
-                        <div class="ck-bankname">OPAY</div>
-                        <div class="ck-banknetwork">Paypoint by OPay</div>
-                    </div>
-                </div>
-                <div class="ck-account-name">Account Name · IMHONTU JULIANA</div>
-                <div class="ck-number-row">
-                    <code id="opayNum">8139583320</code>
-                    <button type="button" class="copy-btn" onclick="copyBankNumber('8139583320', this)" aria-label="Copy Opay account number">
-                        <span class="copy-state">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                            <span>Copy</span>
-                        </span>
-                        <span class="copied-state" aria-hidden="true">
-                            <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                            <span>Copied</span>
-                        </span>
-                        <span class="copy-failed-state" aria-hidden="true">
-                            <svg class="fail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            <span>Failed</span>
-                        </span>
-                    </button>
-                </div>
-            </article>
-
+    <main id="main-content" class="checkout-main">
+        <div class="checkout-header-section">
+            <h1><i class="icon-credit-card"></i> Secure Checkout</h1>
+            <div class="sub">Pay via bank transfer, upload your receipt, and place your order — all on this page.</div>
         </div>
 
-        <!-- ===== FOOT CTA ===== -->
-        <div class="ck-payment-foot">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-            </svg>
-            <span>After paying, send your payment receipt via <a href="https://wa.me/2348139583320?text=Hi JMPOTTERS%2C I just paid for my order. Here is my receipt." target="_blank" rel="noopener"><strong>WhatsApp&nbsp;+234&nbsp;813&nbsp;958&nbsp;3320</strong></a> or upload it on the next page.</span>
+        <div class="checkout-grid">
+            <section class="checkout-card" id="orderSummaryCard" aria-label="Order summary">
+                <h2><i class="icon-shopping-bag"></i> Your Order</h2>
+                <ul class="checkout-order-lines" id="orderLines" aria-live="polite"></ul>
+                <div class="checkout-totals">
+                    <div class="checkout-totals-row">
+                        <span>Subtotal</span>
+                        <span id="sumSubtotal">₦0</span>
+                    </div>
+                    <div class="checkout-totals-row total">
+                        <span>Total</span>
+                        <span class="t-value" id="sumTotal">₦0</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="checkout-card" aria-label="Payment instructions">
+                <h2><i class="icon-banknote"></i> Pay via Bank Transfer</h2>
+                <div class="checkout-card-divider"></div>
+                <div class="ck-bank-stack">
+                    <article class="ck-bank-card is-uba" aria-label="UBA bank account">
+                        <div class="ck-bank-stripe" aria-hidden="true"></div>
+                        <div class="ck-bank-card-body">
+                            <div class="ck-bank-eyebrow">UBA · United Bank for Africa</div>
+                            <div class="ck-banktitle">JMPOTTERS STORE</div>
+                            <div class="ck-number-row">
+                                <code id="ubaNum">1026078101</code>
+                                <button type="button" class="copy-btn" onclick="copyBankNumber('1026078101', this)" aria-label="Copy UBA account number">
+                                    <span class="copy-state">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                        <span>Copy</span>
+                                    </span>
+                                    <span class="copied-state" aria-hidden="true">
+                                        <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                                        <span>Copied</span>
+                                    </span>
+                                    <span class="copy-failed-state" aria-hidden="true">
+                                        <svg class="fail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                        <span>Failed</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="ck-bank-card is-opay" aria-label="OPay bank account">
+                        <div class="ck-bank-stripe" aria-hidden="true"></div>
+                        <div class="ck-bank-card-body">
+                            <div class="ck-bank-eyebrow">OPAY · Paypoint by OPay</div>
+                            <div class="ck-banktitle">IMHONTU JULIANA</div>
+                            <div class="ck-number-row">
+                                <code id="opayNum">8139583320</code>
+                                <button type="button" class="copy-btn" onclick="copyBankNumber('8139583320', this)" aria-label="Copy Opay account number">
+                                    <span class="copy-state">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                        <span>Copy</span>
+                                    </span>
+                                    <span class="copied-state" aria-hidden="true">
+                                        <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                                        <span>Copied</span>
+                                    </span>
+                                    <span class="copy-failed-state" aria-hidden="true">
+                                        <svg class="fail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                        <span>Failed</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="checkout-pay-foot">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                    </svg>
+                    <span>After paying, you can upload your receipt below — or skip and send it later via <a href="https://wa.me/2348139583320?text=Hi%20JMPOTTERS%2C%20I%20just%20paid%20for%20my%20order.%20Here%20is%20my%20receipt." target="_blank" rel="noopener"><strong>WhatsApp&nbsp;+234&nbsp;813&nbsp;958&nbsp;3320</strong></a>.</span>
+                </div>
+
+                <div class="receipt-upload-card">
+                    <h3><i class="icon-upload"></i> Upload Payment Receipt</h3>
+                    <p class="hint">Optional but recommended — speeds up order confirmation.</p>
+                    <div class="page-dropzone" id="pageDropzone">
+                        <input type="file" id="pageDropzoneInput" accept="image/jpeg,image/png,image/webp,application/pdf" />
+                        <div class="page-dropzone-content">
+                            <i class="icon-upload-cloud icon-cell" aria-hidden="true"></i>
+                            <div class="text-cell">
+                                <div class="bold">Drop receipt here or click to browse</div>
+                                <div class="sub">JPG, PNG, WebP or PDF · Max 5MB</div>
+                            </div>
+                        </div>
+                        <div class="page-dropzone-preview" id="pageDropzonePreview">
+                            <img id="pageDropzonePreviewImg" alt="Receipt preview">
+                            <div class="filename" id="pageDropzonePreviewName">receipt.jpg</div>
+                            <div class="filesize" id="pageDropzonePreviewSize">0 KB</div>
+                            <button type="button" class="remove" id="pageDropzoneRemove" aria-label="Remove receipt">
+                                <i class="icon-x" aria-hidden="true"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                    <div id="pageReceiptError" role="alert"></div>
+                </div>
+
+                <button type="button" class="place-order-btn" id="placeOrderBtn">
+                    <span class="loader" aria-hidden="true"></span>
+                    <i class="icon-check-circle" aria-hidden="true"></i>
+                    <span id="placeOrderBtnLabel">Place Order</span>
+                </button>
+                <a href="cart.html" class="continue-shopping"><i class="icon-arrow-left"></i> Back to Cart</a>
+            </section>
         </div>
-    </section>
+    </main>
 
-</main>
+    <div class="ad-zone" id="adZoneBeforeFooter"></div>
+<!-- ===== SILHOUETTE FOOTER ===== -->
+    <footer class="silhouette-footer">
+        <svg class="footer-skyline" viewBox="0 0 1440 120" preserveAspectRatio="none" fill="rgba(212,175,55,0.04)">
+            <path d="M0,120 L0,80 L60,80 L60,50 L80,50 L80,35 L100,35 L100,50 L120,50 L120,80 L200,80 L200,60 L220,60 L220,40 L240,40 L240,20 L260,20 L260,40 L280,40 L280,60 L300,60 L300,80 L400,80 L400,55 L420,55 L420,30 L440,30 L440,10 L460,10 L460,30 L480,30 L480,55 L500,55 L500,80 L580,80 L580,65 L600,65 L600,45 L620,45 L620,65 L640,65 L640,80 L720,80 L720,50 L740,50 L740,25 L760,25 L760,50 L780,50 L780,80 L860,80 L860,70 L880,70 L880,40 L900,40 L900,15 L920,15 L920,40 L940,40 L940,70 L960,70 L960,80 L1040,80 L1040,55 L1060,55 L1060,35 L1080,35 L1080,55 L1100,55 L1100,80 L1180,80 L1180,60 L1200,60 L1200,30 L1220,30 L1220,60 L1240,60 L1240,80 L1320,80 L1320,70 L1340,70 L1340,45 L1360,45 L1360,70 L1380,70 L1380,80 L1440,80 L1440,120 Z" />
+        </svg>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <img src="assets/logos/logo1.png" alt="JMPOTTERS" class="footer-logo-img" width="56" height="56">
+                <p>Premium fashion and lifestyle products for the modern individual. Quality you can trust, style you'll love.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="WhatsApp"><i class="icon-message-circle"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="icon-instagram"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="icon-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="icon-twitter"></i></a>
+                </div>
+                <div class="payment-methods">
+                    <span class="payment-icon"><i class="icon-credit-card" style="font-size:0.9rem;vertical-align:middle;margin-right:4px"></i> Visa</span>
+                    <span class="payment-icon"><i class="icon-credit-card" style="font-size:0.9rem;vertical-align:middle;margin-right:4px"></i> Mastercard</span>
+                    <span class="payment-icon"><i class="icon-banknote" style="font-size:0.9rem;vertical-align:middle;margin-right:4px"></i> Transfer</span>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Shop</h4>
+                <ul class="footer-links">
+                    <li><a href="mensfootwear.html">Men's Footwear</a></li>
+                    <li><a href="womensfootwear.html">Women's Footwear</a></li>
+                    <li><a href="bags.html">Bags</a></li>
+                    <li><a href="accessories.html">Accessories</a></li>
+                    <li><a href="household.html">Household</a></li>
+                    <li><a href="kids.html">Kids & Babies</a></li>
+                    <li><a href="healthcare.html">Healthcare</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Company</h4>
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="#">Shipping Policy</a></li>
+                    <li><a href="#">Returns & Refunds</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Get in Touch</h4>
+                <ul class="footer-links">
+                    <li class="contact-item"><i class="icon-phone"></i> +234 813 958 3320</li>
+                    <li class="contact-item"><i class="icon-mail"></i> hello@jmpotters.com</li>
+                    <li class="contact-item"><i class="icon-map-pin"></i> Lagos, Nigeria</li>
+                    <li class="contact-item"><i class="icon-clock"></i> Mon-Sat, 9am - 7pm</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-inner">
+                <div class="copyright">&copy; 2025 JMPOTTERS. All rights reserved.</div>
+                <ul class="footer-bottom-links">
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+<!-- Back to top -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="icon-arrow-up"></i></button>
 
-<!-- ===== FOOTER ===== -->
-<footer class="ck-footer">
-    <p>&copy; 2025 JMPOTTERS · Need help? <a href="contact.html">Contact us</a> · <a href="index.html">Continue shopping</a></p>
-</footer>
+    <!-- Toast notification -->
+    <div class="toast" id="cartToast" role="alert">
+        <img class="toast-img" id="toastImg" src="" alt="">
+        <div class="toast-content">
+            <div class="toast-title" id="toastTitle"></div>
+            <div class="toast-subtitle">Added to cart</div>
+        </div>
+        <a href="cart.html" class="toast-action">View Cart
+<script src="app.js" defer></script>
+<script src="account-auth.js" defer></script>
 
-<!-- ===== INLINE JS: load cart + render summary ===== -->
-<script>
-(function(){
-    'use strict';
-    // ===== Single source of truth for cart loading on this page =====
-    // Probe known localStorage cart keys (legacy + current paths) and accept
-    // either a bare array or one of {items, cart, products} shapes. If nothing
-    // parses to a non-empty array -> bounce the user back to /cart.html so
-    // they don't land on the empty-state stranding card. Otherwise seed the
-    // render-time `cart` variable ONCE here so the render logic doesn't have
-    // to re-parse below.
-    var cart = [];
-    var _peekKeys = ['JMPOTTERS_CART','jmpotters_cart','JMPottersCart','cart','cartItems','JMPOTTERS_cart'];
-    var _peeked = null;
-    for (var _pk = 0; _pk < _peekKeys.length; _pk++) {
+    <!-- All-in-one inline glue: cart peek, render, dropzone, place-order,
+         search wiring, copyBankNumber fallback. Loads BEFORE /theme.js
+         and /app.js defer scripts so the inline parts of the page work
+         on first paint regardless of network speed. -->
+    <script>
+    (function(){
+        'use strict';
+        // ===== Inline copyBankNumber fallback. Runs BEFORE theme.js's
+        // defer fires, so the first click works even if theme.js hasn't
+        // loaded yet. Once theme.js loads, it OVERWRITES
+        // window.copyBankNumber with the HARDENED V2 version (race-free
+        // scheduleRevert/cancelRevert). This block then becomes a no-op
+        // but the initial click is safe.
+        if (typeof window.copyBankNumber !== 'function') {
+            window.copyBankNumber = function(num, btn){
+                var text = String(num);
+                function flash(cls){
+                    if (!btn || !btn.classList) return;
+                    btn.classList.add(cls);
+                    setTimeout(function(){
+                        try { btn.classList.remove(cls); } catch(_e){}
+                    }, 1800);
+                }
+                if (navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function' && window.isSecureContext !== false) {
+                    navigator.clipboard.writeText(text).then(function(){
+                        flash('copied');
+                    }).catch(function(){
+                        // Fall back to execCommand if clipboard API rejects
+                        try {
+                            var ta = document.createElement('textarea');
+                            ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
+                            document.body.appendChild(ta); ta.select();
+                            var ok = document.execCommand('copy');
+                            document.body.removeChild(ta);
+                            flash(ok ? 'copied' : 'copy-failed');
+                        } catch(_e){ flash('copy-failed'); }
+                    });
+                } else {
+                    try {
+                        var ta = document.createElement('textarea');
+                        ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
+                        document.body.appendChild(ta); ta.select();
+                        var ok = document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        flash(ok ? 'copied' : 'copy-failed');
+                    } catch(_e){ flash('copy-failed'); }
+                }
+            };
+        }
+
+        // ===== Shrunken nav-bar on scroll =====
+        function padTopOnScroll(){
+            try {
+                var nav = document.getElementById('navBar');
+                if (nav) nav.classList.toggle('shrunk', (window.scrollY||0) > 80);
+            } catch(e){}
+            var bt = document.getElementById('backToTop');
+            if (bt) {
+                if ((window.scrollY||0) > 500) bt.classList.add('visible');
+                else bt.classList.remove('visible');
+            }
+        }
+        window.addEventListener('scroll', padTopOnScroll, { passive:true });
+        padTopOnScroll();
+
+        // Back-to-top click
+        var backToTopBtn = document.getElementById('backToTop');
+        if (backToTopBtn) backToTopBtn.addEventListener('click', function(){
+            window.scrollTo({ top:0, behavior:'smooth' });
+        });
+
+        // ===== Mobile nav wiring =====
+        (function(){
+            var mt = document.getElementById('mobileToggle');
+            var mn = document.getElementById('mobileNav');
+            var ov = document.getElementById('navOverlay');
+            var cn = document.getElementById('closeNavBtn');
+            function openNav(){ if (mn) mn.classList.add('active'); if (ov) ov.classList.add('active'); document.body.style.overflow='hidden'; }
+            function closeNav(){ if (mn) mn.classList.remove('active'); if (ov) ov.classList.remove('active'); document.body.style.overflow=''; }
+            if (mt) mt.addEventListener('click', openNav);
+            if (cn) cn.addEventListener('click', closeNav);
+            if (ov) ov.addEventListener('click', closeNav);
+        })();
+
+        // ===== Search overlay wiring (so the header toggle is functional) =====
+        (function(){
+            var overlay      = document.getElementById('searchOverlay');
+            var toggle       = document.getElementById('searchToggle');
+            var closeBtn     = document.getElementById('searchClose');
+            var input        = document.getElementById('searchInput');
+            var results      = document.getElementById('searchResultsContainer');
+            if (!overlay || !toggle) return;
+            var debounceTimer = null;
+            var cache = {};
+            var PLEASE_LOGIN = '<div class="search-empty"><i class="icon-alert-circle"></i><p>Search unavailable</p><p class="search-hint">Check your connection and try again.</p></div>';
+
+            function getSb(){
+                try {
+                    if (window.JMPOTTERS && typeof window.JMPOTTERS.getSupabaseClient === 'function') {
+                        return window.JMPOTTERS.getSupabaseClient();
+                    }
+                } catch(_e){}
+                try {
+                    if (window.supabase && window.supabase.createClient) {
+                        return window.supabase.createClient(
+                            'https://tmpggeeuwdvlngvfncaa.supabase.co',
+                            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtcGdnZWV1d2R2bG5ndmZuY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxOTc0MDYsImV4cCI6MjA3Nzc3MzQwNn0.EKzkKWmzYMvQuN11vEjRTDHrUbh6dYXk7clxVsYQ0b4'
+                        );
+                    }
+                } catch(_e){}
+                return null;
+            }
+            function getImageUrl(p){
+                if (!p || !p.image_url) return 'https://via.placeholder.com/64?text=N%2FA';
+                if (String(p.image_url).indexOf('http') === 0) return p.image_url;
+                return 'https://ebuzome.github.io/JMPOTTERS/assets/images/' + p.image_url;
+            }
+            function escapeHtml(s){ var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+            function highlight(text, query){
+                if (!query) return escapeHtml(text);
+                var re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')','gi');
+                return escapeHtml(text).replace(re, '<mark>$1</mark>');
+            }
+
+            function openSearch(){
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                setTimeout(function(){ if (input) input.focus(); }, 100);
+            }
+            function closeSearch(){
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                if (input) input.value = '';
+                if (results) results.innerHTML = '';
+            }
+            toggle.addEventListener('click', openSearch);
+            if (closeBtn) closeBtn.addEventListener('click', closeSearch);
+            overlay.addEventListener('click', function(e){ if (e.target === overlay) closeSearch(); });
+
+            async function performSearch(query){
+                if (!results) return;
+                if (!query || query.length < 2) { results.innerHTML=''; return; }
+                var key = query.toLowerCase();
+                if (cache[key]) { renderSearchResults(cache[key], query); return; }
+                results.innerHTML = '<div class="search-status"><i class="icon-loader" style="animation:spin 1s linear infinite;display:inline-block"></i> Searching…</div>';
+                var sb = getSb();
+                if (!sb) { results.innerHTML = PLEASE_LOGIN; return; }
+                try {
+                    var terms = key.split(/\s+/).filter(Boolean);
+                    var q = sb.from('products').select('id,name,slug,price,image_url,description,category_id,is_active,categories(name,slug)').eq('is_active', true).order('name');
+                    var res = await q;
+                    if (res.error) throw res.error;
+                    var matched = (res.data || []).filter(function(p){
+                        var text = [(p.name||''), (p.slug||''), (p.description||''), (p.categories && p.categories.name) || '', (p.categories && p.categories.slug) || ''].join(' ').toLowerCase();
+                        return terms.every(function(t){ return text.indexOf(t) !== -1; });
+                    });
+                    cache[key] = matched;
+                    renderSearchResults(matched, query);
+                } catch(err){
+                    results.innerHTML = PLEASE_LOGIN;
+                }
+            }
+            function renderSearchResults(items, query){
+                if (!results) return;
+                if (items.length === 0) {
+                    results.innerHTML = '<div class="search-empty"><i class="icon-search"></i><p>No products found for "' + escapeHtml(query) + '"</p></div>';
+                    return;
+                }
+                var html = '<div class="search-status">' + items.length + ' product' + (items.length !== 1 ? 's' : '') + ' found</div><div class="search-results-grid">';
+                items.slice(0, 20).forEach(function(p){
+                    var cat = (p.categories && p.categories.name) || '';
+                    html += '<a href="product.html?slug=' + encodeURIComponent(p.slug || p.id) + '" class="search-result-item">'
+                         +  '<img class="search-result-img" src="' + getImageUrl(p) + '" alt="" loading="lazy">'
+                         +  '<div class="search-result-info">'
+                         +    (cat ? '<span class="search-result-category">' + escapeHtml(cat) + '</span>' : '')
+                         +    '<div class="search-result-name">' + highlight(p.name || '', query) + '</div>'
+                         +    '<div class="search-result-price">₦' + (p.price || 0).toLocaleString() + '</div>'
+                         +  '</div></a>';
+                });
+                html += '</div>';
+                results.innerHTML = html;
+            }
+            if (input) {
+                input.addEventListener('input', function(){
+                    var q = input.value.trim();
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(function(){ performSearch(q); }, 300);
+                });
+                input.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeSearch(); });
+            }
+        })();
+
+        // ===== ESC handler for nav + search =====
+        document.addEventListener('keydown', function(e){
+            if (e.key === 'Escape') {
+                var mn = document.getElementById('mobileNav'); if (mn) mn.classList.remove('active');
+                var ov = document.getElementById('navOverlay'); if (ov) ov.classList.remove('active');
+                var so = document.getElementById('searchOverlay'); if (so) so.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // ===== Single source of truth for cart loading =====
+        var cart = [];
+        var _peekKeys = ['JMPOTTERS_CART','jmpotters_cart','JMPottersCart','cart','cartItems','JMPOTTERS_cart'];
+        var _peeked = null;
+        for (var _pk = 0; _pk < _peekKeys.length; _pk++) {
+            try {
+                var _raw = localStorage.getItem(_peekKeys[_pk]);
+                if (!_raw) continue;
+                var _parsed = JSON.parse(_raw);
+                if      (_parsed && Array.isArray(_parsed.items)    && _parsed.items.length)    { _peeked = _parsed.items; }
+                else if (_parsed && Array.isArray(_parsed.cart)     && _parsed.cart.length)     { _peeked = _parsed.cart; }
+                else if (_parsed && Array.isArray(_parsed.products) && _parsed.products.length) { _peeked = _parsed.products; }
+                else if (Array.isArray(_parsed) && _parsed.length)                              { _peeked = _parsed; }
+                if (_peeked) break;
+            } catch(_e){}
+        }
+        if (!_peeked || _peeked.length === 0) {
+            try { window.location.replace('cart.html'); } catch(_e){ window.location.href = 'cart.html'; }
+            return;
+        }
+        cart = _peeked;
+
+        var list = document.getElementById('orderLines');
+        var subtotalEl = document.getElementById('sumSubtotal');
+        var totalEl    = document.getElementById('sumTotal');
+
+        function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+        function imgSrcFor(item){ return item.image_url || item.image || item.thumb || item.thumbnail || ''; }
+        function nameOf(item){ return item.name || item.title || 'Item'; }
+        function variantLabel(item){
+            var parts = [];
+            if (item.color || item.color_name) parts.push(escapeHtml(item.color || item.color_name));
+            if (item.size || item.size_value)   parts.push('Size ' + escapeHtml(item.size || item.size_value));
+            return parts.join(' · ');
+        }
+        function qtyOf(item){ var q = parseInt(item.quantity || item.qty || item.q); return isNaN(q) || q < 1 ? 1 : q; }
+        function priceOf(item){ var p = parseFloat(item.price || item.unit_price || 0); return isNaN(p) ? 0 : p; }
+        function fmtN(n){ try { return '₦' + Number(n).toLocaleString(); } catch(e){ return '₦' + n; } }
+
+        // Single quote-free swap: dead image source -> lucide placeholder block.
+        // We build the fallback element in JS (not as inline onerror) to keep
+        // markup tidy and to avoid the previous "blank styled hole" regression.
+        function imgTagFor(item){
+            // v4 sibling-element image-fallback: the broken JS-escape
+            // outerHTML trick failed because encodeURIComponent produced
+            // gibberish that the browser treats as a JS identifier. Use a
+            // one-line onerror class-toggle + sibling-adjacent reveal in
+            // CSS — zero string escaping, robust across browsers.
+            var src = imgSrcFor(item);
+            var esc = function(s){ return escapeHtml(s); };
+            if (!src) {
+                return '<div class="line-img">'
+                     +     '<i class="icon-image checkout-line-img-fallback" aria-hidden="true"></i>'
+                     + '</div>';
+            }
+            return '<div class="line-img">'
+                 +     '<img src="' + esc(src) + '" alt="" '
+                 +         'onerror="this.classList.add(\'broke\')">'
+                 +     '<i class="icon-image checkout-line-img-fallback" aria-hidden="true"></i>'
+                 + '</div>';
+        }
+
+        if (!cart || cart.length === 0) {
+            list.innerHTML = '<li class="checkout-empty">Your cart is empty. <a href="index.html">Continue shopping</a>.</li>';
+            subtotalEl.textContent = '₦0';
+            totalEl.textContent    = '₦0';
+        } else {
+            var subtotal = 0;
+            var html = '';
+            cart.forEach(function(item){
+                var lineTotal = priceOf(item) * qtyOf(item);
+                subtotal += lineTotal;
+                html +=
+                    '<li class="checkout-order-line">' +
+                      imgTagFor(item) +
+                      '<div>' +
+                        '<div class="line-name">' + escapeHtml(nameOf(item)) + '</div>' +
+                        '<div class="line-meta">' +
+                          (variantLabel(item) ? '<span>' + variantLabel(item) + '</span> · ' : '') +
+                          '<span>Qty ' + qtyOf(item) + '</span>' +
+                        '</div>' +
+                      '</div>' +
+                      '<div class="line-total">' + fmtN(lineTotal) + '</div>' +
+                    '</li>';
+            });
+            list.innerHTML = html;
+            subtotalEl.textContent = fmtN(subtotal);
+            totalEl.textContent    = fmtN(subtotal);
+        }
+
+        // ===== Receipt dropzone =====
+        var dropzone   = document.getElementById('pageDropzone');
+        var dropInput  = document.getElementById('pageDropzoneInput');
+        var preview    = document.getElementById('pageDropzonePreview');
+        var prevImg    = document.getElementById('pageDropzonePreviewImg');
+        var prevName   = document.getElementById('pageDropzonePreviewName');
+        var prevSize   = document.getElementById('pageDropzonePreviewSize');
+        var dropRemove = document.getElementById('pageDropzoneRemove');
+        var dropErr    = document.getElementById('pageReceiptError');
+        var selectedReceiptFile = null;
+
+        function showReceiptError(msg){
+            if (!dropErr) return;
+            dropErr.textContent = msg;
+            dropErr.classList.add('active');
+        }
+        function clearReceiptError(){
+            if (!dropErr) return;
+            dropErr.textContent = '';
+            dropErr.classList.remove('active');
+        }
+        function fmtBytes(b){
+            if (b < 1024) return b + ' B';
+            if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+            return (b/1024/1024).toFixed(2) + ' MB';
+        }
+        function clearReceipt(){
+            selectedReceiptFile = null;
+            if (dropInput) dropInput.value = '';
+            if (preview) preview.classList.remove('active');
+            clearReceiptError();
+        }
+        function acceptReceiptFile(file){
+            if (!file) return;
+            var maxSize = 5 * 1024 * 1024;
+            var allowed = ['image/jpeg','image/png','image/webp','application/pdf'];
+            if (file.size > maxSize) { showReceiptError('File too large — max 5MB.'); return; }
+            if (allowed.indexOf(file.type) === -1) {
+                showReceiptError('Unsupported file type. Use JPG, PNG, WebP or PDF.');
+                return;
+            }
+            clearReceiptError();
+            selectedReceiptFile = file;
+            if (prevName) prevName.textContent = file.name || 'receipt';
+            if (prevSize) prevSize.textContent = fmtBytes(file.size);
+            if (prevImg) {
+                if (file.type && file.type.indexOf('image/') === 0) {
+                    var r = new FileReader();
+                    r.onload = function(e){ if (prevImg) { prevImg.src = e.target.result; prevImg.style.display = 'block'; } };
+                    r.readAsDataURL(file);
+                } else {
+                    // PDF preview placeholder (inline SVG icon)
+                    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+                            + '<rect x="12" y="8" width="40" height="48" rx="6" fill="#FEE2E2"/>'
+                            + '<text x="32" y="38" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="800" fill="#B91C1C">PDF</text></svg>';
+                    prevImg.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+                    prevImg.style.display = 'block';
+                }
+            }
+            if (preview) preview.classList.add('active');
+        }
+        if (dropzone && dropInput) {
+            dropzone.addEventListener('click', function(e){
+                if (e.target && e.target.closest && e.target.closest('#pageDropzonePreview')) return;
+                dropInput.click();
+            });
+            dropInput.addEventListener('change', function(){
+                var file = dropInput.files && dropInput.files[0];
+                if (file) acceptReceiptFile(file);
+            });
+            dropzone.addEventListener('dragover', function(e){ e.preventDefault(); dropzone.classList.add('dragging'); });
+            dropzone.addEventListener('dragleave', function(e){ e.preventDefault(); dropzone.classList.remove('dragging'); });
+            dropzone.addEventListener('drop', function(e){
+                e.preventDefault();
+                dropzone.classList.remove('dragging');
+                var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+                if (f) acceptReceiptFile(f);
+            });
+        }
+        if (dropRemove) dropRemove.addEventListener('click', function(e){ e.stopPropagation(); clearReceipt(); });
+
+        // ===== Place order =====
+        var placeBtn    = document.getElementById('placeOrderBtn');
+        var placeBtnLbl = document.getElementById('placeOrderBtnLabel');
+
+        function setBusy(busy){
+            if (!placeBtn) return;
+            placeBtn.disabled = busy;
+            placeBtn.classList.toggle('loading', busy);
+            if (placeBtnLbl) placeBtnLbl.textContent = busy ? 'Processing…' : 'Place Order';
+        }
+
+        if (placeBtn) {
+            placeBtn.addEventListener('click', async function(){
+                if (placeBtn.disabled) return;
+                clearReceiptError();
+
+                var user = null;
+                try { user = JSON.parse(localStorage.getItem('jmpotters_user') || 'null'); } catch(_e){}
+                if (!user || !user.address || !user.city || !user.state) {
+                    showReceiptError('Please complete your profile (address, city, state) before placing your order.');
+                    try { sessionStorage.setItem('checkoutRedirect', 'checkout.html'); } catch(_e){}
+                    setTimeout(function(){ window.location.href = 'register.html'; }, 1200);
+                    return;
+                }
+
+                var J = window.JMPOTTERS || null;
+                if (!J || typeof J.createOrder !== 'function' || typeof J.uploadReceiptToStorage !== 'function') {
+                    // JMPOTTERS not ready yet — show inline error, leave button
+                    // clickable so user can retry once /app.js has loaded.
+                    showReceiptError('Checkout system not ready yet. Please wait a moment and try again.');
+                    return;
+                }
+
+                setBusy(true);
+                try {
+                    var tempId = 'order_' + Date.now();
+                    var receiptUrl = null;
+                    if (selectedReceiptFile) {
+                        try {
+                            receiptUrl = await J.uploadReceiptToStorage(selectedReceiptFile, tempId);
+                        } catch (uplErr) {
+                            // Receipt upload failure is NOT a blocker: customer
+                            // can still place the order with receipt_url=null and
+                            // send the receipt later via WhatsApp.
+                            console.warn('Receipt upload failed; proceeding without receipt_url:', uplErr);
+                            receiptUrl = null;
+                        }
+                    }
+
+                    var orderData = {
+                        user_id:     user.id,
+                        email:       user.email,
+                        full_name:   user.full_name,
+                        phone:       user.phone,
+                        address:     user.address,
+                        city:        user.city,
+                        state:       user.state,
+                        notes:       '',
+                        receipt_url: receiptUrl
+                    };
+
+                    var order = await J.createOrder(orderData, cart);
+                    if (order && order.order_number) {
+                        try { localStorage.setItem('jmpotters_cart', '[]'); } catch(_e){}
+                        window.location.href = 'invoice.html?order=' + encodeURIComponent(order.order_number);
+                        return;
+                    }
+                    showReceiptError('Could not create your order. Please try again, or contact us on WhatsApp.');
+                    setBusy(false);
+                } catch (err) {
+                    console.error('Place-order error:', err);
+                    showReceiptError('Order failed: ' + (err && err.message ? err.message : 'unknown error'));
+                    setBusy(false);
+                }
+            });
+        }
+
+        // ===== Cart count badge =====
         try {
-            var _raw = localStorage.getItem(_peekKeys[_pk]);
-            if (!_raw) continue;
-            var _parsed = JSON.parse(_raw);
-            if      (_parsed && Array.isArray(_parsed.items)    && _parsed.items.length)    { _peeked = _parsed.items; }
-            else if (_parsed && Array.isArray(_parsed.cart)     && _parsed.cart.length)     { _peeked = _parsed.cart; }
-            else if (_parsed && Array.isArray(_parsed.products) && _parsed.products.length) { _peeked = _parsed.products; }
-            else if (Array.isArray(_parsed) && _parsed.length)                              { _peeked = _parsed; }
-            if (_peeked) break;
-        } catch(_e){ /* try next */ }
-    }
-    if (!_peeked || _peeked.length === 0) {
-        // Empty cart -> bounce back. Use replace() so the back button doesn't
-        // bounce the user right back here.
-        try { window.location.replace('cart.html'); } catch(_e){ window.location.href = 'cart.html'; }
-        return;
-    }
-    cart = _peeked;
+            var ccount = cart.reduce(function(s,i){ return s + qtyOf(i); }, 0);
+            var el = document.getElementById('cartCount');
+            if (el) {
+                el.textContent = ccount;
+                el.style.display = ccount > 0 ? 'flex' : 'none';
+            }
+        } catch(_e){}
 
-    var list = document.getElementById('orderLines');
-    var subtotalEl = document.getElementById('sumSubtotal');
-    var totalEl    = document.getElementById('sumTotal');
+        // ===== Reveal animations =====
+        var reveals = document.querySelectorAll('.reveal');
+        if (reveals.length && 'IntersectionObserver' in window) {
+            var ro = new IntersectionObserver(function(entries){
+                entries.forEach(function(entry){
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        ro.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            reveals.forEach(function(el){ ro.observe(el); });
+        }
+    })();
+    </script>
+    <!-- JMPOTTERS_THEME_FOUC (FOUC mitigation pre-paint) -->
+    <script>
+    (function(){
+      try{
+        var t = localStorage.getItem('jmpTheme');
+        if (t === 'dark') document.documentElement.classList.add('dark-mode');
+      } catch(e){}
+    })();
+    </script>
+    <!-- JMPOTTERS_THEME_JS placeholder (replaced with /theme.js at deploy) -->
 
-    function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-    function imgSrcFor(item){ return item.image_url || item.image || item.thumb || item.thumbnail || ''; }
-    function nameOf(item){ return item.name || item.title || 'Item'; }
-    function variantLabel(item){
-        var parts = [];
-        if (item.color || item.color_name) parts.push(escapeHtml(item.color || item.color_name));
-        if (item.size || item.size_value)   parts.push('Size ' + escapeHtml(item.size || item.size_value));
-        return parts.join(' · ');
-    }
-    function qtyOf(item){ var q = parseInt(item.quantity || item.qty || item.q); return isNaN(q) || q < 1 ? 1 : q; }
-    function priceOf(item){ var p = parseFloat(item.price || item.unit_price || 0); return isNaN(p) ? 0 : p; }
-    function fmtN(n){ try { return '₦' + Number(n).toLocaleString(); } catch(e){ return '₦' + n; } }
-
-    if (!cart || cart.length === 0) {
-        list.innerHTML =
-            '<li class="ck-empty">' +
-              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="48" height="48" style="margin:0 auto 8px;display:block;opacity:0.55"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>' +
-              '<div style="font-weight:600;margin-bottom:4px">Your cart is empty</div>' +
-              '<div style="font-size:0.85rem">Add items to your cart before checking out.</div>' +
-              '<a class="ck-empty-cta" href="index.html">Continue Shopping</a>' +
-            '</li>';
-        subtotalEl.textContent = '₦0';
-        totalEl.textContent    = '₦0';
-        return;
-    }
-
-    var subtotal = 0;
-    var html = '';
-    cart.forEach(function(item){
-        var lineTotal = priceOf(item) * qtyOf(item);
-        subtotal += lineTotal;
-        var img = imgSrcFor(item);
-        var imgTag = img
-            ? '<img src="' + escapeHtml(img) + '" alt="" onerror="this.outerHTML=\'<div class=\'ck-line-img-placeholder\' aria-hidden=\\\'true\\\'><i class=\\\'icon-box\\\'></i></div>\'">'
-            : '<div class="ck-line-img-placeholder" aria-hidden="true"><i class="icon-box" style="font-size:1.2rem"></i></div>';
-        html +=
-            '<li class="ck-order-line">' +
-              imgTag +
-              '<div class="ck-line-info">' +
-                '<div class="ck-line-name">' + nameOf(item) + '</div>' +
-                '<div class="ck-line-meta">' +
-                  (variantLabel(item) ? '<span>' + variantLabel(item) + '</span>' : '') +
-                  '<span>Qty ' + qtyOf(item) + '</span>' +
-                '</div>' +
-              '</div>' +
-              '<div class="ck-line-total">' + fmtN(lineTotal) + '</div>' +
-            '</li>';
-    });
-    list.innerHTML = html;
-    subtotalEl.textContent = fmtN(subtotal);
-    totalEl.textContent    = fmtN(subtotal);
-})();
-</script>
-
+<!-- // v4 image-fallback: sibling-element + adjacent-class-swap -->
 </body>
 </html>
