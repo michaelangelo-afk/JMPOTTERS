@@ -1350,7 +1350,8 @@
 
                     var items = order.items || [];
                     var subtotal = order.total_amount || 0;
-                    var shippingFee = order.shipping_fee || 0;
+                    // Shipping row removed (v7) — keep var for downstream compat but force 0.
+                                    var shippingFee = 0;
                     var grandTotal = order.grand_total || (subtotal + shippingFee);
                     var orderDate = new Date(order.created_at).toLocaleDateString('en-NG', {
                         day: 'numeric',
@@ -1450,10 +1451,7 @@
                                             '<span class="totals-label">Subtotal:</span>' +
                                             '<span class="totals-value">\u20A6' + subtotal.toLocaleString() + '</span>' +
                                         '</div>' +
-                                        '<div class="totals-row">' +
-                                            '<span class="totals-label">Shipping Fee:</span>' +
-                                            '<span class="totals-value">' + (shippingFee === 0 ? 'Free' : '\u20A6' + shippingFee.toLocaleString()) + '</span>' +
-                                        '</div>' +
+                                        <!-- Shipping row removed per user direction (v7) -->
                                         '<div class="totals-row grand-total">' +
                                             '<span class="totals-label">Grand Total:</span>' +
                                             '<span class="totals-value">\u20A6' + grandTotal.toLocaleString() + '</span>' +
@@ -1519,5 +1517,6 @@
 
 <!-- JMPOTTERS_THEME_JS -->
 <script src="theme.js" defer></script>
+<!-- v7: invoice.html shipping_fee row removed -->
 </body>
 </html>
