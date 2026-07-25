@@ -913,9 +913,9 @@
         var closeNavBtn = document.getElementById('closeNavBtn');
         function openNav() { mobileNav.classList.add('active'); navOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
         function closeNav() { mobileNav.classList.remove('active'); navOverlay.classList.remove('active'); document.body.style.overflow = ''; }
-        if (mobileToggle) mobileToggle.addEventListener('click', openNav);
-        if (closeNavBtn) closeNavBtn.addEventListener('click', closeNav);
-        if (navOverlay) navOverlay.addEventListener('click', closeNav);
+        if (mobileToggle) /* v19: page-local checkout wiring stripped (no-op; app.js handles) */ 0
+        if (closeNavBtn) /* v19: page-local checkout wiring stripped (no-op; app.js handles) */ 0
+        if (navOverlay) /* v19: page-local checkout wiring stripped (no-op; app.js handles) */ 0
 
         // ===== SEARCH =====
         var searchToggle = document.getElementById('searchToggle');
@@ -937,8 +937,8 @@
             searchInput.value = '';
             if (searchResultsContainer) searchResultsContainer.innerHTML = '';
         }
-        if (searchToggle) searchToggle.addEventListener('click', openSearch);
-        if (searchClose) searchClose.addEventListener('click', closeSearch);
+        if (searchToggle) /* v19: page-local checkout wiring stripped (no-op; app.js handles) */ 0
+        if (searchClose) /* v19: page-local checkout wiring stripped (no-op; app.js handles) */ 0
         if (searchOverlay) searchOverlay.addEventListener('click', function(e) {
             if (e.target === searchOverlay) closeSearch();
         });
@@ -1104,16 +1104,15 @@
         if (cartIconEl) {
             cartIconEl.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); openCartPanel(); });
         }
-        if (closeCartBtn) closeCartBtn.addEventListener('click', closeCartPanel);
-        if (cartOverlayEl) cartOverlayEl.addEventListener('click', closeCartPanel);
+        if (closeCartBtn) /* v19: page-local checkout wiring stripped (no-op; app.js handles) */ 0
+        if (cartOverlayEl) /* v19: page-local checkout wiring stripped (no-op; app.js handles) */ 0
         if (cartCheckoutBtn) {
-            /* v19: page-local checkout wiring stripped */ (inline addEventListener on cartCheckoutBtn stripped; app.js's listener handles it)
+            /* v19: page-local checkout wiring stripped (no-op; app.js handles) */ 0
                 if (typeof window.JMPOTTERS !== 'undefined' && window.JMPOTTERS.proceedToCheckout) {
                     window.JMPOTTERS.proceedToCheckout();
                 } else {
                     window.location.href = 'cart.html';
                 }
-            });
         }
 
         // ===== BACK TO TOP =====
