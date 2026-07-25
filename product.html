@@ -1268,6 +1268,7 @@
                             <span class="current-price">${formatPrice(product.price)}</span>
                             ${hasComparePrice ? `<span class="original-price">${formatPrice(product.compare_price)}</span>` : ''}
                             ${hasComparePrice ? `<span class="discount-badge">-${discountPercent}%</span>` : ''}
+                    ${hasComparePrice ? `<div style="font-size:0.8rem;color:#dc2626;font-weight:600;margin-top:-4px;">Save ${discountPercent}%</div>` : ''}
                         </div>
                         <div class="stock-tile">
                             <div class="stock-status ${stockStatus}">
@@ -1320,7 +1321,10 @@
             `;
 
             setupProductPageInteractions(product);
-        }
+        
+            // v15: signal that product.html has rendered -- app.js will see this and skip its render.
+            window.__jmpottersProductRendered = true;
+}
 
         function setupProductPageInteractions(product) {
             var colorOptions = document.getElementById('colorOptions');
