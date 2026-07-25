@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "installCommand": "echo Skipping install (static HTML deploy)",
-  "buildCommand": "echo Skipping build (static HTML deploy)",
+  "installCommand": "echo skipping-install-for-static-site",
+  "buildCommand": "echo skipping-build-for-static-site",
   "outputDirectory": "."
 }
